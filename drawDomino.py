@@ -79,9 +79,15 @@ def drawDomino(inCanvas, inDomino=[5, 6], inOrientation=tk.HORIZONTAL, inOutline
     return theCanvas
 
 junk = """
-2     6     3
--[2,6]-[6,3]-[3,1]
-2     6     3
+      5
+      -
+      6
+2     6     
+-[2,6]-[6,3][3,1]
+2     6     
+      6
+      -
+      4
 """
 
 
