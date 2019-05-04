@@ -22,9 +22,10 @@ Player 0 has 6 dominos, 18.0 points, 10 go agains, 1 hands and 0 games won.
 $ __./tkDomino.py__  # To see the start of a [tkinter](https://docs.python.org/3/library/tk.html)-based ui
 
 Rules:
-* Each player is dealt a hand of 7 dominos
+* Each player is initially dealt a hand of 7 dominos
 * Dominos can only be played against matching numbers
+* If no domino in a player's hand matches an outside domino then the player must take a domino from the boneyard until one can play or until the boneyard only has two dominos
 * If all outside dominos add up to a multiple of 5 then the player gets points and goes again
 * If the play plays doubles they get to go again
-* The player who has no dominos gets points from the other player's dominos // 5
+* The player who has no dominos gets all points on the other player's dominos // 5
 * First player to 30 points wins the match
