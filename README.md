@@ -2,6 +2,7 @@
 Racehorse dominos
 
 $ __./DominoWorld.py__  # To play a text game on the terminal against the computer
+
 $ __./tkDomino.py__  # To see the start of a [tkinter](https://docs.python.org/3/library/tk.html)-based ui
 
 Rules:
