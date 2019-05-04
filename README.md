@@ -10,7 +10,7 @@ Rules:
 * The player who has no dominos gets all points on the other player's dominos // 5
 * First player to 30 points wins the match
 
-$ __./DominoWorld.py__  # To play a text game on the terminal against the computer
+$ __python3 DominoWorld.py__  # To play a text game on the terminal against the computer
 ```
 Player 1's hand: 1 [[6, 6]]
 ================================
@@ -32,5 +32,5 @@ RECAP:playARun() run length: 6
 Player 1 has 1 dominos, 9.0 points, 10 go agains, 1 hands and 0 games won.
 ```
 
-$ __./tkDomino.py__  # To see the start of a [tkinter](https://docs.python.org/3/library/tk.html)-based ui
+$ __python3 tkDomino.py__  # To see the start of a [tkinter](https://docs.python.org/3/library/tk.html)-based ui
 ![tkDomino.py.png](images/tkDomino.py.png)
