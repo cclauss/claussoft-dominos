@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from os import getenv
 from random import shuffle
 # from sys import argv
 # from askNumberFromOneTo import askNumberFromOneTo
@@ -157,7 +158,7 @@ def main():
     humanWantsToPlay = games_to_play != 1
     if not games_to_play:
         games_to_play = 100
-    if os.getenv("TRAVIS"):       # If we are running under Travis CI...
+    if getenv("TRAVIS"):       # If we are running under Travis CI...
         humanWantsToPlay = False  # computer vs. computer
         games_to_play = 10        # games to play
     dw = DominoWorld()
