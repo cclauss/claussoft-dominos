@@ -78,6 +78,7 @@ class DominoWorld(object):
         return True
 
     def playATurn(self):
+        global gPassesInARow
         p = self.mWhoseTurnMinor % len(self.mPlayers)
         # print('playATurn: {} {}'.format(self.mWhoseTurnMinor, p))
         print('=' * 10 + ' NEW TURN ' + '=' * 10)
