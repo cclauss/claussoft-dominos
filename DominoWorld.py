@@ -154,7 +154,7 @@ def main():
     print('Enter 2 to play 1 human vs. computer game.')
     games_to_play = 2  # askNumberFromOneTo(2)
     
-    humanWantsToPlay = i != 1
+    humanWantsToPlay = games_to_play != 1
     if not games_to_play:
         games_to_play = 100
     if os.getenv("TRAVIS"):       # If we are running under Travis CI...
