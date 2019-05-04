@@ -9,10 +9,11 @@ from DominoPlayer import DominoPlayer
 from DominoBoard import DominoBoard
 
 gPassesInARow = 0
+# dominos = tuple((x, y) for x in range(7) for y in range(x + 1))
 
 
 def initDominos(inMaxDie=6):
-    return [[x, y] for x in range(inMaxDie + 1) for y in range(x, inMaxDie + 1)]
+    return [[x, y] for x in range(inMaxDie + 1) for y in range(x + 1)]
 
 
 def ZZinitDominos(inMaxDie=6):
