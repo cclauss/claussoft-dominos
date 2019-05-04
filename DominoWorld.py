@@ -152,13 +152,17 @@ class DominoWorld(object):
 def main():
     print('Enter 1 to play 100 computer vs. computer games.')
     print('Enter 2 to play 1 human vs. computer game.')
-    i = 2  # askNumberFromOneTo(2)
+    games_to_play = 2  # askNumberFromOneTo(2)
+    
     humanWantsToPlay = i != 1
-    if not i:
-        i = 100
+    if not games_to_play:
+        games_to_play = 100
+    if os.getenv("TRAVIS"):       # If we are running under Travis CI...
+        humanWantsToPlay = False  # computer vs. computer
+        games_to_play = 10        # games to play
     dw = DominoWorld()
-    while i:
-        i -= 1
+    while games_to_play:
+        games_to_play -= 1
         dw.playAGame(humanWantsToPlay)
     print('=' * 10)
     print(dw)
