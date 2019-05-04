@@ -34,3 +34,6 @@ Player 1 has 1 dominos, 9.0 points, 10 go agains, 1 hands and 0 games won.
 
 $ __python3 tkDomino.py__  # To see the start of a [tkinter](https://docs.python.org/3/library/tk.html)-based ui
 ![tkDomino.py.png](images/tkDomino.py.png)
+
+$ __python3 drawDomino.py__  # To see the layout of played Dominos in the tkinter ui
+![drawDomino.py.png](images/drawDomino.py.png)
