@@ -26,6 +26,6 @@ Rules:
 * Dominos can only be played against matching numbers
 * If no domino in a player's hand matches an outside domino then the player must take a domino from the boneyard until one can play or until the boneyard only has two dominos
 * If all outside dominos add up to a multiple of 5 then the player gets points and goes again
-* If the play plays doubles they get to go again
+* If the player plays doubles they get to go again.  Note: Doubles are played sideways and count 2x.
 * The player who has no dominos gets all points on the other player's dominos // 5
 * First player to 30 points wins the match
