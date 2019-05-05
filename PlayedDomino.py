@@ -21,6 +21,7 @@ cLeft, cRight, cUp, cDown = range(4)
 LEFT_RIGHT = (cLeft, cRight)
 UP_DOWN = (cUp, cDown)
 
+# Text offsets when playing one domino next to the other
 # (self_horiz, other_horiz): (LEFT, RIGHT, UP, DOWN)
 # None: if self and other are both horizontal then UP and DOWN are invalid
 #       if self and other are both vertical then LEFT and RIGHT are invalid
@@ -33,6 +34,21 @@ TEXT_OFFSETS = {(True, True): [(-5, 0), (5, 0), None, None],
 def text_offset(self_horiz, other_horiz, direction):
     offset = TEXT_OFFSETS[(self_horiz, other_horiz)][direction]
     assert offset, f"text_offset({self_horiz}, {other_horiz}, {direction})"
+    return offset
+
+# tkinter offsets when playing one domino next to the other
+# (self_horiz, other_horiz): (LEFT, RIGHT, UP, DOWN)
+# None: if self and other are both horizontal then UP and DOWN are invalid
+#       if self and other are both vertical then LEFT and RIGHT are invalid
+TK_OFFSETS = {(True, True): [(-3, 0), (3, 0), None, None],
+                (True, False): [(-1, -1), (3, -1), (1, -3), (1, 1)],
+                (False, True): [(-3, 1), (1, 1), (-1, -1), (-1, 3)],
+                (False, False): [None, None, (0, -3), (0, 3)]}
+
+
+def tk_offset(self_horiz, other_horiz, direction):
+    offset = TK_OFFSETS[(self_horiz, other_horiz)][direction]
+    assert offset, f"tk_offset({self_horiz}, {other_horiz}, {direction})"
     return offset
 
 def lrNoDoublesOffset(inDirection):
