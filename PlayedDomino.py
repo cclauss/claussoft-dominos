@@ -111,8 +111,8 @@ class PlayedDomino(object):
             return 0
         if self.is_double or not neighborCount:  # firstDominoPlayed
             return self.face_value
-        for i in range(len(self.mNeighbors)):
-            if self.mNeighbors[i]:
+        for i, neighbor in enumerate(self.mNeighbors):
+            if neighbor:
                 return self.mDomino[whichDie(oppositeDirection(i))]
         assert False, 'Error in played_value!'
 
@@ -129,12 +129,12 @@ class PlayedDomino(object):
         if self.is_double:
             return self.playable_directions_for_a_double
         neighborCount = self.number_of_neighbors
-        if neighborCount > 1:
+        if neighborCount > 1:  # already boxed in
             return []
         if not neighborCount:  # firstDominoPlayed
             return LEFT_RIGHT if self.mLeftRight else UP_DOWN
-        for i in range(len(self.mNeighbors)):
-            if self.mNeighbors[i]:
+        for i, neighbor in enumerate(self.mNeighbors):
+            if neighbor:
                 return [oppositeDirection(i)]
         assert True, 'Error in playable_directions!'
 
@@ -146,22 +146,20 @@ class PlayedDomino(object):
         if neighborCount == 3:
             return [self.mNeighbors.index(None)]
         if neighborCount == 2:
-            for i in range(len(self.mNeighbors)):
-                if self.mNeighbors[i]:
+            for i, neighbor in enumerate(self.mNeighbors):
+                if neighbor:
                     return rightAngles(i)
         if neighborCount == 1:
             for i in range(len(self.mNeighbors)):
                 if self.mNeighbors[i]:
                     return [oppositeDirection(i)]
         if not neighborCount:  # firstDominoPlayed
-            if self.mLeftRight:
-                return rightAngles(LEFT)
-            else:
-                return rightAngles(UP)
+            return rightAngles(LEFT) if self.mLeftRight else rightAngles(UP)
         assert True, 'Error in playable_directions_for_a_double!'
 
     @property
     def playable_numbers(self):
+        print("FIXME:", self.mDomino, self.playable_directions)
         return sorted(set(self.mDomino[whichDie(direction)] for direction in self.playable_directions))
 
     def newNeighbor(self, inPlayer, inDomino):
