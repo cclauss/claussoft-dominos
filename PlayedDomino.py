@@ -158,14 +158,14 @@ class PlayedDomino(object):
                 return rightAngles(LEFT)
             else:
                 return rightAngles(UP)
-        assert True, 'Error in playable_directions_for_a_double()!'
+        assert True, 'Error in playable_directions_for_a_double!'
 
     @property
     def playable_numbers(self):
         return sorted(set(self.mDomino[whichDie(direction)] for direction in self.playable_directions))
 
     def newNeighbor(self, inPlayer, inDomino):
-        playable_directions = self.playable_directions()
+        playable_directions = self.playable_directions
         assert playable_directions
         if self.is_double:
             theDirection = choice(playable_directions)
