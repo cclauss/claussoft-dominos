@@ -212,11 +212,7 @@ class PlayedDomino(object):
     def setLocation(self):
         for i, theNeighbor in enumerate(self.mNeighbors):
             if theNeighbor and theNeighbor.mLocation:
-                oppDir = oppositeDirection(i)
-                self.mLocation = theNeighbor.getOffset(self, oppDir)
-                offset = text_offset(theNeighbor.mLeftRight, self.mLeftRight, oppDir)
-                if offset != tuple(self.mLocation):
-                    raise RuntimeError(f"{theNeighbor.mLeftRight}, {self.mLeftRight}, {oppDir}, {offset}, {self.mLocation}\n{theNeighbor}\n{self}")
+                self.mLocation = theNeighbor.getOffset(self, oppositeDirection(i))
                 self.mLocation[0] += theNeighbor.mLocation[0]
                 self.mLocation[1] += theNeighbor.mLocation[1]
                 return
