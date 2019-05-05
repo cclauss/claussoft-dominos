@@ -23,18 +23,15 @@ class DominoBoard(tkDominoBoard):
     def __str__(self):
         s = '{} dominos in {} = {}\nPlayable numbers: {}, value = {}\n{}'
         return s.format(len(self.mBoneyard), 'Boneyard', self.mBoneyard,
-                        self.playableNumbers(), self.getValue(), self.mPlayedDominos)
+                        self.self.playable_numbers, self.get_value, self.mPlayedDominos)
 
-    def getValue(self):
-        a = sum(d.playedValue() for d in self.mPlayedDominos)
-        returnValue = 0
-        for d in self.mPlayedDominos:
-            returnValue += d.playedValue()
-        assert a == returnValue
-        return returnValue
+    @property
+    def get_value(self):
+        return sum(d.played_value for d in self.mPlayedDominos)
 
-    def getPoints(self):
-        theValue = self.getValue()
+    @property
+    def get_points(self):
+        theValue = self.get_value
         return 0 if theValue % 5 else theValue / 5
 
     def pickFromBoneyard(self):
@@ -42,18 +39,17 @@ class DominoBoard(tkDominoBoard):
         bones_available = len(self.mBoneyard) > (2 if self.mMaxDie == 6 else 0)
         return self.mBoneyard.pop() if bones_available else None
 
-    def playableNumbers(self):
-        if not self.mPlayedDominos:
+    @property
+    def playable_numbers(self):
+        if self.mPlayedDominos:
+            return sorted(set(d.playable_numbers for d in self.mPlayedDominos))
+        else:
             return range(self.mMaxDie + 1)
-        returnValue = []
-        for d in self.mPlayedDominos:
-            returnValue += d.playableNumbers()
-        return sorted(list(set(returnValue)))
 
     def playableDominos(self, inDomino):
         returnValue = []
         for d in self.mPlayedDominos:
-            pn = d.playableNumbers()
+            pn = d.playable_numbers
             if inDomino[0] in pn or inDomino[1] in pn:
                 returnValue.append(d)
         return returnValue
@@ -62,7 +58,7 @@ class DominoBoard(tkDominoBoard):
         if not self.mPlayedDominos:
             return True  # on an empty board, all dominos are playable
         for d in self.mPlayedDominos:
-            pn = d.playableNumbers()
+            pn = d.playable_numbers
             if inDomino[0] in pn or inDomino[1] in pn:
                 return True
         return False
@@ -106,11 +102,9 @@ class DominoBoard(tkDominoBoard):
         for theDomino in self.mPlayedDominos:
             theDomino.fillCanvas(inCanvas)
 
-    def locationList(self):
-        theList = []
-        for d in self.mPlayedDominos:
-            theList.append(d.mLocation)
-        return theList
+    @property
+    def location_list(self):
+        return [d.mLocation for for d in self.mPlayedDominos]
 
     def printPlayedDominos(self):
         if not self.mPlayedDominos:
@@ -120,7 +114,7 @@ class DominoBoard(tkDominoBoard):
         printCanvas(theCanvas)
         del theCanvas
         s = 'Playable: {}, Value: {}'
-        print(s.format(self.playableNumbers(), self.getValue()))
+        print(s.format(self.playable_numbers, self.get_value))
 
 
 def buildCanvas(inDimensions):
