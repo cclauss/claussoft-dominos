@@ -165,7 +165,7 @@ class PlayedDomino(object):
         for i in range(len(self.mNeighbors)):
             if self.mNeighbors[i]:
                 return self.mDomino[whichDie(oppositeDirection(i))]
-        assert True, 'Error in playedValue()!'
+        assert False, 'Error in playedValue()!'
 
     def notifyNeighborsOfUndo(self):  # break neighbors' links to me
         for theDirection in range(len(self.mNeighbors)):
@@ -263,6 +263,8 @@ class PlayedDomino(object):
                     TEXT_OFFSETS[(theNeighbor.mLeftRight, self.mLeftRight)][oppDir] = tuple(self.mLocation)
                 else:
                     assert offset == tuple(self.mLocation)
+                if oppDir == 3 and theNeighbor.mLeftRight and not self.mLeftRight:
+                    raise RuntimeError(f"{theNeighbor.mLeftRight}, {self.mLeftRight}, {oppDir}, {self.mLocation}\n{theNeighbor}\n{self}")
                 # print(f"text_offset({theNeighbor.mLeftRight}, {self.mLeftRight}, {oppDir}) -> {self.mLocation}")
                 print(TEXT_OFFSETS)
                 self.mLocation[0] += theNeighbor.mLocation[0]
