@@ -18,6 +18,11 @@ from random import choice
 
 # print(argv)
 
+g_offsets = {(True, True): [None, None, None, None],
+             (True, False): [None, None, None, None],
+             (False, True): [None, None, None, None],
+             (False, False): [None, None, None, None]}
+
 
 def text_offset(self_horiz, other_horiz, direction):
     print(f"text_offset({self_horiz}, {other_horiz}, {direction})")
@@ -254,7 +259,13 @@ class PlayedDomino(object):
             if theNeighbor and theNeighbor.mLocation:
                 oppDir = oppositeDirection(i)
                 self.mLocation = theNeighbor.getOffset(self, oppDir)
-                print(f"text_offset({theNeighbor.mLeftRight}, {self.mLeftRight}, {oppDir}) -> {self.mLocation}")
+                offset = g_offsets[(theNeighbor.mLeftRight, self.mLeftRight)][oppDir]
+                if offset is None:
+                    g_offsets[(theNeighbor.mLeftRight, self.mLeftRight)][oppDir] = tuple(self.mLocation)
+                else:
+                    assert offset == tuple(self.mLocation)
+                # print(f"text_offset({theNeighbor.mLeftRight}, {self.mLeftRight}, {oppDir}) -> {self.mLocation}")
+                print(g_offsets)
                 self.mLocation[0] += theNeighbor.mLocation[0]
                 self.mLocation[1] += theNeighbor.mLocation[1]
                 return
