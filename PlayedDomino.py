@@ -26,8 +26,8 @@ def text_offset(self_horiz, other_horiz, direction):
             print(", ".join(lrNoDoublesOffset(i) for i in range(4)))
         else:
             print(", ".join(lrNoDoublesOffset(i) for i in range(4)))
-    if self_horiz, other_horiz == False, False:
-        self_horiz, other_horiz = True, True:
+    #if (self_horiz, other_horiz) == (False, False):
+    #    self_horiz, other_horiz = True, True:
     return {  # LEFT, RIGHT, UP, DOWN
         (True, True): [[-5, 0], [5, 0]],
         (True, False): [[-5, 0], [5, 0], [2, -3], [2, 1]],
