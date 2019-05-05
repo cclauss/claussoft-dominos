@@ -244,7 +244,7 @@ class PlayedDomino(object):
     def getOffset(self, other, inDirection):
         offset = TEXT_OFFSETS[(self.mLeftRight, other.mLeftRight)][inDirection]
         assert offset, f"text_offset({self.mLeftRight}, {other.mLeftRight}, {inDirection})"
-        return offset
+        return list(offset)
         """
         if self.mLeftRight:
             if self.isDouble():
