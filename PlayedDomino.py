@@ -48,6 +48,37 @@ def udOtherDoubleOffset(inDirection):
     # print('udOtherDoubleOffset({})'.format(inDirection), end='')
     return [[0, 0], [0, 0], [-2, -1], [-2, 3]][inDirection]
 
+# tkinter versions
+
+def tkLrNoDoublesOffset(inDirection):
+    # print('lrNoDoublesOffset({})'.format(inDirection), end='')
+    return [[-3, 0], [3, 0], [0, 0], [0, 0]][inDirection]
+
+
+def tkLrMeDoubleOffset(inDirection):
+    # print('lrMeDoubleOffset({})'.format(inDirection), end='')
+    return [[-5, 0], [5, 0], [2, -3], [2, 1]][inDirection]
+
+
+def tkLrOtherDoubleOffset(inDirection):
+    # print('lrOtherDoubleOffset({})'.format(inDirection), end='')
+    return [[-1, -1], [5, -1], [0, 0], [0, 0]][inDirection]
+
+
+def tkUdNoDoublesOffset(inDirection):
+    # print('udNoDoublesOffset({})'.format(inDirection), end='')
+    return [[0, 0], [0, 0], [0, -3], [0, 3]][inDirection]
+
+
+def tkUdMeDoubleOffset(inDirection):
+    # print('udMeDoubleOffset({})'.format(inDirection), end='')
+    return [[-5, +1], [1, 1], [0, -3], [0, 3]][inDirection]
+
+
+def tkUdOtherDoubleOffset(inDirection):
+    # print('udOtherDoubleOffset({})'.format(inDirection), end='')
+    return [[0, 0], [0, 0], [-2, -1], [-2, 3]][inDirection]
+
 cLeft, cRight, cUp, cDown = range(4)
 LEFT_RIGHT = (cLeft, cRight)
 UP_DOWN = (cUp, cDown)
