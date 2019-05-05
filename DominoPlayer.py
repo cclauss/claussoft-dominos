@@ -208,7 +208,7 @@ class DominoPlayer(object):
         # print(self)
         print(self.handAsString())
         # print('Playable: {}, Value: {}'.format(playable, self.mBoard.getValue()))
-        theScoreAndRun = self.bestRun()
+        theScoreAndRun = self.best_run()
         return self.playARun(theScoreAndRun[1])  # just theRun
 
     def best_run(self):  # return the most valuable of an exhaustive series of lists of DominoRunMoves
@@ -225,7 +225,7 @@ class DominoPlayer(object):
                     bestScoreAndRun = theScoreAndRun
                 self.mDominos.append(d)
                 self.mDominos.sort()  # pop()/append() will mess up list order
-        # print('bestRun:', bestScoreAndRun)
+        # print('best_run:', bestScoreAndRun)
         return bestScoreAndRun
 
     def bestRunForDominoOnEmptyBoard(self, inDomino):
