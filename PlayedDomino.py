@@ -9,12 +9,12 @@
 #
 
 # from random import choice, shuffle
-# import tkinter as tk
+import tkinter as tk
 # from sys import argv
 # from askNumberFromOneTo import askNumberFromOneTo
 # from PrintableDomino import lrNoDoublesOffset, lrMeDoubleOffset, lrOtherDoubleOffset, udNoDoublesOffset, udMeDoubleOffset,
 # udOtherDoubleOffset
-# from random import choice
+from random import choice
 
 # print(argv)
 
