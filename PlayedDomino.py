@@ -51,6 +51,7 @@ def tk_offset(self_horiz, other_horiz, direction):
     assert offset, f"tk_offset({self_horiz}, {other_horiz}, {direction})"
     return offset
 
+"""
 def lrNoDoublesOffset(inDirection):
     # print('lrNoDoublesOffset({})'.format(inDirection), end='')
     return [[-5, 0], [5, 0], [0, 0], [0, 0]][inDirection]
@@ -110,7 +111,7 @@ def tkUdMeDoubleOffset(inDirection):
 def tkUdOtherDoubleOffset(inDirection):
     # print('udOtherDoubleOffset({})'.format(inDirection), end='')
     return [[0, 0], [0, 0], [-2, -1], [-2, 3]][inDirection]
-
+"""
 
 def oppositeDirection(inDirection):
     return {cLeft: cRight, cRight: cLeft, cUp: cDown, cDown: cUp}[inDirection]
@@ -240,7 +241,11 @@ class PlayedDomino(object):
         # print('newN Newer:',    d.mDomino,    d.neighborsAsString())
         return d
 
-    def getOffset(self, inDomino, inDirection):
+    def getOffset(self, other, inDirection):
+        offset = TEXT_OFFSETS[(self.mLeftRight, other.mLeftRight)][direction]
+        assert offset, f"text_offset({self.mLeftRight}, {other.mLeftRight}, {direction})"
+        return offset
+        """
         if self.mLeftRight:
             if self.isDouble():
                 return lrMeDoubleOffset(inDirection)
@@ -255,6 +260,7 @@ class PlayedDomino(object):
                 return udOtherDoubleOffset(inDirection)
             else:
                 return udNoDoublesOffset(inDirection)
+        """
 
     def dominoAndLoc(self):
         return self.mDomino, '@', self.mLocation
@@ -270,8 +276,6 @@ class PlayedDomino(object):
                 offset = text_offset(theNeighbor.mLeftRight, self.mLeftRight, oppDir)
                 if offset != tuple(self.mLocation):
                     raise RuntimeError(f"{theNeighbor.mLeftRight}, {self.mLeftRight}, {oppDir}, {offset}, {self.mLocation}\n{theNeighbor}\n{self}")
-                # print(f"text_offset({theNeighbor.mLeftRight}, {self.mLeftRight}, {oppDir}) -> {self.mLocation}")
-                print(TEXT_OFFSETS)
                 self.mLocation[0] += theNeighbor.mLocation[0]
                 self.mLocation[1] += theNeighbor.mLocation[1]
                 return
@@ -280,14 +284,12 @@ class PlayedDomino(object):
         # print(self.mDomino, '@', self.mLocation, self.neighborsAsString())
         if self.mLeftRight:
             s = str(self.mDomino).replace(' ', '')
-            for i in range(len(s)):
-                inCanvas[self.mLocation[1]][self.mLocation[0] + i] = s[i]
+            for i, c in enumerate(s):
+                inCanvas[self.mLocation[1]][self.mLocation[0] + i] = c
         else:
-            inCanvas[self.mLocation[1] +
-                     0][self.mLocation[0]] = str(self.mDomino[0])
+            inCanvas[self.mLocation[1] + 0][self.mLocation[0]] = str(self.mDomino[0])
             inCanvas[self.mLocation[1] + 1][self.mLocation[0]] = '-'
-            inCanvas[self.mLocation[1] +
-                     2][self.mLocation[0]] = str(self.mDomino[1])
+            inCanvas[self.mLocation[1] + 2][self.mLocation[0]] = str(self.mDomino[1])
 
 if __name__ == '__main__':
     # from DominoTest import main
