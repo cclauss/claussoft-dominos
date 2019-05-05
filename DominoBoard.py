@@ -104,7 +104,7 @@ class DominoBoard(tkDominoBoard):
 
     @property
     def location_list(self):
-        return [d.mLocation for for d in self.mPlayedDominos]
+        return [d.mLocation for d in self.mPlayedDominos]
 
     def printPlayedDominos(self):
         if not self.mPlayedDominos:
