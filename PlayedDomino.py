@@ -19,6 +19,21 @@ from random import choice
 # print(argv)
 
 
+def text_offset(self_horiz, other_horiz, direction):
+    print(f"text_offset({self_horiz}, {other_horiz}, {direction})")
+    if self_horiz:
+        if other_horiz:
+            print(", ".join(lrNoDoublesOffset(i) for i in range(4)))
+        else:
+            print(", ".join(lrNoDoublesOffset(i) for i in range(4)))
+    if self_horiz, other_horiz = False, False:
+        self_horiz, other_horiz = True, True:
+    return {  # LEFT, RIGHT, UP, DOWN
+        (True, True): [[-5, 0], [5, 0]],
+        (True, False): [[-5, 0], [5, 0], [2, -3], [2, 1]],
+        (False, True): [[-5, 0], [5, 0], [0, 0], [0, 0]]
+    }[(self_horiz, other_horiz)][direction]
+
 def lrNoDoublesOffset(inDirection):
     # print('lrNoDoublesOffset({})'.format(inDirection), end='')
     return [[-5, 0], [5, 0], [0, 0], [0, 0]][inDirection]
@@ -235,11 +250,11 @@ class PlayedDomino(object):
         return self.mDomino, '@', self.mLocation, 'n:', self.neighborsAsString()
 
     def setLocation(self):
-        for i in range(len(self.mNeighbors)):
-            theNeighbor = self.mNeighbors[i]
+        for i, theNeighbor in enumerate(self.mNeighbors):
             if theNeighbor and theNeighbor.mLocation:
                 oppDir = oppositeDirection(i)
                 self.mLocation = theNeighbor.getOffset(self, oppDir)
+                print(f"text_offset({theNeighbor.mLeftRight}, {self.mLeftRight}, {oppDir}) -> {self.mLocation}")
                 self.mLocation[0] += theNeighbor.mLocation[0]
                 self.mLocation[1] += theNeighbor.mLocation[1]
                 return
