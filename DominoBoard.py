@@ -45,7 +45,7 @@ class DominoBoard(tkDominoBoard):
             return range(self.mMaxDie + 1)
         number_list = []
         for d in self.mPlayedDominos:
-            number_list + d.playable_numbers
+            number_list += d.playable_numbers
         return sorted(set(number_list))
 
     def playableDominos(self, inDomino):
