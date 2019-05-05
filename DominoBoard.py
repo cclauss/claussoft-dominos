@@ -41,10 +41,12 @@ class DominoBoard(tkDominoBoard):
 
     @property
     def playable_numbers(self):
-        if self.mPlayedDominos:
-            return sorted(set(d.playable_numbers for d in self.mPlayedDominos))
-        else:
+        if not self.mPlayedDominos:
             return range(self.mMaxDie + 1)
+        number_list = []
+        for d in self.mPlayedDominos:
+            number_list + d.playable_numbers
+        return sorted(set(number_list))
 
     def playableDominos(self, inDomino):
         returnValue = []
