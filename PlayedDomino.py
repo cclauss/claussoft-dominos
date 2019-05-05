@@ -59,12 +59,13 @@ def tk_offset(self_horiz, other_horiz, direction):
     assert offset, f"tk_offset({self_horiz}, {other_horiz}, {direction})"
     return offset
 
+
 class PlayedDomino(object):
     def __init__(self, inPlayer, inDomino, inNeighbor=None, inDirection=LEFT):
         self.mPlayer = inPlayer
         self.mDomino = inDomino
         self.mLocation = [0, 0]
-        self.tk_loc = [0, 0]
+        self.tk_location = [0, 0]
         self.mLeftRight = inDirection in LEFT_RIGHT
         if self.is_double:
             self.mLeftRight = not self.mLeftRight
@@ -199,6 +200,11 @@ class PlayedDomino(object):
                 return udNoDoublesOffset(inDirection)
         """
 
+    def get_tk_offset(self, other, inDirection):
+        offset = TK_OFFSETS[(self.mLeftRight, other.mLeftRight)][inDirection]
+        assert offset, f"tk_offset({self.mLeftRight}, {other.mLeftRight}, {inDirection})"
+        return list(offset)
+
     @property
     def domino_and_loc(self):
         return self.mDomino, '@', self.mLocation
@@ -214,6 +220,15 @@ class PlayedDomino(object):
                 self.mLocation[0] += theNeighbor.mLocation[0]
                 self.mLocation[1] += theNeighbor.mLocation[1]
                 return
+
+    def set_tk_location(self):
+        for i, theNeighbor in enumerate(self.mNeighbors):
+            if theNeighbor and theNeighbor.tk_location:
+                self.tk_location = theNeighbor.get_tk_offset(self, oppositeDirection(i))
+                self.tk_location[0] += theNeighbor.tk_location[0]
+                self.tk_location[1] += theNeighbor.tk_location[1]
+                return
+
 
     def fillCanvas(self, inCanvas):
         # print(self.mDomino, '@', self.mLocation, self.neighbors_as_string)

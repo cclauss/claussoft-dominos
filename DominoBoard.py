@@ -102,6 +102,28 @@ class DominoBoard:
                             (max(verts) - min(verts)) + 3]
         return buildCanvas(canvasDimensions)
 
+    def set_tk_locations(self):
+        if not self.mPlayedDominos:
+            return
+        for d in self.mPlayedDominos:
+            d.tk_location = None
+        self.mPlayedDominos[0].tk_location = [0, 0]
+        horiz = []
+        verts = []
+        for d in self.mPlayedDominos:
+            if not d.tk_location:  # for all but firstPlayedDomino
+                d.set_tk_location()
+            horiz.append(d.tk_location[0])
+            verts.append(d.tk_location[1])
+        assert min(horiz) < 1
+        assert min(verts) < 1
+        hOffset = abs(min(horiz))
+        vOffset = abs(min(verts))
+        if hOffset or vOffset:
+            for d in self.mPlayedDominos:
+                d.tk_location[0] += hOffset
+                d.tk_location[1] += vOffset
+
     def fillCanvas(self, inCanvas):
         for theDomino in self.mPlayedDominos:
             theDomino.fillCanvas(inCanvas)

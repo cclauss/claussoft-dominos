@@ -2,6 +2,7 @@
 
 from os import getenv
 from random import shuffle
+import tkinter as tk
 # from sys import argv
 # from askNumberFromOneTo import askNumberFromOneTo
 # from PlayedDomino import PlayedDomino
@@ -39,6 +40,22 @@ def ZZpointsRounded(inValue):
 
 # for i in range(20):
 #    print(i, pointsRounded(i), ZZpointsRounded(i))
+"""
+"""
+# tkinter offsets when playing one domino next to the other
+# (self_horiz, other_horiz): (LEFT, RIGHT, UP, DOWN)
+# None: if self and other are both horizontal then UP and DOWN are invalid
+#       if self and other are both vertical then LEFT and RIGHT are invalid
+TK_OFFSETS = {(True, True): ((-3, 0), (3, 0), None, None),
+                (True, False): ((-1, -1), (3, -1), (1, -3), (1, 1)),
+                (False, True): ((-3, 1), (1, 1), (-1, -1), (-1, 3)),
+                (False, False): (None, None, (0, -3), (0, 3))}
+
+
+def tk_offset(self_horiz, other_horiz, direction):
+    offset = TK_OFFSETS[(self_horiz, other_horiz)][direction]
+    assert offset, f"tk_offset({self_horiz}, {other_horiz}, {direction})"
+    return offset
 """
 
 class DominoWorld(tkDominoBoard):
@@ -170,17 +187,25 @@ class DominoWorld(tkDominoBoard):
         # ui.mDropZonePlayer0
         # ui.mDropZonePlayer1
         # ui.mDropZoneScoreBoard
-        for child in self.mDropZoneBoneyard.winfo_children():
+        for i, child in enumerate(self.mDropZoneBoneyard.winfo_children()):
             child.destroy()
         for i, domino in enumerate(self.mBoard.mBoneyard):
             drawDomino(self.mDropZoneBoneyard, domino).grid(row=i)
         uis = (self.mDropZonePlayer0, self.mDropZonePlayer1)
         for player, ui in zip(self.mPlayers, uis):
-            for child in ui.winfo_children():
+            for i, child in enumerate(ui.winfo_children()):
                 child.destroy()
             for i, domino in enumerate(player.mDominos):
                 drawDomino(ui, domino).grid(row=0, column=i*3)
-
+        self.mBoard.set_tk_locations()
+        for i, child in enumerate(self.mDropZonePlayArea.winfo_children()):
+            child.destroy()
+        for d in self.mBoard.mPlayedDominos:
+            column, row = d.tk_location
+            orientation = tk.HORIZONTAL if d.mLeftRight else tk.VERTICAL
+            print("pd>", d, orientation, row, column)
+            drawDomino(self.mDropZonePlayArea,
+                       d.mDomino, orientation).grid(row=row, column=column)
 
 def main():
     print('Enter 1 to play 100 computer vs. computer games.')
