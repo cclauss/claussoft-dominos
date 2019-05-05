@@ -162,7 +162,7 @@ class PlayedDomino(object):
 
     @property
     def playable_numbers(self):
-        return sorted(set(self.mDomino[whichDie(direction) for direction in self.playable_directions))
+        return sorted(set(self.mDomino[whichDie(direction)] for direction in self.playable_directions))
 
     def newNeighbor(self, inPlayer, inDomino):
         playable_directions = self.playable_directions()
