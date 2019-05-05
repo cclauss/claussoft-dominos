@@ -18,8 +18,8 @@ from random import choice
 
 # print(argv)
 LEFT, RIGHT, UP, DOWN = range(4)
-LEFT_RIGHT = (LEFT, RIGHT)
-UP_DOWN = (UP, DOWN)
+LEFT_RIGHT = [LEFT, RIGHT]
+UP_DOWN = [UP, DOWN]
 
 
 def oppositeDirection(direction):
