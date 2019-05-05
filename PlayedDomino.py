@@ -17,11 +17,17 @@ import tkinter as tk
 from random import choice
 
 # print(argv)
+cLeft, cRight, cUp, cDown = range(4)
+LEFT_RIGHT = (cLeft, cRight)
+UP_DOWN = (cUp, cDown)
 
-g_offsets = {(True, True): [None, None, None, None],
-             (True, False): [None, None, None, None],
-             (False, True): [None, None, None, None],
-             (False, False): [None, None, None, None]}
+# (self_horiz, other_horiz): (LEFT, RIGHT, UP, DOWN)
+# None: if self and other are both horizontal then UP and DOWN are invalid
+#       if self and other are both vertical then LEFT and RIGHT are invalid
+TEXT_OFFSETS = {(True, True): [(-5, 0), (5, 0), None, None],
+                (True, False): [(-1, -1), (5, -1), (2, -3), None],
+                (False, True): [(-5, 1), (1, 1), (-2, -1), (-2, 3)],
+                (False, False): [None, None, (0, -3), (0, 3)]}
 
 
 def text_offset(self_horiz, other_horiz, direction):
@@ -34,9 +40,6 @@ def text_offset(self_horiz, other_horiz, direction):
     #if (self_horiz, other_horiz) == (False, False):
     #    self_horiz, other_horiz = True, True:
     return {  # LEFT, RIGHT, UP, DOWN
-        (True, True): [[-5, 0], [5, 0]],
-        (True, False): [[-5, 0], [5, 0], [2, -3], [2, 1]],
-        (False, True): [[-5, 0], [5, 0], [0, 0], [0, 0]]
     }[(self_horiz, other_horiz)][direction]
 
 def lrNoDoublesOffset(inDirection):
@@ -98,10 +101,6 @@ def tkUdMeDoubleOffset(inDirection):
 def tkUdOtherDoubleOffset(inDirection):
     # print('udOtherDoubleOffset({})'.format(inDirection), end='')
     return [[0, 0], [0, 0], [-2, -1], [-2, 3]][inDirection]
-
-cLeft, cRight, cUp, cDown = range(4)
-LEFT_RIGHT = (cLeft, cRight)
-UP_DOWN = (cUp, cDown)
 
 
 def oppositeDirection(inDirection):
@@ -259,13 +258,13 @@ class PlayedDomino(object):
             if theNeighbor and theNeighbor.mLocation:
                 oppDir = oppositeDirection(i)
                 self.mLocation = theNeighbor.getOffset(self, oppDir)
-                offset = g_offsets[(theNeighbor.mLeftRight, self.mLeftRight)][oppDir]
+                offset = TEXT_OFFSETS[(theNeighbor.mLeftRight, self.mLeftRight)][oppDir]
                 if offset is None:
-                    g_offsets[(theNeighbor.mLeftRight, self.mLeftRight)][oppDir] = tuple(self.mLocation)
+                    TEXT_OFFSETS[(theNeighbor.mLeftRight, self.mLeftRight)][oppDir] = tuple(self.mLocation)
                 else:
                     assert offset == tuple(self.mLocation)
                 # print(f"text_offset({theNeighbor.mLeftRight}, {self.mLeftRight}, {oppDir}) -> {self.mLocation}")
-                print(g_offsets)
+                print(TEXT_OFFSETS)
                 self.mLocation[0] += theNeighbor.mLocation[0]
                 self.mLocation[1] += theNeighbor.mLocation[1]
                 return
