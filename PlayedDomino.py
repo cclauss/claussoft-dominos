@@ -18,8 +18,8 @@ from random import choice
 
 # print(argv)
 LEFT, RIGHT, UP, DOWN = range(4)
-LEFT_RIGHT = [LEFT, RIGHT]
-UP_DOWN = [UP, DOWN]
+LEFT_RIGHT = (LEFT, RIGHT)
+UP_DOWN = (UP, DOWN)
 
 
 def oppositeDirection(direction):
@@ -159,7 +159,7 @@ class PlayedDomino(object):
 
     @property
     def playable_numbers(self):
-        print("FIXME:", self.mDomino, self.playable_directions)
+        # print("FIXME:", self.mDomino, self.playable_directions)
         return sorted(set(self.mDomino[whichDie(direction)] for direction in self.playable_directions))
 
     def newNeighbor(self, inPlayer, inDomino):
