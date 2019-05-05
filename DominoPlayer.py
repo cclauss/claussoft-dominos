@@ -211,7 +211,7 @@ class DominoPlayer(object):
         theScoreAndRun = self.bestRun()
         return self.playARun(theScoreAndRun[1])  # just theRun
 
-    def bestRun(self):  # return the most valuable of an exhaustive series of lists of DominoRunMoves
+    def best_run(self):  # return the most valuable of an exhaustive series of lists of DominoRunMoves
         if not self.mDominos:
             # going out with goAgain more valuable than not goAgain
             return [12, []]
@@ -250,9 +250,9 @@ class DominoPlayer(object):
                 bestScoreAndRun = theScoreAndRun
         return bestScoreAndRun
 
-    def calcRunScore(self):  # (inPoints, inNumberOfDominosPlayed, inFaceValue)
+    def calc_run_score(self):  # (inPoints, inNumberOfDominosPlayed, inFaceValue)
         # the 12 values goAgain above a high faceValue
-        return self.mBoard.getPoints() * 1000 + 12 + self.mBoard.mPlayedDominos[-1].faceValue()
+        return self.mBoard.get_points * 1000 + 12 + self.mBoard.mPlayedDominos[-1].face_value
 
     def bestRunForDominoAndNeighbor(self, inDomino, inNeighbor):
         if inNeighbor:
@@ -261,12 +261,12 @@ class DominoPlayer(object):
             theDomino = PlayedDomino(self, inDomino)
         bestScoreAndRun = [0, []]  # theRun is a list of DominoRunMoves
         self.mBoard.mPlayedDominos.append(theDomino)
-        theScore = self.calcRunScore()
-        theRun = [DominoRunMove(inNeighbor, inDomino, self.mBoard.getPoints())]
+        theScore = self.calc_run_score()
+        theRun = [DominoRunMove(inNeighbor, inDomino, self.mBoard.get_points)]
         if theScore > bestScoreAndRun[0]:
             bestScoreAndRun = [theScore, theRun]
-        if theDomino.isDouble() or self.mBoard.getPoints():
-            theScoreAndRun = self.bestRun()  # go again
+        if theDomino.is_double or self.mBoard.get_points:
+            theScoreAndRun = self.best_run()  # go again
             theScoreAndRun[0] += theScore
             if theScoreAndRun[0] > bestScoreAndRun[0]:
                 bestScoreAndRun[0] = theScoreAndRun[0]
