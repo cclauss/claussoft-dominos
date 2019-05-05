@@ -106,8 +106,8 @@ class DominoPlayer(object):
 
     def printARun(self, inRun):  # a list of DominoRunMoves
         print('playARun() run length:', len(inRun))
-        for i in range(len(inRun)):
-            print(i + 1, inRun[i])
+        for i, move in enumerate(inRun):
+            print(i + 1, move)
 
     def playARun(self, inRun):  # a list of DominoRunMoves
         self.printARun(inRun)
@@ -138,9 +138,9 @@ class DominoPlayer(object):
         else:  # firstPlayedDomino
             theDomino = PlayedDomino(self, newerDomino)
         self.mBoard.mPlayedDominos.append(theDomino)
-        thePoints = self.mBoard.getPoints()
+        thePoints = self.mBoard.get_points
         self.awardPoints(thePoints)
-        goAgain = thePoints or theDomino.isDouble()
+        goAgain = thePoints or theDomino.is_double
         if goAgain:
             self.mGoAgains += 1
         return goAgain
@@ -151,10 +151,7 @@ class DominoPlayer(object):
         if not self.pickFromBoneyardUntilCanPlay():
             print('Pass!!!')
             return False  # unable to play, passing to next player
-        if self.mPlayerIsHuman:
-            goAgain = self.playATurnHumanPlayer()
-        else:
-            goAgain = self.playATurnComputerPlayer()
+        goAgain = self.playATurnHumanPlayer() if self.mPlayerIsHuman else self.playATurnComputerPlayer()
         if goAgain:
             print('Go again.')
             return self.playATurn()
