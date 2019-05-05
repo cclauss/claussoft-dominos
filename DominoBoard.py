@@ -46,6 +46,7 @@ class DominoBoard(tkDominoBoard):
         number_list = []
         for d in self.mPlayedDominos:
             number_list + d.playable_numbers
+        assert number_list, number_list  # FIXME
         return sorted(set(number_list))
 
     def playableDominos(self, inDomino):
