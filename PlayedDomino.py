@@ -9,12 +9,12 @@
 #
 
 # from random import choice, shuffle
-import tkinter as tk
+# import tkinter as tk
 # from sys import argv
 # from askNumberFromOneTo import askNumberFromOneTo
 # from PrintableDomino import lrNoDoublesOffset, lrMeDoubleOffset, lrOtherDoubleOffset, udNoDoublesOffset, udMeDoubleOffset,
 # udOtherDoubleOffset
-from random import choice
+# from random import choice
 
 # print(argv)
 
@@ -49,29 +49,20 @@ def udOtherDoubleOffset(inDirection):
     return [[0, 0], [0, 0], [-2, -1], [-2, 3]][inDirection]
 
 cLeft, cRight, cUp, cDown = range(4)
+LEFT_RIGHT = (cLeft, cRight)
+UP_DOWN = (cUp, cDown)
 
 
 def oppositeDirection(inDirection):
-    if inDirection == cLeft:
-        return cRight
-    if inDirection == cRight:
-        return cLeft
-    if inDirection == cUp:
-        return cDown
-    if inDirection == cDown:
-        return cUp
-    assert True, 'Invalid direction: {}'.format(inDirection)
+    return {cLeft: cRight, cRight: cLeft, cUp: cDown, cDown: cUp}[inDirection]
 
 
 def rightAngles(inDirection):
-    if inDirection == cLeft or inDirection == cRight:
-        return [cUp, cDown]
-    else:
-        return [cLeft, cRight]
+    return UP_DOWN if inDirection in LEFT_RIGHT else LEFT_RIGHT
 
 
 def whichDie(inDirection):
-    return inDirection == cRight or inDirection == cDown
+    return inDirection in (cRight, cDown)
 
 
 class PlayedDomino(object):
@@ -80,7 +71,7 @@ class PlayedDomino(object):
         self.mPlayer = inPlayer
         self.mDomino = inDomino
         self.mLocation = [0, 0]
-        self.mLeftRight = inDirection == cLeft or inDirection == cRight
+        self.mLeftRight = inDirection in LEFT_RIGHT
         if self.isDouble():
             self.mLeftRight = not self.mLeftRight
         if self.mLeftRight:
@@ -113,15 +104,10 @@ class PlayedDomino(object):
 
     def neighborAsString(self, inDirection):
         theNeighbor = self.mNeighbors[inDirection]
-        if theNeighbor:
-            return theNeighbor.mDomino
-        return theNeighbor
+        return theNeighbor.mDomino if theNeighbor else theNeighbor
 
     def neighborsAsString(self):
-        returnValue = []
-        for i in range(len(self.mNeighbors)):
-            returnValue.append(self.neighborAsString(i))
-        return returnValue
+        return [self.neighborAsString(i) for i in range(len(self.mNeighbors))]
 
     def playedValue(self):
         neighborCount = self.numberOfNeighbors()
@@ -149,10 +135,7 @@ class PlayedDomino(object):
         if neighborCount > 1:
             return []
         if not neighborCount:  # firstDominoPlayed
-            if self.mLeftRight:
-                return [cLeft, cRight]
-            else:
-                return [cUp, cDown]
+            return LEFT_RIGHT if self.mLeftRight else UP_DOWN
         for i in range(len(self.mNeighbors)):
             if self.mNeighbors[i]:
                 return [oppositeDirection(i)]
