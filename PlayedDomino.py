@@ -25,22 +25,15 @@ UP_DOWN = (cUp, cDown)
 # None: if self and other are both horizontal then UP and DOWN are invalid
 #       if self and other are both vertical then LEFT and RIGHT are invalid
 TEXT_OFFSETS = {(True, True): [(-5, 0), (5, 0), None, None],
-                (True, False): [(-1, -1), (5, -1), (2, -3), None],
+                (True, False): [(-1, -1), (5, -1), (2, -3), (2, 1)],
                 (False, True): [(-5, 1), (1, 1), (-2, -1), (-2, 3)],
                 (False, False): [None, None, (0, -3), (0, 3)]}
 
 
 def text_offset(self_horiz, other_horiz, direction):
-    print(f"text_offset({self_horiz}, {other_horiz}, {direction})")
-    if self_horiz:
-        if other_horiz:
-            print(", ".join(lrNoDoublesOffset(i) for i in range(4)))
-        else:
-            print(", ".join(lrNoDoublesOffset(i) for i in range(4)))
-    #if (self_horiz, other_horiz) == (False, False):
-    #    self_horiz, other_horiz = True, True:
-    return {  # LEFT, RIGHT, UP, DOWN
-    }[(self_horiz, other_horiz)][direction]
+    offset = TEXT_OFFSETS[(self_horiz, other_horiz)][direction]
+    assert offset, f"text_offset({self_horiz}, {other_horiz}, {direction})"
+    return offset
 
 def lrNoDoublesOffset(inDirection):
     # print('lrNoDoublesOffset({})'.format(inDirection), end='')
@@ -258,13 +251,9 @@ class PlayedDomino(object):
             if theNeighbor and theNeighbor.mLocation:
                 oppDir = oppositeDirection(i)
                 self.mLocation = theNeighbor.getOffset(self, oppDir)
-                offset = TEXT_OFFSETS[(theNeighbor.mLeftRight, self.mLeftRight)][oppDir]
-                if offset is None:
-                    TEXT_OFFSETS[(theNeighbor.mLeftRight, self.mLeftRight)][oppDir] = tuple(self.mLocation)
-                else:
-                    assert offset == tuple(self.mLocation)
-                if oppDir == 3 and theNeighbor.mLeftRight and not self.mLeftRight:
-                    raise RuntimeError(f"{theNeighbor.mLeftRight}, {self.mLeftRight}, {oppDir}, {self.mLocation}\n{theNeighbor}\n{self}")
+                offset = text_offset(theNeighbor.mLeftRight, self.mLeftRight, oppDir)
+                if offset != tuple(self.mLocation):
+                    raise RuntimeError(f"{theNeighbor.mLeftRight}, {self.mLeftRight}, {oppDir}, {offset}, {self.mLocation}\n{theNeighbor}\n{self}")
                 # print(f"text_offset({theNeighbor.mLeftRight}, {self.mLeftRight}, {oppDir}) -> {self.mLocation}")
                 print(TEXT_OFFSETS)
                 self.mLocation[0] += theNeighbor.mLocation[0]
