@@ -36,21 +36,26 @@ class tkDomino(Draggable):
 class tkDominoBoard(ttk.Frame):
     '''GUI Domino Board as a ttk.Frame that uses Tkdnd to support drag and drop'''
 
-    def __init__(self, inMaster=None, inWidth=1280, inHeight=None):
+    def __init__(self, inMaster=None, inWidth=1920, inHeight=None):
         NSEW = (tk.N, tk.S, tk.E, tk.W)
         inHeight = inHeight or 9 / 16 * inWidth  # HiDef aspect ratio is 9/16
         # super(tkDominoBoard, self).__init__()
         ttk.Frame.__init__(self, inMaster, width=inWidth, height=inHeight)
         self.grid(sticky=NSEW)
+        self.mDropZoneBoneyard = None
+        self.mDropZonePlayArea = None
+        self.mDropZonePlayer0 = None
+        self.mDropZonePlayer1 = None
+        self.mDropZoneScoreBoard = None
         self.setupDropZones()
 
     def setupDropZones(self):
-        N = tk.N
-        E = tk.E
-        S = tk.S
-        W = tk.W
+        #N = tk.N
+        #E = tk.E
+        #S = tk.S
+        #W = tk.W
         NSEW = (tk.N, tk.S, tk.E, tk.W)
-        NEW = (tk.N, tk.E, tk.W)
+        #NEW = (tk.N, tk.E, tk.W)
 
         theStyle = ttk.Style()
         # theStyle.configure('TLabelframe', labelanchor=tk.N, borderwidth=2, relief=tk.RAISED)

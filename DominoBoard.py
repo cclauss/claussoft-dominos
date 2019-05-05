@@ -5,17 +5,19 @@
 # from askNumberFromOneTo import askNumberFromOneTo
 # import tkinter as tk
 # from PlayedDomino import printPlayedDominos
-from tkDomino import tkDominoBoard
+# from drawDomino import drawDomino
+# from tkDomino import tkDominoBoard
 
 
-class DominoBoard(tkDominoBoard):
+class DominoBoard:
 
     def __init__(self, inMaxDie=6):
-        print(1, self.__class__)
+        #print(1, self.__class__.__name__)
         # print(2, self.super())
         # iprint(3, super(DominoBoard))
         # self.super(DominoBoard, self).__init__()
-        # super().__init__()
+        #super().__init__()
+        #print(2, super().__class__.__name__)
         self.mMaxDie = inMaxDie
         self.mBoneyard = []
         self.mPlayedDominos = []
@@ -143,6 +145,7 @@ def printCanvas(inCanvas):
             print(s)  # ,' <',i
         i += 1
     print(border)
+
 
 if __name__ == '__main__':
     from DominoWorld import main

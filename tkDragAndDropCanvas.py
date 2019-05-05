@@ -39,7 +39,7 @@ class tkDraggableCanvas(tk.Canvas):
         # self.pack()
         # self.pack(expand='yes', fill='both')
         theCanvas = tk.Canvas(self, width=1, height=1)
-        theOval = theCanvas.create_oval(20, 20, 70, 70, outline='blue', fill='lightgray')
+        theCanvas.create_oval(20, 20, 70, 70, outline='blue', fill='lightgray')
         theCanvas.grid(row=7, column=7)
         # self.bind("<ButtonPress>", self.onClick)
         self.mName = inName.replace(' ', '_')  # difficult bug to find!
@@ -99,8 +99,7 @@ class tkDraggableFrame(ttk.Frame):
         # self.pack(expand='yes', fill='both')
         theCanvas = tk.Canvas(self, width=100, height=100)
         theCanvas.pack()
-        theOval = theCanvas.create_oval(
-            20, 20, 70, 70, outline='blue', fill='lightgray')
+        theCanvas.create_oval(20, 20, 70, 70, outline='blue', fill='lightgray')
         # theCanvas.grid(row=7, column=7)
         # self.bind("<ButtonPress>", self.onClick)
         self.mName = inName.replace(' ', '_')  # difficult bug to find!
@@ -200,10 +199,10 @@ class tkDragAndDropFrame(ttk.Frame):
         # self.mCanvas = tk.Canvas(self, width=width, height=height)
         self.mCanvas = tk.Canvas(self, width=width, height=height,  bg='gray')
         # self.mCanvas.pack()
-        N = tk.N
-        E = tk.E
-        S = tk.S
-        W = tk.W
+        #N = tk.N
+        #E = tk.E
+        #S = tk.S
+        #W = tk.W
         NSEW = (tk.N, tk.S, tk.E, tk.W)
         self.mCanvas.grid(column=0, row=0, columnspan=10,
                           rowspan=10, sticky=NSEW)
@@ -316,8 +315,8 @@ class SampleApp(tk.Tk):
                            tkDraggableWidget(self.mDNDFrame, None, 'Widget 2')]
         return
 
-        self.theFrames = [tkDraggableFrame(self.mDNDFrame, 'Frame 1'),
-                          tkDraggableFrame(self.mDNDFrame, 'Frame 2')]
+#        self.theFrames = [tkDraggableFrame(self.mDNDFrame, 'Frame 1'),
+#                          tkDraggableFrame(self.mDNDFrame, 'Frame 2')]
 #        for theFrame in self.theFrames:
 #            theCanvas = tk.Canvas(theFrame, width=100, height=100, bd=2, relief=tk.RAISED)
 #            theCanvas.pack()

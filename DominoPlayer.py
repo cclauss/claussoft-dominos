@@ -37,7 +37,7 @@ class DominoPlayer(object):
         # self.mPlayerIsHuman = True
 
     def __str__(self):
-        s = '{} has {} dominos, {} points, {} go agains, {} hands and {} games won.'
+        s = '{} has {} dominos, {} points, {} go agains, {} hands won and {} games won.'
         return s.format(self.mName, len(self.mDominos), self.mPoints, self.mGoAgains, self.mHandsWon, self.mGamesWon)
 
     def handAsString(self):
@@ -143,6 +143,7 @@ class DominoPlayer(object):
         goAgain = thePoints or theDomino.is_double
         if goAgain:
             self.mGoAgains += 1
+        # self.mBoard.update_ui()
         return goAgain
 
     def playATurn(self):  # returns wasAbleToPlay
@@ -205,8 +206,8 @@ class DominoPlayer(object):
         # print(self)
         print(self.handAsString())
         # print('Playable: {}, Value: {}'.format(playable, self.mBoard.getValue()))
-        theScoreAndRun = self.best_run()
-        return self.playARun(theScoreAndRun[1])  # just theRun
+        score, run = self.best_run()
+        return self.playARun(run)
 
     def best_run(self):  # return the most valuable of an exhaustive series of lists of DominoRunMoves
         if not self.mDominos:
