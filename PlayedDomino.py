@@ -74,10 +74,7 @@ class PlayedDomino(object):
         self.mLeftRight = inDirection in LEFT_RIGHT
         if self.isDouble():
             self.mLeftRight = not self.mLeftRight
-        if self.mLeftRight:
-            self.mOrientation = tk.HORIZONTAL
-        else:
-            self.mOrientation = tk.VERTICAL
+        self.mOrientation = tk.HORIZONTAL if self.mLeftRight else tk.VERTICAL
         oppDir = oppositeDirection(inDirection)
         if inNeighbor:  # flip inDomino if required
             matchToDie = inNeighbor.mDomino[whichDie(inDirection)]
