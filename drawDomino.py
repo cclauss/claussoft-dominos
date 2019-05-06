@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 
-try:  # Python3
-    import tkinter as tk
-    from tkinter import ttk
-except:  # Python2
-    import Tkinter as tk
-    import ttk as ttk  # noqa
+import tkinter as tk
+from tkinter import ttk
 
 
 def onMouseDownInDie(inEvent):
@@ -89,13 +85,13 @@ junk = """
       5
       -
       6
-2     6     
+2     6
 -[2,6]-[6,3][3,1]
-2     6     
+2     6
       6
       -
       4
-"""
+"""  # noqa: F841
 
 
 def demoPlay():

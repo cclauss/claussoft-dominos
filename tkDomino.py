@@ -8,7 +8,7 @@ import tkinter.ttk as ttk
 from drawDomino import drawDomino
 
 # from tkDragAndDropCanvas import tkDragAndDropFrame, tkDraggableWidget
-from TkdndDropTarget import DropTarget, LabeledDropTarget, Draggable
+# from TkdndDropTarget import DropTarget, LabeledDropTarget, Draggable
 
 
 def initDominos(n=6):

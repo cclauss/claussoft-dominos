@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 
-try:  # Python3
-    import tkinter as tk
-    from tkinter import ttk
-except:  # Python2
-    import Tkinter as tk
-    import ttk as ttk
+import tkinter as tk
+from tkinter import ttk
 
 
 def coordInBbox(
@@ -13,13 +9,12 @@ def coordInBbox(
 ):  # like pointInRect() on the Mac
     (x, y) = inCoord
     (theLeft, theTop, theRight, theBottom) = inBbox
-    print("coordInBbox(inCoord = {}, inBbox = {}".format(inCoord, inBbox))
+    print(f"coordInBbox(inCoord = {inCoord}, inBbox = {inBbox}")
     return theLeft < x and x < theRight and theTop < y and y < theBottom
 
 
 def tkEventAsString(inEvent):
-    s = "widget:{}, type:{}, x:{}, y:{}"
-    return s.format(inEvent.widget, inEvent.type, inEvent.x, inEvent.y)
+    return "widget:{inEvent.widget}, type:{inEvent.type}, x:{inEvent.x}, y:{inEvent.y}"
 
 
 # ===============
@@ -34,9 +29,8 @@ class tkDraggableCanvas(tk.Canvas):
         # print(class(master))
         # print(class(self))
         # super(tkDraggableFrame, self).__init__(self, master)
-        tk.Canvas.__init__(
-            self, master, bg="green", width=75, height=75
-        )  # , offset='100, 100')
+        tk.Canvas.__init__(self, master, bg="green", width=75, height=75)
+        # , offset='100, 100')
         # self.geometry('75x75')
         self.grid()
         # self.pack()
@@ -301,7 +295,7 @@ class SampleApp(tk.Tk):
         yellowCanvas = tk.Canvas(yellowFrame, width=100, height=100,  bg='gray')
         yellowCanvas.pack()
         self.mDNDFrame.addDropZone(yellowCanvas, 'Yellow Frame')
-        """
+        """  # noqa: F841
 
         theRect = (50, 50, 150, 150)  # Left, Top, Right, Bottom
         self.r1 = theCanvas.create_rectangle(
