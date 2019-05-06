@@ -30,8 +30,9 @@ class DominoWorld(tkDominoBoard):
         super().__init__()  # start up tkinter
         self.dominos = init_dominos(max_die)
         self.board = DominoBoard(max_die)
-        self.players = [DominoPlayer(f"Player {i}", self.board)
-                         for i in range(inNumberOfPlayers)]
+        self.players = [
+            DominoPlayer(f"Player {i}", self.board) for i in range(inNumberOfPlayers)
+        ]
         self.whose_turn_major = 0
         self.whose_turn_minor = 0
         self.games_ending_in_a_draw = 0
