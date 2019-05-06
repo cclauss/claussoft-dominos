@@ -31,7 +31,7 @@ def rightAngles(direction):
     return UP_DOWN if direction in LEFT_RIGHT else LEFT_RIGHT
 
 
-def whichDie(direction):
+def which_die(direction):
     return direction in (RIGHT, DOWN)
 
 
@@ -79,9 +79,9 @@ class PlayedDomino(object):
         self.orientation = tk.HORIZONTAL if self.left_right else tk.VERTICAL
         opp_dir = oppositeDirection(direction)
         if neighbor:  # flip inDomino if required
-            match_to_die = neighbor.mDomino[whichDie(direction)]
+            match_to_die = neighbor.domino[which_die(direction)]
             assert match_to_die in self.domino, "These dominos do not match!"
-            if self.domino[whichDie(opp_dir)] != match_to_die:
+            if self.domino[which_die(opp_dir)] != match_to_die:
                 self.domino.reverse()
         self.mNeighbors = [None, None, None, None]
         self.mNeighbors[opp_dir] = neighbor
@@ -126,7 +126,7 @@ class PlayedDomino(object):
             return self.face_value
         for i, neighbor in enumerate(self.mNeighbors):
             if neighbor:
-                return self.domino[whichDie(oppositeDirection(i))]
+                return self.domino[which_die(oppositeDirection(i))]
         assert False, "Error in played_value!"
 
     def notifyNeighborsOfUndo(self):  # break neighbors' links to me
@@ -175,7 +175,7 @@ class PlayedDomino(object):
         # print("FIXME:", self.domino, self.playable_directions)
         return sorted(
             set(
-                self.domino[whichDie(direction)]
+                self.domino[which_die(direction)]
                 for direction in self.playable_directions
             )
         )
