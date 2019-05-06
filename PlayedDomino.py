@@ -257,7 +257,7 @@ class PlayedDomino(object):
             for i, c in enumerate(s):
                 inCanvas[self.mLocation[1]][self.mLocation[0] + i] = c
         else:
-            for i, s in enumerate((self.mDomino[0], "-", self.mDomino[1]):
+            for i, s in enumerate((self.mDomino[0], "-", self.mDomino[1])):
                 inCanvas[self.mLocation[1] + i][self.mLocation[0]] = str(s)
 
 
