@@ -30,7 +30,7 @@ class DominoWorld(tkDominoBoard):
         super().__init__()  # start up tkinter
         self.dominos = init_dominos(max_die)
         assert len(self.dominos) == 28
-        assert len(self.dominos) == len(set(self.dominos)), dominos
+        assert len(self.dominos) == len(set(self.dominos)), self.dominos
         self.board = DominoBoard(max_die)
         self.players = [
             DominoPlayer(f"Player {i}", self.board) for i in range(inNumberOfPlayers)
