@@ -142,7 +142,7 @@ class DominoBoard:
     def print_played_dominos(self):
         if not self.played_dominos:
             return
-        theCanvas = self.setLocations()
+        theCanvas = self.set_locations()
         self.fill_canvas(theCanvas)
         print_canvas(theCanvas)
         del theCanvas
@@ -150,29 +150,21 @@ class DominoBoard:
         print(s.format(self.playable_numbers, self.get_value))
 
 
-def build_canvas(inDimensions):
-    theCanvas = []
-    for j in range(inDimensions[1] + 5):
-        theCanvas.append([])
-        for _ in range(inDimensions[0] + 5):
-            theCanvas[j].append(" ")
-    return theCanvas
+def build_canvas(dimensions):
+    canvas = []
+    for j in range(dimensions[1] + 5):
+        canvas.append([])
+        for _ in range(dimensions[0] + 5):
+            canvas[j].append(" ")
+    return canvas
 
 
-def print_canvas(inCanvas):
-    i = 0
-    theMax = 0
-    for theLine in inCanvas:
-        theLine = "".join(theLine).rstrip()
-        if len(theLine) > theMax:
-            theMax = len(theLine)
-    border = ("=" * 33)[:theMax]
+def print_canvas(canvas):
+    lines = ["".join(line).rstrip() for line in canvas]
+    longest_line = max(len(line) for line in lines)
+    border = "=" * longest_line
     print(border)
-    for theLine in inCanvas:
-        s = "".join(theLine).rstrip()
-        if s:
-            print(s)  # ,' <',i
-        i += 1
+    print("\n".join(line for line in lines if line))
     print(border)
 
 
