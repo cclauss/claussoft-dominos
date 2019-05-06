@@ -134,7 +134,7 @@ class PlayedDomino(object):
             if self.neighbors[theDirection]:
                 oppDir = oppositeDirection(theDirection)
                 # print('Notify Before:', self.neighbors[theDirection].neighbors_as_string)
-                self.neighbors[theDirection].mNeighbors[oppDir] = None
+                self.neighbors[theDirection].neighbors[oppDir] = None
                 # print(' Notify After:', self.neighbors[theDirection].neighbors_as_string)
 
     @property
