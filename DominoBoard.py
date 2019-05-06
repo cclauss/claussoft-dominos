@@ -10,87 +10,87 @@
 
 
 class DominoBoard:
-    def __init__(self, inMaxDie=6):
+    def __init__(self, max_die=6):
         # print(1, self.__class__.__name__)
         # print(2, self.super())
         # iprint(3, super(DominoBoard))
         # self.super(DominoBoard, self).__init__()
         # super().__init__()
         # print(2, super().__class__.__name__)
-        self.mMaxDie = inMaxDie
-        self.mBoneyard = []
-        self.mPlayedDominos = []
+        self.max_die = max_die
+        self.boneyard = []
+        self.played_dominos = []
 
     def __str__(self):
         s = "{} dominos in {} = {}\nPlayable numbers: {}, value = {}\n{}"
         return s.format(
-            len(self.mBoneyard),
+            len(self.boneyard),
             "Boneyard",
-            self.mBoneyard,
+            self.boneyard,
             self.playable_numbers,
             self.get_value,
-            self.mPlayedDominos,
+            self.played_dominos,
         )
 
     @property
     def get_value(self):
-        return sum(d.played_value for d in self.mPlayedDominos)
+        return sum(d.played_value for d in self.played_dominos)
 
     @property
     def get_points(self):
         theValue = self.get_value
         return 0 if theValue % 5 else theValue / 5
 
-    def pickFromBoneyard(self):
-        # not clear what the rule is for other values of self.mMaxDie
-        bones_available = len(self.mBoneyard) > (2 if self.mMaxDie == 6 else 0)
-        return self.mBoneyard.pop() if bones_available else None
+    def pick_from_boneyard(self):
+        # not clear what the rule is for other values of self.max_die
+        bones_available = len(self.boneyard) > (2 if self.max_die == 6 else 0)
+        return self.boneyard.pop() if bones_available else None
 
     @property
     def playable_numbers(self):
-        if not self.mPlayedDominos:
-            return range(self.mMaxDie + 1)
+        if not self.played_dominos:
+            return range(self.max_die + 1)
         number_list = []
-        for d in self.mPlayedDominos:
+        for d in self.played_dominos:
             number_list += d.playable_numbers
         return sorted(set(number_list))
 
-    def playableDominos(self, inDomino):
+    def playable_dominos(self, inDomino):
         returnValue = []
-        for d in self.mPlayedDominos:
+        for d in self.played_dominos:
             pn = d.playable_numbers
             if inDomino[0] in pn or inDomino[1] in pn:
                 returnValue.append(d)
         return returnValue
 
-    def isDominoPlayable(self, inDomino):
-        if not self.mPlayedDominos:
+    def is_domino_playable(self, inDomino):
+        if not self.played_dominos:
             return True  # on an empty board, all dominos are playable
-        for d in self.mPlayedDominos:
+        for d in self.played_dominos:
             pn = d.playable_numbers
             if inDomino[0] in pn or inDomino[1] in pn:
                 return True
         return False
 
-    def getFreshCopy(self, inOlderDomino):
-        if inOlderDomino in self.mPlayedDominos:
+    def get_fresh_copy(self, in_older_domino):
+        if in_older_domino in self.played_dominos:
             # print('freshCopy NOT required')
-            return inOlderDomino
+            return in_older_domino
         print("freshCopy WAS required")
-        for d in self.mPlayedDominos:
-            if d.mDomino == inOlderDomino.mDomino:
+        for d in self.played_dominos:
+            if d.mDomino == in_older_domino.mDomino:
                 return d
         assert True
 
-    def setLocations(self):
-        if not self.mPlayedDominos:
+    def set_locations(self):
+        if not self.played_dominos:
             return
-        for d in self.mPlayedDominos:
+        for d in self.played_dominos:
             d.mLocation = None
-        self.mPlayedDominos[0].mLocation = [0, 0]
+        self.played_dominos[0].mLocation = [0, 0]
         horiz = []
         verts = []
-        for d in self.mPlayedDominos:
+        for d in self.played_dominos:
             if not d.mLocation:  # for all but firstPlayedDomino
                 d.setLocation()
             horiz.append(d.mLocation[0])
@@ -100,24 +100,24 @@ class DominoBoard:
         hOffset = abs(min(horiz))
         vOffset = abs(min(verts))
         if hOffset or vOffset:
-            for d in self.mPlayedDominos:
+            for d in self.played_dominos:
                 d.mLocation[0] += hOffset
                 d.mLocation[1] += vOffset
         canvasDimensions = [
             (max(horiz) - min(horiz)) + 5,
             (max(verts) - min(verts)) + 3,
         ]
-        return buildCanvas(canvasDimensions)
+        return build_canvas(canvasDimensions)
 
     def set_tk_locations(self):
-        if not self.mPlayedDominos:
+        if not self.played_dominos:
             return
-        for d in self.mPlayedDominos:
+        for d in self.played_dominos:
             d.tk_location = None
-        self.mPlayedDominos[0].tk_location = [0, 0]
+        self.played_dominos[0].tk_location = [0, 0]
         horiz = []
         verts = []
-        for d in self.mPlayedDominos:
+        for d in self.played_dominos:
             if not d.tk_location:  # for all but firstPlayedDomino
                 d.set_tk_location()
             horiz.append(d.tk_location[0])
@@ -127,30 +127,30 @@ class DominoBoard:
         hOffset = abs(min(horiz))
         vOffset = abs(min(verts))
         if hOffset or vOffset:
-            for d in self.mPlayedDominos:
+            for d in self.played_dominos:
                 d.tk_location[0] += hOffset
                 d.tk_location[1] += vOffset
 
-    def fillCanvas(self, inCanvas):
-        for theDomino in self.mPlayedDominos:
+    def fill_canvas(self, inCanvas):
+        for theDomino in self.played_dominos:
             theDomino.fillCanvas(inCanvas)
 
     @property
     def location_list(self):
-        return [d.mLocation for d in self.mPlayedDominos]
+        return [d.mLocation for d in self.played_dominos]
 
-    def printPlayedDominos(self):
-        if not self.mPlayedDominos:
+    def print_played_dominos(self):
+        if not self.played_dominos:
             return
         theCanvas = self.setLocations()
-        self.fillCanvas(theCanvas)
-        printCanvas(theCanvas)
+        self.fill_canvas(theCanvas)
+        print_canvas(theCanvas)
         del theCanvas
         s = "Playable: {}, Value: {}"
         print(s.format(self.playable_numbers, self.get_value))
 
 
-def buildCanvas(inDimensions):
+def build_canvas(inDimensions):
     theCanvas = []
     for j in range(inDimensions[1] + 5):
         theCanvas.append([])
@@ -159,7 +159,7 @@ def buildCanvas(inDimensions):
     return theCanvas
 
 
-def printCanvas(inCanvas):
+def print_canvas(inCanvas):
     i = 0
     theMax = 0
     for theLine in inCanvas:
