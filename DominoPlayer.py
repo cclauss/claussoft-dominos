@@ -1,293 +1,285 @@
 #!/usr/bin/env python3
 
-from askNumberFromOneTo import askNumberFromOneTo
+from askNumberFromOneTo import ask_number_from_one_to
 from PlayedDomino import PlayedDomino
 
 
 class DominoRunMove(object):
-    def __init__(self, inAlreadyPlayedDomino, inToBePlayedSimpleDomino, inPoints=0):
-        self.mAlreadyPlayedDomino = inAlreadyPlayedDomino
-        self.mToBePlayedSimpleDomino = inToBePlayedSimpleDomino
-        self.mPoints = inPoints
+    def __init__(self, already_played_domino, to_be_played_simple_domino, points=0):
+        self.already_played_domino = already_played_domino
+        self.to_be_played_simple_domino = to_be_played_simple_domino
+        self.points = points
 
     def __str__(self):
-        theMessage = ""
-        if self.mPoints:
-            theMessage = "{} points, go again...".format(self.mPoints)
-        elif self.mToBePlayedSimpleDomino[0] == self.mToBePlayedSimpleDomino[1]:
-            theMessage = "is a double, go again..."
-        s = "Playing {}".format(self.mToBePlayedSimpleDomino)
-        if not self.mAlreadyPlayedDomino:
-            return "{} as firstPlayedDomino {}".format(s, theMessage)
-        return "{} on {} {}".format(s, self.mAlreadyPlayedDomino.mDomino, theMessage)
+        msg = ""
+        if self.points:
+            msg = f"{self.points} points, go again..."
+        elif self.to_be_played_simple_domino[0] == self.to_be_played_simple_domino[1]:
+            msg = "is a double, go again..."
+        s = f"Playing {self.to_be_played_simple_domino}"
+        if not self.already_played_domino:
+            return f"{s} as firstPlayedDomino {msg}"
+        return f"{s} on {self.already_played_domino.mDomino} {msg}"
 
 
 class DominoPlayer(object):
-    def __init__(self, inName, inBoard):
-        self.mName = inName
-        self.mBoard = inBoard
-        self.mPoints = 0
-        self.mDominos = []
-        self.mGoAgains = 0
-        self.mHandsWon = 0
-        self.mGamesWon = 0
-        self.mPlayerIsHuman = False  # assume humans are not interested in playing
-        # self.mPlayerIsHuman = True
+    def __init__(self, name, board):
+        self.name = name
+        self.board = board
+        self.points = 0
+        self.dominos = []
+        self.go_agains = 0
+        self.hands_won = 0
+        self.games_won = 0
+        self.player_is_human = False  # assume humans are not interested in playing
+        # self.player_is_human = True
 
     def __str__(self):
         s = "{} has {} dominos, {} points, {} go agains, {} hands won and {} games won."
         return s.format(
-            self.mName,
-            len(self.mDominos),
-            self.mPoints,
-            self.mGoAgains,
-            self.mHandsWon,
-            self.mGamesWon,
+            self.name,
+            len(self.dominos),
+            self.points,
+            self.go_agains,
+            self.hands_won,
+            self.games_won,
         )
 
-    def handAsString(self):
-        return "{}'s hand: {} {}".format(self.mName, len(self.mDominos), self.mDominos)
+    def hand_as_string(self):
+        return f"{self.name}'s hand: {len(self.dominos)} {self.dominos}"
 
-    def awardPoints(self, inPoints):
-        if not inPoints:
+    def award_points(self, points):
+        if not points:
             return
-        oldPoints = self.mPoints
-        self.mPoints += inPoints
+        old_points = self.points
+        self.points += points
         print(
             "Awarding {} points to {} from {} --> {}.".format(
-                inPoints, self.mName, oldPoints, self.mPoints
+                points, self.name, old_points, self.points
             )
         )
 
-    def pointsStillHolding(self):
-        returnValue = 0
-        for d in self.mDominos:
-            returnValue += d[0] + d[1]
-        return returnValue
+    @property
+    def points_still_holding(self):
+        return sum(sum(domino) for domino in self.dominos)
 
-    def isDominoPlayable(self, inIndex):
-        return self.mBoard.is_domino_playable(self.mDominos[inIndex])
+    def is_domino_playable(self, inIndex):
+        return self.board.is_domino_playable(self.dominos[inIndex])
 
-    def starIfPlayable(self, inIndex):
-        if self.isDominoPlayable(inIndex):
-            return "*"
-        return ""
+    def star_if_playable(self, inIndex):
+        return "*" if self.is_domino_playable(inIndex) else ""
 
-    def canPlay(self):
-        for i in range(len(self.mDominos)):
-            if self.isDominoPlayable(i):
-                return True
-        return False  # goin' to the boneyard
+    @property
+    def can_play(self):  # if not, then goin' to the boneyard...
+        return any(self.is_domino_playable(i) for i in range(len(self.dominos)))
 
-    def pickFromBoneyard(self):
+    def pick_from_boneyard(self):
         print("Going to the boneyard... ", end="")
-        theDomino = self.mBoard.pick_from_boneyard()
-        if not theDomino:
+        domino = self.board.pick_from_boneyard()
+        if not domino:
             print("EMPTY!! Passing to next player.")
-            assert True  # ---------*
             return None
-        self.mDominos.append(theDomino)
-        print("Got:", theDomino)
-        return theDomino
+        self.dominos.append(domino)
+        print("Got:", domino)
+        return domino
 
-    def pickFromBoneyardUntilCanPlay(self):
-        while not self.canPlay():
-            if not self.pickFromBoneyard():
+    def pick_from_boneyard_until_can_play(self):
+        while not self.can_play:
+            if not self.pick_from_boneyard():
                 return False  # Can not play and boneyard is empty
         return True  # Can play
 
     def undo(self):  # "A domino laid is a domino played." -- anon
-        if not self.mBoard.played_dominos:
+        if not self.board.played_dominos:
             print("Nothing to undo.")
             return
-        thePlayer = self.mBoard.played_dominos[-1].mPlayer
-        if thePlayer != self:
-            print("Can not undo the move of", thePlayer.mName)
+        player = self.board.played_dominos[-1].mPlayer
+        if player != self:
+            print("Can not undo the move of", player.mName)
             return
-        self.mPoints -= self.mBoard.get_points
-        theDomino = self.mBoard.played_dominos.pop()
+        self.points -= self.board.get_points
+        theDomino = self.board.played_dominos.pop()
         theDomino.notifyNeighborsOfUndo()
-        self.mDominos.append(theDomino.mDomino)
+        self.dominos.append(theDomino.mDomino)
 
-    def getFreshCopy(self, inOlderDomino):
-        return self.mBoard.get_fresh_copy(inOlderDomino)
+    def get_fresh_copy(self, older_domino):
+        return self.board.get_fresh_copy(older_domino)
 
-    def printARun(self, inRun):  # a list of DominoRunMoves
-        print("playARun() run length:", len(inRun))
-        for i, move in enumerate(inRun):
+    def print_a_run(self, run):  # a list of DominoRunMoves
+        print("playARun() run length:", len(run))
+        for i, move in enumerate(run):
             print(i + 1, move)
 
-    def playARun(self, inRun):  # a list of DominoRunMoves
-        self.printARun(inRun)
-        movesPlayed = 0
-        for theMove in inRun:
-            goAgain = self.playAMove(theMove)
-            print(self.handAsString())
-            self.mBoard.print_played_dominos()
-            movesPlayed += 1
-            if not goAgain:
+    def play_a_run(self, run):  # a list of DominoRunMoves
+        self.print_a_run(run)
+        moves_played = 0
+        for move in run:
+            go_again = self.play_a_move(move)
+            print(self.hand_as_string())
+            self.board.print_played_dominos()
+            moves_played += 1
+            if not go_again:
                 break
-        s = "ERROR: movesPlayed {} does not match len(inRun) {}"
-        assert movesPlayed == len(inRun), s.format(movesPlayed, len(inRun))
+        s = "ERROR: moves_played {} does not match len(run) {}"
+        assert moves_played == len(run), s.format(moves_played, len(run))
         print("RECAP:", end="")
-        self.printARun(inRun)
-        return goAgain
+        self.print_a_run(run)
+        return go_again
 
-    def playAMove(self, inMove):  # a DominoRunMove
-        # print(inMove)
-        assert inMove
-        newerDomino = inMove.mToBePlayedSimpleDomino
-        newerDomino = self.mDominos.pop(self.mDominos.index(newerDomino))
-        olderDomino = inMove.mAlreadyPlayedDomino
-        if olderDomino:
-            olderDomino = self.getFreshCopy(olderDomino)  # the toughest bug to find!!
-            theDomino = olderDomino.newNeighbor(self, newerDomino)
+    def play_a_move(self, move):  # a DominoRunMove
+        # print(move)
+        assert move
+        newer_domino = move.mToBePlayedSimpleDomino
+        newer_domino = self.dominos.pop(self.dominos.index(newer_domino))
+        older_domino = move.mAlreadyPlayedDomino
+        if older_domino:
+            older_domino = self.get_fresh_copy(
+                older_domino
+            )  # the toughest bug to find!!
+            domino = older_domino.newNeighbor(self, newer_domino)
         else:  # firstPlayedDomino
-            theDomino = PlayedDomino(self, newerDomino)
-        self.mBoard.played_dominos.append(theDomino)
-        thePoints = self.mBoard.get_points
-        self.awardPoints(thePoints)
-        goAgain = thePoints or theDomino.is_double
-        if goAgain:
-            self.mGoAgains += 1
-        # self.mBoard.update_ui()
-        return goAgain
+            domino = PlayedDomino(self, newer_domino)
+        self.board.played_dominos.append(domino)
+        points = self.board.get_points
+        self.award_points(points)
+        go_again = points or domino.is_double
+        if go_again:
+            self.go_agains += 1
+        # self.board.update_ui()
+        return go_again
 
-    def playATurn(self):  # returns wasAbleToPlay
+    def play_a_turn(self):  # returns wasAbleToPlay
         print(self)
-        self.mBoard.print_played_dominos()
-        if not self.pickFromBoneyardUntilCanPlay():
+        self.board.print_played_dominos()
+        if not self.pick_from_boneyard_until_can_play():
             print("Pass!!!")
             return False  # unable to play, passing to next player
-        goAgain = (
-            self.playATurnHumanPlayer()
-            if self.mPlayerIsHuman
-            else self.playATurnComputerPlayer()
+        go_again = (
+            self.play_a_turn_human_player()
+            if self.player_is_human
+            else self.play_a_turn_computer_player()
         )
-        if goAgain:
+        if go_again:
             print("Go again.")
-            return self.playATurn()
+            return self.play_a_turn()
         print(self)
         return True  # was able to play
 
     # ===== Human player routines
 
     # class DominoHumanPlayer(DominoPlayer):
-    def playATurnHumanPlayer(self):
-        newerDomino = self.mDominos[self.askWhichDominoToPlay()]
-        olderDomino = self.askWhereToPlay(newerDomino)
-        return self.playAMove(DominoRunMove(olderDomino, newerDomino))
+    def play_a_turn_human_player(self):
+        newerDomino = self.dominos[self.ask_which_domino_to_play()]
+        olderDomino = self.ask_where_to_play(newerDomino)
+        return self.play_a_move(DominoRunMove(olderDomino, newerDomino))
 
-    def askWhichDominoToPlay(self, inPrint=True):
-        # playable = self.mBoard.playable_numbers()
-        theMax = len(self.mDominos)
+    def ask_which_domino_to_play(self, inPrint=True):
+        # playable = self.board.playable_numbers()
+        theMax = len(self.dominos)
         if inPrint:
             for i in range(theMax):
                 print(
-                    "{}: {} {}".format(i + 1, self.mDominos[i], self.starIfPlayable(i))
+                    "{}: {} {}".format(i + 1, self.dominos[i], self.star_if_playable(i))
                 )
-            print(self.mName, "which domino would you like to play?")
-        whichDomino = askNumberFromOneTo(theMax)
-        print("Got:", whichDomino)
-        if str(whichDomino)[0] == "u":
+            print(self.name, "which domino would you like to play?")
+        which_domino = ask_number_from_one_to(theMax)
+        print("Got:", which_domino)
+        if str(which_domino)[0] == "u":
             self.undo()
-            return self.askWhichDominoToPlay()
-        whichDomino -= 1  # askNumber is 1 thru 7 but dominos are 0 thru 6
-        if not self.isDominoPlayable(whichDomino):
-            print("Can not play {}!".format(self.mDominos[whichDomino]))
-            return self.askWhichDominoToPlay(False)
-        return whichDomino
+            return self.ask_which_domino_to_play()
+        which_domino -= 1  # askNumber is 1 thru 7 but dominos are 0 thru 6
+        if not self.is_domino_playable(which_domino):
+            print("Can not play {}!".format(self.dominos[which_domino]))
+            return self.ask_which_domino_to_play(False)
+        return which_domino
 
-    def askWhereToPlay(self, inDominoToPlay):
-        if not self.mBoard.played_dominos:
+    def ask_where_to_play(self, domino_to_play):
+        if not self.board.played_dominos:
             return None  # firstDominoPlayed has no neighbors
-        potentialNeighbors = self.mBoard.playable_dominos(inDominoToPlay)
-        assert potentialNeighbors
-        if len(potentialNeighbors) == 1:
-            return potentialNeighbors[0]
-        print("Connect {}: to which domino?".format(inDominoToPlay))
-        theMax = len(potentialNeighbors)
-        for i in range(theMax):
-            print("{}: {}".format(i + 1, potentialNeighbors[i].mDomino))
-        return potentialNeighbors[askNumberFromOneTo(theMax) - 1]
+        potential_neighbors = self.board.playable_dominos(domino_to_play)
+        assert potential_neighbors
+        if len(potential_neighbors) == 1:
+            return potential_neighbors[0]
+        print("Connect {}: to which domino?".format(domino_to_play))
+        maximum = len(potential_neighbors)
+        for i in range(maximum):
+            print("{}: {}".format(i + 1, potential_neighbors[i].mDomino))
+        return potential_neighbors[ask_number_from_one_to(maximum) - 1]
 
     # ===== Computer player routines
 
     # class DominoComputerPlayer(DominoPlayer):
-    def playATurnComputerPlayer(self):
+    def play_a_turn_computer_player(self):
         # print(self)
-        print(self.handAsString())
-        # print('Playable: {}, Value: {}'.format(playable, self.mBoard.get_value()))
+        print(self.hand_as_string())
+        # print('Playable: {}, Value: {}'.format(playable, self.board.get_value()))
         score, run = self.best_run()
-        return self.playARun(run)
+        return self.play_a_run(run)
 
-    def best_run(
-        self
-    ):  # return the most valuable of an exhaustive series of lists of DominoRunMoves
-        if not self.mDominos:
+    def best_run(self):
+        """return the most valuable of an exhaustive series of lists of DominoRunMoves"""
+        if not self.dominos:
             # going out with goAgain more valuable than not goAgain
             return [12, []]
-        bestScoreAndRun = [0, []]  # theRun is a list of DominoRunMoves
-        self.mDominos.sort()  # maintain list order across calls to pop() & append()
-        for i in range(len(self.mDominos)):
-            if self.isDominoPlayable(i):
-                d = self.mDominos.pop(i)
-                theScoreAndRun = self.bestRunForDomino(d)
-                if theScoreAndRun[0] > bestScoreAndRun[0]:
-                    bestScoreAndRun = theScoreAndRun
-                self.mDominos.append(d)
-                self.mDominos.sort()  # pop()/append() will mess up list order
-        # print('best_run:', bestScoreAndRun)
-        return bestScoreAndRun
+        best_score_and_run = [0, []]  # theRun is a list of DominoRunMoves
+        self.dominos.sort()  # maintain list order across calls to pop() & append()
+        for i in range(len(self.dominos)):
+            if self.is_domino_playable(i):
+                d = self.dominos.pop(i)
+                score_and_run = self.best_run_for_domino(d)
+                if score_and_run[0] > best_score_and_run[0]:
+                    best_score_and_run = score_and_run
+                self.dominos.append(d)
+                self.dominos.sort()  # pop()/append() will mess up list order
+        # print('best_run:', best_score_and_run)
+        return best_score_and_run
 
-    def bestRunForDominoOnEmptyBoard(self, inDomino):
-        theKeepers = [[0, 0], [0, 5], [5, 0], [5, 5]]
-        if inDomino in theKeepers:
-            return [0, []]  # do not waste theKeepers on an empty board
-        bestScoreAndRun = [0, []]  # theRun is a list of DominoRunMoves
-        theScoreAndRun = self.bestRunForDominoAndNeighbor(inDomino, None)
-        if theScoreAndRun[0] > bestScoreAndRun[0]:
-            bestScoreAndRun = theScoreAndRun
-        return bestScoreAndRun
+    def best_run_for_domino_on_empty_board(self, domino):
+        keepers = [[0, 0], [0, 5], [5, 0], [5, 5]]
+        if domino in keepers:
+            return [0, []]  # do not waste keepers on an empty board
+        best_score_and_run = [0, []]  # theRun is a list of DominoRunMoves
+        score_and_run = self.best_run_for_domino_and_neighbor(domino, None)
+        if score_and_run[0] > best_score_and_run[0]:
+            best_score_and_run = score_and_run
+        return best_score_and_run
 
-    def bestRunForDomino(self, inDomino):
-        if not self.mBoard.played_dominos:
-            return self.bestRunForDominoOnEmptyBoard(inDomino)
-        bestScoreAndRun = [0, []]  # theRun is a list of DominoRunMoves
-        potentialNeighbors = self.mBoard.playable_dominos(inDomino)
-        for theNeighbor in potentialNeighbors:
-            theScoreAndRun = self.bestRunForDominoAndNeighbor(inDomino, theNeighbor)
-            if theScoreAndRun[0] > bestScoreAndRun[0]:
-                bestScoreAndRun = theScoreAndRun
-        return bestScoreAndRun
+    def best_run_for_domino(self, domino):
+        if not self.board.played_dominos:
+            return self.best_run_for_domino_on_empty_board(domino)
+        best_score_and_run = [0, []]  # theRun is a list of DominoRunMoves
+        potential_neighbors = self.board.playable_dominos(domino)
+        for neighbor in potential_neighbors:
+            score_and_run = self.best_run_for_domino_and_neighbor(domino, neighbor)
+            if score_and_run[0] > best_score_and_run[0]:
+                best_score_and_run = score_and_run
+        return best_score_and_run
 
     def calc_run_score(self):  # (inPoints, inNumberOfDominosPlayed, inFaceValue)
         # the 12 values goAgain above a high faceValue
         return (
-            self.mBoard.get_points * 1000
-            + 12
-            + self.mBoard.played_dominos[-1].face_value
+            self.board.get_points * 1000 + 12 + self.board.played_dominos[-1].face_value
         )
 
-    def bestRunForDominoAndNeighbor(self, inDomino, inNeighbor):
-        if inNeighbor:
-            theDomino = inNeighbor.newNeighbor(self, inDomino)
+    def best_run_for_domino_and_neighbor(self, in_domino, neighbor):
+        if neighbor:
+            domino = neighbor.newNeighbor(self, in_domino)
         else:
-            theDomino = PlayedDomino(self, inDomino)
-        bestScoreAndRun = [0, []]  # theRun is a list of DominoRunMoves
-        self.mBoard.played_dominos.append(theDomino)
-        theScore = self.calc_run_score()
-        theRun = [DominoRunMove(inNeighbor, inDomino, self.mBoard.get_points)]
-        if theScore > bestScoreAndRun[0]:
-            bestScoreAndRun = [theScore, theRun]
-        if theDomino.is_double or self.mBoard.get_points:
-            theScoreAndRun = self.best_run()  # go again
-            theScoreAndRun[0] += theScore
-            if theScoreAndRun[0] > bestScoreAndRun[0]:
-                bestScoreAndRun[0] = theScoreAndRun[0]
-                bestScoreAndRun[1] = theRun + theScoreAndRun[1]
-        self.mBoard.played_dominos.pop().notifyNeighborsOfUndo()
-        return bestScoreAndRun
+            domino = PlayedDomino(self, in_domino)
+        best_score_and_run = [0, []]  # run is a list of DominoRunMoves
+        self.board.played_dominos.append(domino)
+        score = self.calc_run_score()
+        run = [DominoRunMove(neighbor, in_domino, self.board.get_points)]
+        if score > best_score_and_run[0]:
+            best_score_and_run = [score, run]
+        if domino.is_double or self.board.get_points:
+            score_and__run = self.best_run()  # go again
+            score_and__run[0] += score
+            if score_and__run[0] > best_score_and_run[0]:
+                best_score_and_run[0] = score_and__run[0]
+                best_score_and_run[1] = run + score_and__run[1]
+        self.board.played_dominos.pop().notifyNeighborsOfUndo()
+        return best_score_and_run
 
 
 if __name__ == "__main__":

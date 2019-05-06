@@ -12,7 +12,7 @@
 import tkinter as tk
 
 # from sys import argv
-# from askNumberFromOneTo import askNumberFromOneTo
+# from ask_number_from_one_to import ask_number_from_one_to
 # from PrintableDomino import lrNoDoublesOffset, lrMeDoubleOffset, lrOtherDoubleOffset, udNoDoublesOffset, udMeDoubleOffset,
 # udOtherDoubleOffset
 from random import choice
@@ -68,28 +68,28 @@ def tk_offset(self_horiz, other_horiz, direction):
 
 
 class PlayedDomino(object):
-    def __init__(self, inPlayer, inDomino, inNeighbor=None, inDirection=LEFT):
-        self.mPlayer = inPlayer
-        self.mDomino = inDomino
-        self.mLocation = [0, 0]
+    def __init__(self, player, domino, neighbor=None, direction=LEFT):
+        self.player = player
+        self.domino = domino
+        self.location = [0, 0]
         self.tk_location = [0, 0]
-        self.mLeftRight = inDirection in LEFT_RIGHT
+        self.left_right = direction in LEFT_RIGHT
         if self.is_double:
-            self.mLeftRight = not self.mLeftRight
-        self.mOrientation = tk.HORIZONTAL if self.mLeftRight else tk.VERTICAL
-        oppDir = oppositeDirection(inDirection)
-        if inNeighbor:  # flip inDomino if required
-            matchToDie = inNeighbor.mDomino[whichDie(inDirection)]
-            assert matchToDie in self.mDomino, "These dominos do not match!"
-            if self.mDomino[whichDie(oppDir)] != matchToDie:
-                self.mDomino.reverse()
+            self.left_right = not self.left_right
+        self.orientation = tk.HORIZONTAL if self.left_right else tk.VERTICAL
+        opp_dir = oppositeDirection(direction)
+        if neighbor:  # flip inDomino if required
+            match_to_die = neighbor.mDomino[whichDie(direction)]
+            assert match_to_die in self.domino, "These dominos do not match!"
+            if self.domino[whichDie(opp_dir)] != match_to_die:
+                self.domino.reverse()
         self.mNeighbors = [None, None, None, None]
-        self.mNeighbors[oppDir] = inNeighbor
+        self.mNeighbors[opp_dir] = neighbor
 
     def __str__(self):
         s = "Domino: {}, isD: {}, pd: {}, fv: {}, pv: {}, Neighbors: {}"
         return s.format(
-            self.mDomino,
+            self.domino,
             self.is_double,
             self.playable_directions,
             self.face_value,
@@ -99,11 +99,11 @@ class PlayedDomino(object):
 
     @property
     def is_double(self):
-        return self.mDomino[0] == self.mDomino[1]
+        return self.domino[0] == self.domino[1]
 
     @property
     def face_value(self):
-        return self.mDomino[0] + self.mDomino[1]
+        return self.domino[0] + self.domino[1]
 
     @property
     def number_of_neighbors(self):
@@ -126,7 +126,7 @@ class PlayedDomino(object):
             return self.face_value
         for i, neighbor in enumerate(self.mNeighbors):
             if neighbor:
-                return self.mDomino[whichDie(oppositeDirection(i))]
+                return self.domino[whichDie(oppositeDirection(i))]
         assert False, "Error in played_value!"
 
     def notifyNeighborsOfUndo(self):  # break neighbors' links to me
@@ -145,7 +145,7 @@ class PlayedDomino(object):
         if neighborCount > 1:  # already boxed in
             return []
         if not neighborCount:  # firstDominoPlayed
-            return LEFT_RIGHT if self.mLeftRight else UP_DOWN
+            return LEFT_RIGHT if self.left_right else UP_DOWN
         for i, neighbor in enumerate(self.mNeighbors):
             if neighbor:
                 return [oppositeDirection(i)]
@@ -167,15 +167,15 @@ class PlayedDomino(object):
                 if self.mNeighbors[i]:
                     return [oppositeDirection(i)]
         if not neighborCount:  # firstDominoPlayed
-            return rightAngles(LEFT) if self.mLeftRight else rightAngles(UP)
+            return rightAngles(LEFT) if self.left_right else rightAngles(UP)
         assert True, "Error in playable_directions_for_a_double!"
 
     @property
     def playable_numbers(self):
-        # print("FIXME:", self.mDomino, self.playable_directions)
+        # print("FIXME:", self.domino, self.playable_directions)
         return sorted(
             set(
-                self.mDomino[whichDie(direction)]
+                self.domino[whichDie(direction)]
                 for direction in self.playable_directions
             )
         )
@@ -188,22 +188,22 @@ class PlayedDomino(object):
         else:
             theDirection = playable_directions[0]
             if len(playable_directions) > 1:
-                if self.mDomino[1] in inDomino:
+                if self.domino[1] in inDomino:
                     theDirection = playable_directions[1]
         d = PlayedDomino(inPlayer, inDomino, self, theDirection)
         self.mNeighbors[theDirection] = d
-        # print('newN Older:', self.mDomino, self.neighbors_as_string)
-        # print('newN Newer:',    d.mDomino,    d.neighbors_as_string)
+        # print('newN Older:', self.domino, self.neighbors_as_string)
+        # print('newN Newer:',    d.domino,    d.neighbors_as_string)
         return d
 
     def getOffset(self, other, inDirection):
-        offset = TEXT_OFFSETS[(self.mLeftRight, other.mLeftRight)][inDirection]
+        offset = TEXT_OFFSETS[(self.left_right, other.mLeftRight)][inDirection]
         assert (
             offset
-        ), f"text_offset({self.mLeftRight}, {other.mLeftRight}, {inDirection})"
+        ), f"text_offset({self.left_right}, {other.mLeftRight}, {inDirection})"
         return list(offset)
         """
-        if self.mLeftRight:
+        if self.left_right:
             if self.is_double:
                 return lrMeDoubleOffset(inDirection)
             elif inDomino.is_double:
@@ -220,26 +220,26 @@ class PlayedDomino(object):
         """
 
     def get_tk_offset(self, other, inDirection):
-        offset = TK_OFFSETS[(self.mLeftRight, other.mLeftRight)][inDirection]
+        offset = TK_OFFSETS[(self.left_right, other.mLeftRight)][inDirection]
         assert (
             offset
-        ), f"tk_offset({self.mLeftRight}, {other.mLeftRight}, {inDirection})"
+        ), f"tk_offset({self.left_right}, {other.mLeftRight}, {inDirection})"
         return list(offset)
 
     @property
     def domino_and_loc(self):
-        return f"{self.mDomino} @ {self.mLocation}"
+        return f"{self.domino} @ {self.location}"
 
     @property
     def domino_and_loc_and_neighbors(self):
-        return f"{self.mDomino} @ {self.mLocation} n: {self.neighbors_as_string}"
+        return f"{self.domino} @ {self.location} n: {self.neighbors_as_string}"
 
     def setLocation(self):
         for i, theNeighbor in enumerate(self.mNeighbors):
             if theNeighbor and theNeighbor.mLocation:
-                self.mLocation = theNeighbor.getOffset(self, oppositeDirection(i))
-                self.mLocation[0] += theNeighbor.mLocation[0]
-                self.mLocation[1] += theNeighbor.mLocation[1]
+                self.location = theNeighbor.getOffset(self, oppositeDirection(i))
+                self.location[0] += theNeighbor.mLocation[0]
+                self.location[1] += theNeighbor.mLocation[1]
                 return
 
     def set_tk_location(self):
@@ -251,14 +251,14 @@ class PlayedDomino(object):
                 return
 
     def fillCanvas(self, inCanvas):
-        # print(self.mDomino, '@', self.mLocation, self.neighbors_as_string)
-        if self.mLeftRight:
-            s = str(self.mDomino).replace(" ", "")
+        # print(self.domino, '@', self.location, self.neighbors_as_string)
+        if self.left_right:
+            s = str(self.domino).replace(" ", "")
             for i, c in enumerate(s):
-                inCanvas[self.mLocation[1]][self.mLocation[0] + i] = c
+                inCanvas[self.location[1]][self.location[0] + i] = c
         else:
-            for i, s in enumerate((self.mDomino[0], "-", self.mDomino[1])):
-                inCanvas[self.mLocation[1] + i][self.mLocation[0]] = str(s)
+            for i, s in enumerate((self.domino[0], "-", self.domino[1])):
+                inCanvas[self.location[1] + i][self.location[0]] = str(s)
 
 
 if __name__ == "__main__":

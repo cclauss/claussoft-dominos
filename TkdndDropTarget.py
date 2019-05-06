@@ -113,7 +113,7 @@ class DropTarget(tk.Canvas):
 
     def arrangeFirst(self):
         theChild = self.find_all()[0]
-        # theChild.mOrientation = tk.HORIZONTAL
+        # theChild.orientation = tk.HORIZONTAL
         longDimension = int(self["width"])
         theBuffer = (longDimension - 75) / 2
         self.coords(theChild, theBuffer, 10)
@@ -182,7 +182,7 @@ class Draggable(object):
             return
         self.mCanvas = inCanvas
         # print('attach2:', self.mCanvas, inCanvas)
-        # self.mWidgetID = ttk.Label(self.mCanvas, text=self.mName, borderwidth=2,
+        # self.mWidgetID = ttk.Label(self.mCanvas, text=self.name, borderwidth=2,
         #                      relief="raised")
         self.mWidgetID = self.mDrawRoutine(self.mCanvas, self.mName, self.mOrientation)
         self.mWindowID = self.mCanvas.create_window(

@@ -5,7 +5,7 @@ from random import shuffle
 import tkinter as tk
 
 # from sys import argv
-# from askNumberFromOneTo import askNumberFromOneTo
+# from ask_number_from_one_to import ask_number_from_one_to
 # from PlayedDomino import PlayedDomino
 from DominoPlayer import DominoPlayer
 from DominoBoard import DominoBoard
@@ -50,7 +50,7 @@ class DominoWorld(tkDominoBoard):
         assert len(self.dominos) == 28
         d = 0  # start with the first domino.
         for player in self.players:
-            player.mDominos = sorted(self.dominos[d : d + inDominosPerPlayer])
+            player.dominos = sorted(self.dominos[d : d + inDominosPerPlayer])
             d += inDominosPerPlayer
         self.board.mBoneyard = self.dominos[d:]
         self.update_ui()
@@ -62,23 +62,23 @@ class DominoWorld(tkDominoBoard):
 
     def playersHaveDominos(self):
         for player in self.players:
-            if not player.mDominos:
+            if not player.dominos:
                 return False
         return True
-        # all(player.mDominos for player in self.players)
+        # all(player.dominos for player in self.players)
 
     def playATurn(self):
         global g_passes_in_a_row
         p = self.whose_turn_minor % len(self.players)
         # print('playATurn: {} {}'.format(self.whose_turn_minor, p))
         print("=" * 10 + " NEW TURN " + "=" * 10)
-        if self.players[p].playATurn():
+        if self.players[p].play_a_turn():
             g_passes_in_a_row = 0
         else:
             g_passes_in_a_row += 1
         if g_passes_in_a_row > 1:  # TODO: Only allow passing once?
             for player in self.players:
-                player.mDominos = []
+                player.dominos = []
         self.whose_turn_minor += 1
         self.update_ui()
 
@@ -91,14 +91,14 @@ class DominoWorld(tkDominoBoard):
             self.playATurn()
         total_value = 0
         for player in self.players:
-            hand_value = player.pointsStillHolding()
+            hand_value = player.points_still_holding
             total_value += hand_value
             if hand_value:
-                print(player.handAsString(), "still holds", hand_value, "...", end="")
+                print(player.hand_as_string(), "still holds", hand_value, "...", end="")
         for player in self.players:
-            if not player.mDominos:  # the player that won
-                player.awardPoints(pointsRounded(total_value))
-                player.mHandsWon += 1
+            if not player.dominos:  # the player that won
+                player.award_points(pointsRounded(total_value))
+                player.hands_won += 1
                 break
         print()
         winner = self.checkForWinner()
@@ -106,7 +106,7 @@ class DominoWorld(tkDominoBoard):
             print("=" * 10 + " NEW HAND " + "=" * 10)
 
     def playAGame(self, human_wants_to_play):
-        self.players[0].mPlayerIsHuman = human_wants_to_play
+        self.players[0].player_is_human = human_wants_to_play
         # self.board.clearBoard()
         winner = None
         while not winner:
@@ -120,22 +120,22 @@ class DominoWorld(tkDominoBoard):
             print(self)
         # if winner:
         #    for thePlayer in self.players:
-        #        if winner == thePlayer.mName:
-        #            thePlayer.mGamesWon += 1
+        #        if winner == thePlayer.name:
+        #            thePlayer.games_won += 1
         print("The winner is", winner)
         return winner
 
     @property
     def highest_score(self):
-        return max(player.mPoints for player in self.players)
+        return max(player.points for player in self.players)
 
     def checkForWinner(self):
         high_score = self.highest_score
         if high_score < 25:
             return None
         for p in self.players:
-            if p.mPoints == high_score:
-                return p.mName
+            if p.points == high_score:
+                return p.name
 
     def update_ui(self):
         # ui = self.board
@@ -152,7 +152,7 @@ class DominoWorld(tkDominoBoard):
         for player, ui in zip(self.players, uis):
             for i, child in enumerate(ui.winfo_children()):
                 child.destroy()
-            for i, domino in enumerate(player.mDominos):
+            for i, domino in enumerate(player.dominos):
                 drawDomino(ui, domino).grid(row=0, column=i * 3)
         self.board.set_tk_locations()
         for i, child in enumerate(self.mDropZonePlayArea.winfo_children()):
@@ -169,7 +169,7 @@ class DominoWorld(tkDominoBoard):
 def main():
     print("Enter 1 to play 100 computer vs. computer games.")
     print("Enter 2 to play 1 human vs. computer game.")
-    games_to_play = 2  # askNumberFromOneTo(2)
+    games_to_play = 2  # ask_number_from_one_to(2)
     human_wants_to_play = games_to_play != 1
     if not games_to_play:
         games_to_play = 100

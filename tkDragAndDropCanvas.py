@@ -224,7 +224,7 @@ class tkDragAndDropFrame(ttk.Frame):
         return self.mCanvas
 
     def addDraggableCanvas(self, inCanvas):
-        # print('Binding:', inWidget.mName)
+        # print('Binding:', inWidget.name)
         # self.bind("<ButtonPress-1>",   inCanvas.onClick)
         # self.bind("<B1-Motion>",       inCanvas.onDrag)
         # self.bind("<ButtonRelease-1>", inCanvas.onDrop)
@@ -234,11 +234,11 @@ class tkDragAndDropFrame(ttk.Frame):
         self.mDraggableCanvases.append(inCanvas)
 
     def addDraggableFrame(self, inFrame):
-        # print('Binding:', inWidget.mName)
+        # print('Binding:', inWidget.name)
         self.mDraggableFrames.append(inFrame)
 
     def addDraggableWidget(self, inWidget):
-        # print('Binding:', inWidget.mName)
+        # print('Binding:', inWidget.name)
         self.mCanvas.tag_bind(inWidget.mName, "<ButtonPress-1>", inWidget.onClick)
         self.mCanvas.tag_bind(inWidget.mName, "<B1-Motion>", inWidget.onDrag)
         self.mCanvas.tag_bind(inWidget.mName, "<ButtonRelease-1>", inWidget.onDrop)

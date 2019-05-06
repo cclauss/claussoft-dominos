@@ -138,7 +138,7 @@ class SampleApp(tk.Tk):
         shuffle(self.mDominos)
         shuffle(self.mDominos)
         shuffle(self.mDominos)
-        # shuffle(shuffle(shuffle(self.mDominos)))
+        # shuffle(shuffle(shuffle(self.dominos)))
         d = 0  # start with the first domino.
         for thePlayer in [
             self.mDominoBoard.mDropZonePlayer0,

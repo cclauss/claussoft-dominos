@@ -2,7 +2,7 @@
 
 # from random import shuffle
 # from sys import argv
-# from askNumberFromOneTo import askNumberFromOneTo
+# from ask_number_from_one_to import ask_number_from_one_to
 # import tkinter as tk
 # from PlayedDomino import printPlayedDominos
 # from drawDomino import drawDomino
