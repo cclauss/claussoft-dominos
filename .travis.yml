@@ -13,7 +13,7 @@ before_script:
   - flake8 . --count --ignore=E203,W503 --max-complexity=10 --max-line-length=127 --show-source --statistics
   - git checkout -b branch_for_wily  # avoid wily "HEAD is a detached symbolic reference" error
   - wily build .
-  - wily report .
+  - wily report --format html .
 script:
   - python DominoWorld.py  # Play some computer vs. computer games
 notifications:

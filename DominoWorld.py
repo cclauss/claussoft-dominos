@@ -123,7 +123,7 @@ class DominoWorld(tkDominoBoard):
 
     @property
     def highest_score(self):
-        return max(player.mPoints for players in self.players)
+        return max(player.mPoints for player in self.players)
 
     def checkForWinner(self):
         high_score = self.highest_score
