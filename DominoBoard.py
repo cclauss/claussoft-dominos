@@ -78,7 +78,7 @@ class DominoBoard:
             return in_older_domino
         print("freshCopy WAS required")
         for d in self.played_dominos:
-            if d.mDomino == in_older_domino.mDomino:
+            if d.domino == in_older_domino.domino:
                 return d
         assert True
 
@@ -86,23 +86,23 @@ class DominoBoard:
         if not self.played_dominos:
             return
         for d in self.played_dominos:
-            d.mLocation = None
-        self.played_dominos[0].mLocation = [0, 0]
+            d.location = None
+        self.played_dominos[0].location = [0, 0]
         horiz = []
         verts = []
         for d in self.played_dominos:
-            if not d.mLocation:  # for all but firstPlayedDomino
+            if not d.location:  # for all but firstPlayedDomino
                 d.setLocation()
-            horiz.append(d.mLocation[0])
-            verts.append(d.mLocation[1])
+            horiz.append(d.location[0])
+            verts.append(d.location[1])
         assert min(horiz) < 1
         assert min(verts) < 1
         hOffset = abs(min(horiz))
         vOffset = abs(min(verts))
         if hOffset or vOffset:
             for d in self.played_dominos:
-                d.mLocation[0] += hOffset
-                d.mLocation[1] += vOffset
+                d.location[0] += hOffset
+                d.location[1] += vOffset
         canvasDimensions = [
             (max(horiz) - min(horiz)) + 5,
             (max(verts) - min(verts)) + 3,
@@ -137,7 +137,7 @@ class DominoBoard:
 
     @property
     def location_list(self):
-        return [d.mLocation for d in self.played_dominos]
+        return [d.location for d in self.played_dominos]
 
     def print_played_dominos(self):
         if not self.played_dominos:
