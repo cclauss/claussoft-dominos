@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-try:    # Python3
+try:  # Python3
     import tkinter as tk
     from tkinter import ttk
 except:  # Python2
@@ -9,39 +9,39 @@ except:  # Python2
 
 
 def onMouseDownInDie(inEvent):
-    print('onMouseDownInDie:', (inEvent.x, inEvent.x), inEvent.widget)
+    print("onMouseDownInDie:", (inEvent.x, inEvent.x), inEvent.widget)
 
 
 # The locations of the dots on a 3x3 grid.
-pipLocs = [[[]],
-           [[1, 1]],
-           [[0, 0], [2, 2]],
-           [[0, 0], [1, 1], [2, 2]],
-           [[0, 0], [0, 2], [2, 0], [2, 2]],
-           [[0, 0], [0, 2], [1, 1], [2, 0], [2, 2]],
-           [[0, 0], [0, 1], [0, 2], [2, 0], [2, 1], [2, 2]]]
+pipLocs = [
+    [[]],
+    [[1, 1]],
+    [[0, 0], [2, 2]],
+    [[0, 0], [1, 1], [2, 2]],
+    [[0, 0], [0, 2], [2, 0], [2, 2]],
+    [[0, 0], [0, 2], [1, 1], [2, 0], [2, 2]],
+    [[0, 0], [0, 1], [0, 2], [2, 0], [2, 1], [2, 2]],
+]
 
 
-def pipCanvas(inCanvas, inOutlineColor='blue', inFillColor='gray'):
+def pipCanvas(inCanvas, inOutlineColor="blue", inFillColor="gray"):
     theCanvas = tk.Canvas(inCanvas, width=13, height=13)
-    theCanvas.create_oval(
-        3, 3, 13, 13, outline=inOutlineColor, fill=inFillColor)
+    theCanvas.create_oval(3, 3, 13, 13, outline=inOutlineColor, fill=inFillColor)
     return theCanvas
 
 
-def drawPipInGrid(inCanvas, inLoc, inOutlineColor='blue', inFillColor='gray'):
-    pipCanvas(inCanvas, inOutlineColor, inFillColor).grid(
-        row=inLoc[0], column=inLoc[1])
+def drawPipInGrid(inCanvas, inLoc, inOutlineColor="blue", inFillColor="gray"):
+    pipCanvas(inCanvas, inOutlineColor, inFillColor).grid(row=inLoc[0], column=inLoc[1])
 
 
-def drawDie(inCanvas, inDie=6, inOutlineColor='blue', inFillColor='gray'):
+def drawDie(inCanvas, inDie=6, inOutlineColor="blue", inFillColor="gray"):
     theCanvas = tk.Canvas(inCanvas)
-    if inDie in [0, 1]:       # draw invisible pips to correct grid spacing
+    if inDie in [0, 1]:  # draw invisible pips to correct grid spacing
         for theLoc in pipLocs[2]:
-            drawPipInGrid(theCanvas, theLoc, 'white', None)
+            drawPipInGrid(theCanvas, theLoc, "white", None)
     if inDie in [0, 2, 4, 6]:  # draw invisible pips to correct grid spacing
         for theLoc in pipLocs[1]:
-            drawPipInGrid(theCanvas, theLoc, 'white', None)
+            drawPipInGrid(theCanvas, theLoc, "white", None)
     for theLoc in pipLocs[inDie]:
         if theLoc:
             drawPipInGrid(theCanvas, theLoc, inOutlineColor, inFillColor)
@@ -50,7 +50,7 @@ def drawDie(inCanvas, inDie=6, inOutlineColor='blue', inFillColor='gray'):
     return theCanvas
 
 
-def drawTheDominoDivider(inCanvas, theOrientation=tk.HORIZONTAL, inFillColor='gray'):
+def drawTheDominoDivider(inCanvas, theOrientation=tk.HORIZONTAL, inFillColor="gray"):
     # return ttk.Separator(inCanvas, orient=theOrientation)
     if theOrientation == tk.HORIZONTAL:
         theCanvas = tk.Canvas(inCanvas, width=1, height=51)
@@ -61,7 +61,13 @@ def drawTheDominoDivider(inCanvas, theOrientation=tk.HORIZONTAL, inFillColor='gr
     return theCanvas
 
 
-def drawDomino(inCanvas, inDomino=[5, 6], inOrientation=tk.HORIZONTAL, inOutlineColor='blue', inFillColor='gray'):
+def drawDomino(
+    inCanvas,
+    inDomino=[5, 6],
+    inOrientation=tk.HORIZONTAL,
+    inOutlineColor="blue",
+    inFillColor="gray",
+):
     theCanvas = tk.Canvas(inCanvas)
     theFrame = tk.Frame(theCanvas, bd=4, bg=inOutlineColor, relief=tk.GROOVE)
     theFrame.grid()  # pack(fill=tk.BOTH, padx=1, pady=1)
@@ -78,6 +84,7 @@ def drawDomino(inCanvas, inDomino=[5, 6], inOrientation=tk.HORIZONTAL, inOutline
         theCanvas.grid(rowspan=3)
     return theCanvas
 
+
 junk = """
       5
       -
@@ -93,7 +100,7 @@ junk = """
 
 def demoPlay():
     theWindow = tk.Toplevel()
-    theWindow.title('demoPlay')
+    theWindow.title("demoPlay")
     drawDomino(theWindow, [6, 6], tk.VERTICAL).grid(row=3, column=5)
     drawDomino(theWindow, [6, 3], tk.HORIZONTAL).grid(row=4, column=6)
     drawDomino(theWindow, [2, 6], tk.HORIZONTAL).grid(row=4, column=1)
@@ -102,9 +109,10 @@ def demoPlay():
     drawDomino(theWindow, [5, 6], tk.VERTICAL).grid(row=0, column=5)
     drawDomino(theWindow, [6, 4], tk.VERTICAL).grid(row=6, column=5)
 
+
 if __name__ == "__main__":
     root = tk.Tk()
-    root.title('Claussoft Dominos')
+    root.title("Claussoft Dominos")
     # drawDomino(root).pack()
     for i in range(7):
         for j in range(7):

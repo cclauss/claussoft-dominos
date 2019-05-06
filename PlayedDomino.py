@@ -10,6 +10,7 @@
 
 # from random import choice, shuffle
 import tkinter as tk
+
 # from sys import argv
 # from askNumberFromOneTo import askNumberFromOneTo
 # from PrintableDomino import lrNoDoublesOffset, lrMeDoubleOffset, lrOtherDoubleOffset, udNoDoublesOffset, udMeDoubleOffset,
@@ -38,20 +39,24 @@ def whichDie(direction):
 # (self_horiz, other_horiz): (LEFT, RIGHT, UP, DOWN)
 # None: if self and other are both horizontal then UP and DOWN are invalid
 #       if self and other are both vertical then LEFT and RIGHT are invalid
-TEXT_OFFSETS = {(True, True): ((-5, 0), (5, 0), None, None),
-                (True, False): ((-1, -1), (5, -1), (2, -3), (2, 1)),
-                (False, True): ((-5, 1), (1, 1), (-2, -1), (-2, 3)),
-                (False, False): (None, None, (0, -3), (0, 3))}
+TEXT_OFFSETS = {
+    (True, True): ((-5, 0), (5, 0), None, None),
+    (True, False): ((-1, -1), (5, -1), (2, -3), (2, 1)),
+    (False, True): ((-5, 1), (1, 1), (-2, -1), (-2, 3)),
+    (False, False): (None, None, (0, -3), (0, 3)),
+}
 
 
 # tkinter offsets when playing one domino next to the other
 # (self_horiz, other_horiz): (LEFT, RIGHT, UP, DOWN)
 # None: if self and other are both horizontal then UP and DOWN are invalid
 #       if self and other are both vertical then LEFT and RIGHT are invalid
-TK_OFFSETS = {(True, True): ((-3, 0), (3, 0), None, None),
-                (True, False): ((-1, -1), (3, -1), (1, -3), (1, 1)),
-                (False, True): ((-3, 1), (1, 1), (-1, -1), (-1, 3)),
-                (False, False): (None, None, (0, -3), (0, 3))}
+TK_OFFSETS = {
+    (True, True): ((-3, 0), (3, 0), None, None),
+    (True, False): ((-1, -1), (3, -1), (1, -3), (1, 1)),
+    (False, True): ((-3, 1), (1, 1), (-1, -1), (-1, 3)),
+    (False, False): (None, None, (0, -3), (0, 3)),
+}
 
 
 def tk_offset(self_horiz, other_horiz, direction):
@@ -73,17 +78,22 @@ class PlayedDomino(object):
         oppDir = oppositeDirection(inDirection)
         if inNeighbor:  # flip inDomino if required
             matchToDie = inNeighbor.mDomino[whichDie(inDirection)]
-            assert matchToDie in self.mDomino, 'These dominos do not match!'
+            assert matchToDie in self.mDomino, "These dominos do not match!"
             if self.mDomino[whichDie(oppDir)] != matchToDie:
                 self.mDomino.reverse()
         self.mNeighbors = [None, None, None, None]
         self.mNeighbors[oppDir] = inNeighbor
 
     def __str__(self):
-        s = 'Domino: {}, isD: {}, pd: {}, fv: {}, pv: {}, Neighbors: {}'
-        return s.format(self.mDomino, self.is_double,
-                        self.playable_directions, self.face_value,
-                        self.played_value, self.mNeighbors)
+        s = "Domino: {}, isD: {}, pd: {}, fv: {}, pv: {}, Neighbors: {}"
+        return s.format(
+            self.mDomino,
+            self.is_double,
+            self.playable_directions,
+            self.face_value,
+            self.played_value,
+            self.mNeighbors,
+        )
 
     @property
     def is_double(self):
@@ -115,7 +125,7 @@ class PlayedDomino(object):
         for i, neighbor in enumerate(self.mNeighbors):
             if neighbor:
                 return self.mDomino[whichDie(oppositeDirection(i))]
-        assert False, 'Error in played_value!'
+        assert False, "Error in played_value!"
 
     def notifyNeighborsOfUndo(self):  # break neighbors' links to me
         for theDirection in range(len(self.mNeighbors)):
@@ -137,7 +147,7 @@ class PlayedDomino(object):
         for i, neighbor in enumerate(self.mNeighbors):
             if neighbor:
                 return [oppositeDirection(i)]
-        assert True, 'Error in playable_directions!'
+        assert True, "Error in playable_directions!"
 
     @property
     def playable_directions_for_a_double(self):
@@ -156,12 +166,17 @@ class PlayedDomino(object):
                     return [oppositeDirection(i)]
         if not neighborCount:  # firstDominoPlayed
             return rightAngles(LEFT) if self.mLeftRight else rightAngles(UP)
-        assert True, 'Error in playable_directions_for_a_double!'
+        assert True, "Error in playable_directions_for_a_double!"
 
     @property
     def playable_numbers(self):
         # print("FIXME:", self.mDomino, self.playable_directions)
-        return sorted(set(self.mDomino[whichDie(direction)] for direction in self.playable_directions))
+        return sorted(
+            set(
+                self.mDomino[whichDie(direction)]
+                for direction in self.playable_directions
+            )
+        )
 
     def newNeighbor(self, inPlayer, inDomino):
         playable_directions = self.playable_directions
@@ -181,7 +196,9 @@ class PlayedDomino(object):
 
     def getOffset(self, other, inDirection):
         offset = TEXT_OFFSETS[(self.mLeftRight, other.mLeftRight)][inDirection]
-        assert offset, f"text_offset({self.mLeftRight}, {other.mLeftRight}, {inDirection})"
+        assert (
+            offset
+        ), f"text_offset({self.mLeftRight}, {other.mLeftRight}, {inDirection})"
         return list(offset)
         """
         if self.mLeftRight:
@@ -202,16 +219,18 @@ class PlayedDomino(object):
 
     def get_tk_offset(self, other, inDirection):
         offset = TK_OFFSETS[(self.mLeftRight, other.mLeftRight)][inDirection]
-        assert offset, f"tk_offset({self.mLeftRight}, {other.mLeftRight}, {inDirection})"
+        assert (
+            offset
+        ), f"tk_offset({self.mLeftRight}, {other.mLeftRight}, {inDirection})"
         return list(offset)
 
     @property
     def domino_and_loc(self):
-        return self.mDomino, '@', self.mLocation
+        return self.mDomino, "@", self.mLocation
 
     @property
     def domino_and_loc_and_neighbors(self):
-        return self.mDomino, '@', self.mLocation, 'n:', self.neighbors_as_string
+        return self.mDomino, "@", self.mLocation, "n:", self.neighbors_as_string
 
     def setLocation(self):
         for i, theNeighbor in enumerate(self.mNeighbors):
@@ -229,19 +248,20 @@ class PlayedDomino(object):
                 self.tk_location[1] += theNeighbor.tk_location[1]
                 return
 
-
     def fillCanvas(self, inCanvas):
         # print(self.mDomino, '@', self.mLocation, self.neighbors_as_string)
         if self.mLeftRight:
-            s = str(self.mDomino).replace(' ', '')
+            s = str(self.mDomino).replace(" ", "")
             for i, c in enumerate(s):
                 inCanvas[self.mLocation[1]][self.mLocation[0] + i] = c
         else:
             inCanvas[self.mLocation[1] + 0][self.mLocation[0]] = str(self.mDomino[0])
-            inCanvas[self.mLocation[1] + 1][self.mLocation[0]] = '-'
+            inCanvas[self.mLocation[1] + 1][self.mLocation[0]] = "-"
             inCanvas[self.mLocation[1] + 2][self.mLocation[0]] = str(self.mDomino[1])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # from DominoTest import main
     from DominoWorld import main
+
     main()

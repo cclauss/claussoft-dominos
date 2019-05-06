@@ -3,6 +3,7 @@
 from os import getenv
 from random import shuffle
 import tkinter as tk
+
 # from sys import argv
 # from askNumberFromOneTo import askNumberFromOneTo
 # from PlayedDomino import PlayedDomino
@@ -58,6 +59,7 @@ def tk_offset(self_horiz, other_horiz, direction):
     return offset
 """
 
+
 class DominoWorld(tkDominoBoard):
     def __init__(self, inMaxDie=6, inNumberOfPlayers=2):
         print(1, self.__class__.__name__)
@@ -68,16 +70,17 @@ class DominoWorld(tkDominoBoard):
         print(2, super().__class__.__name__)
         self.mDominos = initDominos(inMaxDie)
         self.mBoard = DominoBoard(inMaxDie)
-        self.mPlayers = [DominoPlayer(f'Player {i}', self.mBoard)
-                         for i in range(inNumberOfPlayers)]
+        self.mPlayers = [
+            DominoPlayer(f"Player {i}", self.mBoard) for i in range(inNumberOfPlayers)
+        ]
         self.mWhoseTurnMajor = 0
         self.mWhoseTurnMinor = 0
         self.mGamesEndingInADraw = 0
 
     def __str__(self):
-        p = ''
+        p = ""
         for thePlayer in self.mPlayers:
-            p += str(thePlayer) + '\n'
+            p += str(thePlayer) + "\n"
         return p  # + str(self.mBoard)
 
     def deal(self, inDominosPerPlayer=7):
@@ -88,8 +91,7 @@ class DominoWorld(tkDominoBoard):
         # shuffle(shuffle(shuffle(self.mDominos)))
         d = 0  # start with the first domino.
         for thePlayer in self.mPlayers:
-            thePlayer.mDominos = sorted(
-                self.mDominos[d:d + inDominosPerPlayer])
+            thePlayer.mDominos = sorted(self.mDominos[d : d + inDominosPerPlayer])
             d += inDominosPerPlayer
         self.mBoard.mBoneyard = self.mDominos[d:]
         self.update_ui()
@@ -110,7 +112,7 @@ class DominoWorld(tkDominoBoard):
         global gPassesInARow
         p = self.mWhoseTurnMinor % len(self.mPlayers)
         # print('playATurn: {} {}'.format(self.mWhoseTurnMinor, p))
-        print('=' * 10 + ' NEW TURN ' + '=' * 10)
+        print("=" * 10 + " NEW TURN " + "=" * 10)
         if self.mPlayers[p].playATurn():
             gPassesInARow = 0
         else:
@@ -133,8 +135,7 @@ class DominoWorld(tkDominoBoard):
             handValue = p.pointsStillHolding()
             totalValue += handValue
             if handValue:
-                print(p.handAsString(), 'still holds',
-                      handValue, '...', end='')
+                print(p.handAsString(), "still holds", handValue, "...", end="")
         for p in self.mPlayers:
             if not p.mDominos:  # the player that won
                 p.awardPoints(pointsRounded(totalValue))
@@ -143,7 +144,7 @@ class DominoWorld(tkDominoBoard):
         print()
         theWinner = self.checkForWinner()
         if theWinner and theWinner != -1:
-            print('=' * 10 + ' NEW HAND ' + '=' * 10)
+            print("=" * 10 + " NEW HAND " + "=" * 10)
 
     def playAGame(self, inHumanWantsToPlay):
         self.mPlayers[0].mPlayerIsHuman = inHumanWantsToPlay
@@ -162,7 +163,7 @@ class DominoWorld(tkDominoBoard):
         #    for thePlayer in self.mPlayers:
         #        if theWinner == thePlayer.mName:
         #            thePlayer.mGamesWon += 1
-        print('The winner is', theWinner)
+        print("The winner is", theWinner)
         return theWinner
 
     def highestScore(self):
@@ -196,7 +197,7 @@ class DominoWorld(tkDominoBoard):
             for i, child in enumerate(ui.winfo_children()):
                 child.destroy()
             for i, domino in enumerate(player.mDominos):
-                drawDomino(ui, domino).grid(row=0, column=i*3)
+                drawDomino(ui, domino).grid(row=0, column=i * 3)
         self.mBoard.set_tk_locations()
         for i, child in enumerate(self.mDropZonePlayArea.winfo_children()):
             child.destroy()
@@ -204,24 +205,26 @@ class DominoWorld(tkDominoBoard):
             column, row = d.tk_location
             orientation = tk.HORIZONTAL if d.mLeftRight else tk.VERTICAL
             print("pd>", d, orientation, row, column)
-            drawDomino(self.mDropZonePlayArea,
-                       d.mDomino, orientation).grid(row=row, column=column)
+            drawDomino(self.mDropZonePlayArea, d.mDomino, orientation).grid(
+                row=row, column=column
+            )
+
 
 def main():
-    print('Enter 1 to play 100 computer vs. computer games.')
-    print('Enter 2 to play 1 human vs. computer game.')
+    print("Enter 1 to play 100 computer vs. computer games.")
+    print("Enter 2 to play 1 human vs. computer game.")
     games_to_play = 2  # askNumberFromOneTo(2)
     humanWantsToPlay = games_to_play != 1
     if not games_to_play:
         games_to_play = 100
-    if getenv("TRAVIS"):       # If we are running under Travis CI...
+    if getenv("TRAVIS"):  # If we are running under Travis CI...
         humanWantsToPlay = False  # computer vs. computer
-        games_to_play = 10        # games to play
+        games_to_play = 10  # games to play
     dw = DominoWorld()
     while games_to_play:
         games_to_play -= 1
         dw.playAGame(humanWantsToPlay)
-    print('=' * 10)
+    print("=" * 10)
     print(dw)
 
     # dw = DominoWorld()
@@ -235,5 +238,6 @@ def main():
     # print('==========')
     # print(dw)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

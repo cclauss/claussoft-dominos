@@ -10,22 +10,27 @@
 
 
 class DominoBoard:
-
     def __init__(self, inMaxDie=6):
-        #print(1, self.__class__.__name__)
+        # print(1, self.__class__.__name__)
         # print(2, self.super())
         # iprint(3, super(DominoBoard))
         # self.super(DominoBoard, self).__init__()
-        #super().__init__()
-        #print(2, super().__class__.__name__)
+        # super().__init__()
+        # print(2, super().__class__.__name__)
         self.mMaxDie = inMaxDie
         self.mBoneyard = []
         self.mPlayedDominos = []
 
     def __str__(self):
-        s = '{} dominos in {} = {}\nPlayable numbers: {}, value = {}\n{}'
-        return s.format(len(self.mBoneyard), 'Boneyard', self.mBoneyard,
-                        self.self.playable_numbers, self.get_value, self.mPlayedDominos)
+        s = "{} dominos in {} = {}\nPlayable numbers: {}, value = {}\n{}"
+        return s.format(
+            len(self.mBoneyard),
+            "Boneyard",
+            self.mBoneyard,
+            self.self.playable_numbers,
+            self.get_value,
+            self.mPlayedDominos,
+        )
 
     @property
     def get_value(self):
@@ -71,7 +76,7 @@ class DominoBoard:
         if inOlderDomino in self.mPlayedDominos:
             # print('freshCopy NOT required')
             return inOlderDomino
-        print('freshCopy WAS required')
+        print("freshCopy WAS required")
         for d in self.mPlayedDominos:
             if d.mDomino == inOlderDomino.mDomino:
                 return d
@@ -98,8 +103,10 @@ class DominoBoard:
             for d in self.mPlayedDominos:
                 d.mLocation[0] += hOffset
                 d.mLocation[1] += vOffset
-        canvasDimensions = [(max(horiz) - min(horiz)) + 5,
-                            (max(verts) - min(verts)) + 3]
+        canvasDimensions = [
+            (max(horiz) - min(horiz)) + 5,
+            (max(verts) - min(verts)) + 3,
+        ]
         return buildCanvas(canvasDimensions)
 
     def set_tk_locations(self):
@@ -139,7 +146,7 @@ class DominoBoard:
         self.fillCanvas(theCanvas)
         printCanvas(theCanvas)
         del theCanvas
-        s = 'Playable: {}, Value: {}'
+        s = "Playable: {}, Value: {}"
         print(s.format(self.playable_numbers, self.get_value))
 
 
@@ -148,7 +155,7 @@ def buildCanvas(inDimensions):
     for j in range(inDimensions[1] + 5):
         theCanvas.append([])
         for i in range(inDimensions[0] + 5):
-            theCanvas[j].append(' ')
+            theCanvas[j].append(" ")
     return theCanvas
 
 
@@ -156,19 +163,20 @@ def printCanvas(inCanvas):
     i = 0
     theMax = 0
     for theLine in inCanvas:
-        theLine = ''.join(theLine).rstrip()
+        theLine = "".join(theLine).rstrip()
         if len(theLine) > theMax:
             theMax = len(theLine)
-    border = ('=' * 33)[:theMax]
+    border = ("=" * 33)[:theMax]
     print(border)
     for theLine in inCanvas:
-        s = ''.join(theLine).rstrip()
+        s = "".join(theLine).rstrip()
         if s:
             print(s)  # ,' <',i
         i += 1
     print(border)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from DominoWorld import main
+
     main()

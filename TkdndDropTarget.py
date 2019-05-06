@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import dnd
 
-'''
+"""
 try:    # Python3
     import tkinter as tk
     from tkinter import ttk
@@ -13,7 +13,7 @@ except:  # Python2
     import Tkinter as tk
     import ttk as ttk
     import Tkdnd as dnd
-'''
+"""
 
 from drawDomino import drawDomino
 
@@ -39,12 +39,11 @@ class DropTarget(tk.Canvas):
     +---------------------------------------------------------+
     """
 
-    def __init__(self, inMaster, inWidth=101, inHeight=100, inBgColor='lightblue'):
+    def __init__(self, inMaster, inWidth=101, inHeight=100, inBgColor="lightblue"):
         self.mMaster = inMaster
         # if not inHeight:
         inHeight or 9 / 16 * inWidth  # HiDef aspect ratio is 9/16
-        tk.Canvas.__init__(self, inMaster, width=inWidth,
-                           height=inHeight, bg=inBgColor)
+        tk.Canvas.__init__(self, inMaster, width=inWidth, height=inHeight, bg=inBgColor)
         self.grid()
 
     def dnd_accept(self, inSource, inEvent):
@@ -85,12 +84,12 @@ class DropTarget(tk.Canvas):
         if len(theChildren) == 1:
             self.arrangeFirst()
             return
-        if int(self['width']) > int(self['height']):
+        if int(self["width"]) > int(self["height"]):
             theOrientation = tk.HORIZONTAL
-            longDimension = int(self['width'])
+            longDimension = int(self["width"])
         else:
             theOrientation = tk.VERTICAL
-            longDimension = int(self['height'])
+            longDimension = int(self["height"])
 
         theBuffer = (longDimension - len(theChildren) * 75) / 2
         if theBuffer < 10:
@@ -115,7 +114,7 @@ class DropTarget(tk.Canvas):
     def arrangeFirst(self):
         theChild = self.find_all()[0]
         # theChild.mOrientation = tk.HORIZONTAL
-        longDimension = int(self['width'])
+        longDimension = int(self["width"])
         theBuffer = (longDimension - 75) / 2
         self.coords(theChild, theBuffer, 10)
 
@@ -123,18 +122,21 @@ class DropTarget(tk.Canvas):
         theOutput = []
         for theKey in sorted(self.config()):
             theOutput.append(str(self.config(theKey)))
-        return '\t' + '\n\t'.join(theOutput)
+        return "\t" + "\n\t".join(theOutput)
 
 
 class LabeledDropTarget(DropTarget):
     """LabeledDropTarget(inMaster, inName, inWidth=100, inHeight=100, inBgColor='lightblue')
     Proved less useful than originally thought."""
 
-    def __init__(self, inMaster, inName, inWidth=100, inHeight=100, inBgColor='lightblue'):
+    def __init__(
+        self, inMaster, inName, inWidth=100, inHeight=100, inBgColor="lightblue"
+    ):
         theLabelframe = ttk.Labelframe(inMaster, text=inName, labelanchor=tk.N)
         theLabelframe.grid()
-        DropTarget.__init__(self, theLabelframe, inWidth=inWidth,
-                            inHeight=inHeight, inBgColor=inBgColor)
+        DropTarget.__init__(
+            self, theLabelframe, inWidth=inWidth, inHeight=inHeight, inBgColor=inBgColor
+        )
 
 
 def gridSlaveBindPropogate(inSlave, inBindType, inCallback):
@@ -144,13 +146,13 @@ def gridSlaveBindPropogate(inSlave, inBindType, inCallback):
         gridSlaveBindPropogate(theSlave, inBindType, inCallback)
 
 
-def buildADomino(inMaster, inName='[5, 6]', inOrientation=tk.VERTICAL):
+def buildADomino(inMaster, inName="[5, 6]", inOrientation=tk.VERTICAL):
     theDomino = eval(inName)
     assert len(theDomino) == 2
     return drawDomino(inMaster, theDomino, inOrientation)
 
 
-def myDrawRoutine(inMaster, inName='????', inOrientation=tk.VERTICAL):
+def myDrawRoutine(inMaster, inName="????", inOrientation=tk.VERTICAL):
     return ttk.Label(inMaster, text=inName, borderwidth=2, relief=tk.RAISED)
 
 
@@ -182,14 +184,13 @@ class Draggable(object):
         # print('attach2:', self.mCanvas, inCanvas)
         # self.mWidgetID = ttk.Label(self.mCanvas, text=self.mName, borderwidth=2,
         #                      relief="raised")
-        self.mWidgetID = self.mDrawRoutine(
-            self.mCanvas, self.mName, self.mOrientation)
+        self.mWidgetID = self.mDrawRoutine(self.mCanvas, self.mName, self.mOrientation)
         self.mWindowID = self.mCanvas.create_window(
-            inX, inY, window=self.mWidgetID, anchor="nw")
+            inX, inY, window=self.mWidgetID, anchor="nw"
+        )
         # self.mWidgetID.grid(row=0, column=0)
         # self.mWidgetID.bind('<ButtonPress>', self.onMouseDown)
-        gridSlaveBindPropogate(
-            self.mWidgetID, '<ButtonPress>', self.onMouseDown)
+        gridSlaveBindPropogate(self.mWidgetID, "<ButtonPress>", self.onMouseDown)
         self.mCanvas.arrange()
 
         # self.mCanvas.bind("<ButtonPress>", self.onMouseDown)
@@ -262,7 +263,7 @@ def main():
     top2 = tk.Toplevel(root)
     top2.geometry("+120+80")
     # t2 = DropTarget(top2)
-    t2 = LabeledDropTarget(top2, 'Labelframe')
+    t2 = LabeledDropTarget(top2, "Labelframe")
 
     top3 = tk.Toplevel(root)
     top3.geometry("+240+80")
@@ -284,14 +285,15 @@ def main():
     # print(len(t3.grid_slaves()))    # 0
     # print(len(t3.winfo_children())) # 3
     # print(len(t3.children))         # 3
-#    i = 0
-#    for theChild in t3.winfo_children():
-#        theChild.grid(row=0, column=i)
-#        i += 1
-#        print('voodooChild:', theChild.__class__, theChild.bbox())
-#        for theAttribute in sorted(theChild.configure()):
-#            print('    {}: {}'.format(theAttribute, theChild.configure(theAttribute)))
+    #    i = 0
+    #    for theChild in t3.winfo_children():
+    #        theChild.grid(row=0, column=i)
+    #        i += 1
+    #        print('voodooChild:', theChild.__class__, theChild.bbox())
+    #        for theAttribute in sorted(theChild.configure()):
+    #            print('    {}: {}'.format(theAttribute, theChild.configure(theAttribute)))
     root.mainloop()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
