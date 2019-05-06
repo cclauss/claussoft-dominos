@@ -235,11 +235,11 @@ class PlayedDomino(object):
         return f"{self.domino} @ {self.location} n: {self.neighbors_as_string}"
 
     def setLocation(self):
-        for i, theNeighbor in enumerate(self.mNeighbors):
-            if theNeighbor and theNeighbor.mLocation:
-                self.location = theNeighbor.getOffset(self, oppositeDirection(i))
-                self.location[0] += theNeighbor.mLocation[0]
-                self.location[1] += theNeighbor.mLocation[1]
+        for i, neighbor in enumerate(self.mNeighbors):
+            if neighbor and neighbor.location:
+                self.location = neighbor.getOffset(self, oppositeDirection(i))
+                self.location[0] += neighbor.mLocation[0]
+                self.location[1] += neighbor.mLocation[1]
                 return
 
     def set_tk_location(self):
