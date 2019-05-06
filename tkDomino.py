@@ -9,6 +9,7 @@ from drawDomino import drawDomino
 
 # from tkDragAndDropCanvas import tkDragAndDropFrame, tkDraggableWidget
 # from TkdndDropTarget import DropTarget, LabeledDropTarget, Draggable
+from TkdndDropTarget import Draggable, DropTarget
 
 
 def initDominos(n=6):

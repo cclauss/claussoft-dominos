@@ -277,7 +277,8 @@ class SampleApp(tk.Tk):
         self.mDNDFrame = tkDragAndDropFrame()
 
         # second: create and register the DropZone(s)
-        junk = """N = tk.N; E = tk.E; S = tk.S; W = tk.W
+        """
+        N = tk.N; E = tk.E; S = tk.S; W = tk.W
         self.r1 = tk.Frame(self.mDNDCanvas, bg='lightblue', bd=2)
         self.r1.grid(column=2, row=2, sticky=(N,S,E,W))
         self.mDNDCanvas.addDropZone(self.r1, 'Blue Rectangle')
@@ -288,14 +289,13 @@ class SampleApp(tk.Tk):
         """
 
         theCanvas = self.mDNDFrame.getCanvas()
-
-        junk = """
+        """
         yellowFrame = ttk.Frame(theCanvas)
         yellowFrame.grid(row=3, column=3)
         yellowCanvas = tk.Canvas(yellowFrame, width=100, height=100,  bg='gray')
         yellowCanvas.pack()
         self.mDNDFrame.addDropZone(yellowCanvas, 'Yellow Frame')
-        """  # noqa: F841
+        """
 
         theRect = (50, 50, 150, 150)  # Left, Top, Right, Bottom
         self.r1 = theCanvas.create_rectangle(
