@@ -30,6 +30,7 @@ class DominoWorld(tkDominoBoard):
         super().__init__()  # start up tkinter
         self.dominos = init_dominos(max_die)
         assert len(self.dominos) == 28
+        assert all(self.dominos.count(d) == 1 for d in self.dominos), self.dominos
         assert len(self.dominos) == len(set(str(d) for d in self.dominos)), self.dominos
         self.board = DominoBoard(max_die)
         self.players = [
@@ -46,6 +47,7 @@ class DominoWorld(tkDominoBoard):
         self.board.mPlayedDominos = []
         for _ in range(3):
             shuffle(self.dominos)
+        assert len(self.dominos) == 28
         d = 0  # start with the first domino.
         for player in self.players:
             player.dominos = sorted(self.dominos[d : d + inDominosPerPlayer])
@@ -75,8 +77,8 @@ class DominoWorld(tkDominoBoard):
         else:
             g_passes_in_a_row += 1
         if g_passes_in_a_row > 1:  # TODO: Only allow passing once?
-            for p in self.players:
-                p.dominos = []
+            for player in self.players:
+                player.dominos = []
         self.whose_turn_minor += 1
         self.update_ui()
 
@@ -88,15 +90,15 @@ class DominoWorld(tkDominoBoard):
         while self.playersHaveDominos():
             self.playATurn()
         total_value = 0
-        for p in self.players:
-            hand_value = p.pointsStillHolding()
+        for player in self.players:
+            hand_value = player.pointsStillHolding()
             total_value += hand_value
             if hand_value:
-                print(p.handAsString(), "still holds", hand_value, "...", end="")
-        for p in self.players:
-            if not p.dominos:  # the player that won
-                p.awardPoints(pointsRounded(total_value))
-                p.mHandsWon += 1
+                print(player.handAsString(), "still holds", hand_value, "...", end="")
+        for player in self.players:
+            if not player.dominos:  # the player that won
+                player.awardPoints(pointsRounded(total_value))
+                player.mHandsWon += 1
                 break
         print()
         winner = self.checkForWinner()

@@ -14,8 +14,7 @@ before_script:
   - git checkout -b branch_for_wily  # avoid wily "HEAD is a detached symbolic reference" error
   - wily build .
   - wily report --format HTML .
-  - ls wily_report
-  #- cat wily_report
+  - cat wily_report/index.html
 script:
   - python DominoWorld.py  # Play some computer vs. computer games
 notifications:
