@@ -19,7 +19,7 @@ class DominoRunMove(object):
         s = f"Playing {self.to_be_played_simple_domino}"
         if not self.already_played_domino:
             return f"{s} as firstPlayedDomino {msg}"
-        return f"{s} on {self.already_played_domino.mDomino} {msg}"
+        return f"{s} on {self.already_played_domino.domino} {msg}"
 
 
 class DominoPlayer(object):
@@ -93,14 +93,14 @@ class DominoPlayer(object):
         if not self.board.played_dominos:
             print("Nothing to undo.")
             return
-        player = self.board.played_dominos[-1].mPlayer
+        player = self.board.played_dominos[-1].player
         if player != self:
-            print("Can not undo the move of", player.mName)
+            print("Can not undo the move of", player.name)
             return
         self.points -= self.board.get_points
         theDomino = self.board.played_dominos.pop()
         theDomino.notifyNeighborsOfUndo()
-        self.dominos.append(theDomino.mDomino)
+        self.dominos.append(theDomino.domino)
 
     def get_fresh_copy(self, older_domino):
         return self.board.get_fresh_copy(older_domino)
@@ -129,9 +129,9 @@ class DominoPlayer(object):
     def play_a_move(self, move):  # a DominoRunMove
         # print(move)
         assert move
-        newer_domino = move.mToBePlayedSimpleDomino
+        newer_domino = move.to_be_played_simple_domino
         newer_domino = self.dominos.pop(self.dominos.index(newer_domino))
-        older_domino = move.mAlreadyPlayedDomino
+        older_domino = move.already_played_domino
         if older_domino:
             older_domino = self.get_fresh_copy(
                 older_domino
@@ -203,7 +203,7 @@ class DominoPlayer(object):
         print("Connect {}: to which domino?".format(domino_to_play))
         maximum = len(potential_neighbors)
         for i in range(maximum):
-            print("{}: {}".format(i + 1, potential_neighbors[i].mDomino))
+            print("{}: {}".format(i + 1, potential_neighbors[i].domino))
         return potential_neighbors[ask_number_from_one_to(maximum) - 1]
 
     # ===== Computer player routines
