@@ -27,7 +27,7 @@ class DominoBoard:
             len(self.mBoneyard),
             "Boneyard",
             self.mBoneyard,
-            self.self.playable_numbers,
+            self.playable_numbers,
             self.get_value,
             self.mPlayedDominos,
         )
@@ -154,7 +154,7 @@ def buildCanvas(inDimensions):
     theCanvas = []
     for j in range(inDimensions[1] + 5):
         theCanvas.append([])
-        for i in range(inDimensions[0] + 5):
+        for _ in range(inDimensions[0] + 5):
             theCanvas[j].append(" ")
     return theCanvas
 
