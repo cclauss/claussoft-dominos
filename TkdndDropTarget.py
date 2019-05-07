@@ -3,17 +3,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import dnd  # type: ignore
-
-"""
-try:    # Python3
-    import tkinter as tk
-    from tkinter import ttk
-    from tkinter import dnd
-except:  # Python2
-    import Tkinter as tk
-    import ttk as ttk
-    import Tkdnd as dnd
-"""
+from typing import Any, Tuple
 
 from drawDomino import draw_domino
 
@@ -39,90 +29,87 @@ class DropTarget(tk.Canvas):
     +---------------------------------------------------------+
     """
 
-    def __init__(self, inMaster, inWidth=101, inHeight=100, inBgColor="lightblue"):
-        self.mMaster = inMaster
+    def __init__(
+        self, master, width: int = 101, height: int = 100, bg_color: str = "lightblue"
+    ) -> None:
+        """uses tkinter.dnd to enable Draggables to be Drag and Dropped."""
+        self.master = master
         # if not inHeight:
-        inHeight or 9 / 16 * inWidth  # HiDef aspect ratio is 9/16
-        tk.Canvas.__init__(self, inMaster, width=inWidth, height=inHeight, bg=inBgColor)
+        height or int(9 / 16 * width)  # HiDef aspect ratio is 9/16
+        tk.Canvas.__init__(self, master, width=width, height=height, bg_color=bg_color)
+        self.dnd_id = None
         self.grid()
 
     def dnd_accept(self, inSource, inEvent):
         # print('dnd_accept:', inEvent)
         return self
 
-    def dnd_enter(self, inSource, inEvent):
+    def dnd_enter(self, source, event) -> None:
         # print('dnd_enter:', inEvent)
         self.focus_set()  # Show highlight border
-        (x, y) = inSource.where(self, inEvent)
-        # inSource.mCanvas.bbox(inSource.mWindowID)
-        (x1, y1, x2, y2) = inSource.windowCoords()
+        x, y = source.where(self, event)
+        # inSource.canvas.bbox(inSource.window_id)
+        x1, y1, x2, y2 = source.window_coords()
         width = x2 - x1
         height = y2 - y1
-        self.dndid = self.create_rectangle(x, y, x + width, y + height)
-        self.dnd_motion(inSource, inEvent)
+        self.dnd_id = self.create_rectangle(x, y, x + width, y + height)
+        self.dnd_motion(source, event)
 
-    def dnd_motion(self, inSource, inEvent):
+    def dnd_motion(self, source, event) -> None:
         # print('dnd_motion:', inEvent)
-        (x, y) = inSource.where(self, inEvent)
-        (x1, y1, x2, y2) = self.bbox(self.dndid)
-        self.move(self.dndid, x - x1, y - y1)
+        x, y = source.where(self, event)
+        x1, y1, x2, y2 = self.bbox(self.dnd_id)
+        self.move(self.dnd_id, x - x1, y - y1)
 
-    def dnd_leave(self, inSource, inEvent):
+    def dnd_leave(self, source, event) -> None:
         # print('dnd_leave:', inEvent)
-        self.mMaster.focus_set()  # Hide highlight border
-        self.delete(self.dndid)
-        self.dndid = None
+        self.master.focus_set()  # Hide highlight border
+        self.delete(self.dnd_id)
+        self.dnd_id = None
 
-    def dnd_commit(self, inSource, inEvent):
+    def dnd_commit(self, source, event) -> None:
         # print('dnd_commit:', inEvent)
-        self.dnd_leave(inSource, inEvent)
-        (x, y) = inSource.where(self, inEvent)
-        inSource.attach(self, x, y)
+        self.dnd_leave(source, event)
+        x, y = source.where(self, event)
+        source.attach(self, x, y)
 
-    def arrange(self):
-        theChildren = self.find_all()
-        if len(theChildren) == 1:
-            self.arrangeFirst()
+    def arrange(self) -> None:
+        children = self.find_all()
+        if len(children) == 1:
+            self.arrange_first()
             return
         if int(self["width"]) > int(self["height"]):
-            theOrientation = tk.HORIZONTAL
-            longDimension = int(self["width"])
+            orientation = tk.HORIZONTAL
+            longer_dimension = int(self["width"])
         else:
-            theOrientation = tk.VERTICAL
-            longDimension = int(self["height"])
+            orientation = tk.VERTICAL
+            longer_dimension = int(self["height"])
 
-        theBuffer = (longDimension - len(theChildren) * 75) / 2
-        if theBuffer < 10:
-            theBuffer = 10
-
-        i = 0
-        for theChild in theChildren:
-            if theOrientation == tk.HORIZONTAL:
-                self.coords(theChild, theBuffer + i * 75, 10)
+        padding = max(10, (longer_dimension - len(children) * 75) / 2)
+        for i, child in enumerate(children):
+            if orientation == tk.HORIZONTAL:
+                self.coords(child, padding + i * 75, 10)
             else:
-                self.coords(theChild, 10, theBuffer + i * 75)
+                self.coords(child, 10, padding + i * 75)
 
-            # print(self.type(theChild), self.coords(theChild) # window [10.0, 10.0])
-            # print(self, theChild, 'arrange child i:', i)
+            # print(self.type(child), self.coords(child) # window [10.0, 10.0])
+            # print(self, child, 'arrange child i:', i)
             # .4453228272.4457567080.4457567152 1 arrange child i: 0
-            # print(self.showConfig())
+            # print(self.show_config())
             # print('{} children in {}x{}'.format(len(self.children), self['width'], self.cget('height')))
             # 1 children in 1024x128
             # print(self.configure('width, -height'))
-            i += 1
 
-    def arrangeFirst(self):
-        theChild = self.find_all()[0]
-        # theChild.orientation = tk.HORIZONTAL
-        longDimension = int(self["width"])
-        theBuffer = (longDimension - 75) / 2
-        self.coords(theChild, theBuffer, 10)
+    def arrange_first(self) -> None:
+        first_child = self.find_all()[0]
+        # first_child.orientation = tk.HORIZONTAL
+        longer_dimension = int(self["width"])
+        padding = (longer_dimension - 75) / 2
+        self.coords(first_child, padding, 10)
 
-    def showConfig(self):
-        theOutput = []
-        for theKey in sorted(self.config()):
-            theOutput.append(str(self.config(theKey)))
-        return "\t" + "\n\t".join(theOutput)
+    def show_config(self) -> str:
+        output = (str(self.config(key)) for key in sorted(self.config()))
+        return "\t" + "\n\t".join(output)
 
 
 class LabeledDropTarget(DropTarget):
@@ -130,76 +117,82 @@ class LabeledDropTarget(DropTarget):
     Proved less useful than originally thought."""
 
     def __init__(
-        self, inMaster, inName, inWidth=100, inHeight=100, inBgColor="lightblue"
-    ):
-        theLabelframe = ttk.Labelframe(inMaster, text=inName, labelanchor=tk.N)
+        self, master, width: int = 101, height: int = 100, bg_color: str = "lightblue"
+    ) -> None:
+        theLabelframe = ttk.Labelframe(master, text=width, labelanchor=tk.N)
         theLabelframe.grid()
         DropTarget.__init__(
-            self, theLabelframe, inWidth=inWidth, inHeight=inHeight, inBgColor=inBgColor
+            self, theLabelframe, width=height, height=height, bg_color=bg_color
         )
 
 
-def gridSlaveBindPropogate(inSlave, inBindType, inCallback):
+def grid_slave_bind_propogate(in_slave, bind_type, callback) -> None:
     # print('theSlave:', str(type(theSlave)))
-    inSlave.bind(inBindType, inCallback)
-    for theSlave in inSlave.grid_slaves():
-        gridSlaveBindPropogate(theSlave, inBindType, inCallback)
+    in_slave.bind(bind_type, callback)
+    for slave in in_slave.grid_slaves():
+        grid_slave_bind_propogate(slave, bind_type, callback)
 
 
-def buildADomino(inMaster, inName="[5, 6]", inOrientation=tk.VERTICAL):
-    theDomino = eval(inName)
-    assert len(theDomino) == 2
-    return draw_domino(inMaster, theDomino, inOrientation)
+def build_a_domino(master, name: str = "[5, 6]", orientation: str = tk.VERTICAL):
+    domino = eval(name)
+    assert len(domino) == 2
+    return draw_domino(master, domino, orientation)
 
 
-def myDrawRoutine(inMaster, inName="????", inOrientation=tk.VERTICAL):
-    return ttk.Label(inMaster, text=inName, borderwidth=2, relief=tk.RAISED)
+def my_draw_routine(
+    master, name: str = "????", orientation: str = tk.VERTICAL
+) -> ttk.Label:
+    return ttk.Label(master, text=name, borderwidth=2, relief=tk.RAISED)
 
 
 class Draggable(object):
-    """Draggable(inName): uses tkinter.dnd to enable the widget (self.mWidgetID) to be Drag and
+    """Draggable(inName): uses tkinter.dnd to enable the widget (self.widget_id) to be Drag and
     Dropped into DropTargets.  attach() must be called to initially add your Draggable to
     a DropTarget.  The widget will need to be modified to meet specific requirements.
     """
 
-    def __init__(self, inName, inOrientation=tk.VERTICAL, inDrawRoutine=myDrawRoutine):
-        self.name = inName
-        self.orientation = inOrientation
-        self.mDrawRoutine = inDrawRoutine
-        self.mCanvas = self.mWidgetID = self.mWindowID = None
-        self.mXOffset = self.mYOffset = None
-        self.mXOrigin = self.mYOrigin = None
+    def __init__(self, name, orientation=tk.VERTICAL, draw_routine=my_draw_routine):
+        self.name = name
+        self.orientation = orientation
+        self.draw_routine = draw_routine
+        self.canvas: Any = None
+        self.widget_id: Any = None
+        self.window_id = None
+        self.x_offset: int = 0
+        self.y_offset: int = 0
+        self.x_origin: int = 0
+        self.y_origin: int = 0
 
-    def attach(self, inCanvas, inX=10, inY=10):
-        # print('attach:', self.mCanvas, inCanvas)
-        if inCanvas is self.mCanvas:
-            self.mCanvas.coords(self.mWindowID, inX, inY)
-            self.mCanvas.arrange()
+    def attach(self, canvas: tk.Canvas, x: int = 10, y: int = 10) -> None:
+        # print('attach:', self.canvas, inCanvas)
+        if canvas is self.canvas:
+            self.canvas.coords(self.window_id, x, y)
+            self.canvas.arrange()
             return
-        if self.mCanvas:
+        if self.canvas:
             self.detach()
-        if not inCanvas:
+        if not canvas:
             return
-        self.mCanvas = inCanvas
-        # print('attach2:', self.mCanvas, inCanvas)
-        # self.mWidgetID = ttk.Label(self.mCanvas, text=self.name, borderwidth=2,
+        self.canvas = canvas
+        # print('attach2:', self.canvas, inCanvas)
+        # self.widget_id = ttk.Label(self.canvas, text=self.name, borderwidth=2,
         #                      relief="raised")
-        self.mWidgetID = self.mDrawRoutine(self.mCanvas, self.name, self.orientation)
-        self.mWindowID = self.mCanvas.create_window(
-            inX, inY, window=self.mWidgetID, anchor="nw"
+        self.widget_id = self.draw_routine(self.canvas, self.name, self.orientation)
+        self.window_id = self.canvas.create_window(
+            x, y, window=self.widget_id, anchor="nw"
         )
-        # self.mWidgetID.grid(row=0, column=0)
-        # self.mWidgetID.bind('<ButtonPress>', self.onMouseDown)
-        gridSlaveBindPropogate(self.mWidgetID, "<ButtonPress>", self.onMouseDown)
-        self.mCanvas.arrange()
+        # self.widget_id.grid(row=0, column=0)
+        # self.widget_id.bind('<ButtonPress>', self.onMouseDown)
+        grid_slave_bind_propogate(self.widget_id, "<ButtonPress>", self.onMouseDown)
+        self.canvas.arrange()
 
-        # self.mCanvas.bind("<ButtonPress>", self.onMouseDown)
+        # self.canvas.bind("<ButtonPress>", self.onMouseDown)
         _ = """
-        print(self.mCanvas, 'mWidgetID:', self.mCanvas.bbox(self.mWidgetID))
-        print(self.mCanvas, 'mWindowID:', self.mCanvas.bbox(self.mWindowID))
+        print(self.canvas, 'widget_id:', self.canvas.bbox(self.widget_id))
+        print(self.canvas, 'window_id:', self.canvas.bbox(self.window_id))
         i = 0
-        for theChild in self.mCanvas.children:
-            print(self.mCanvas, 'child i:', i, self.mCanvas.bbox(theChild))
+        for theChild in self.canvas.children:
+            print(self.canvas, 'child i:', i, self.canvas.bbox(theChild))
             i += 1
 
         i = 0
@@ -210,42 +203,42 @@ class Draggable(object):
             i += 1
          """
 
-    def detach(self):
-        # print('detach:', self.mCanvas)
-        if not self.mCanvas:
+    def detach(self) -> None:
+        # print('detach:', self.canvas)
+        if not self.canvas:
             return
-        self.mCanvas.delete(self.mWindowID)
-        self.mWidgetID.destroy()
-        self.mCanvas = self.mWidgetID = self.mWindowID = None
+        self.canvas.delete(self.window_id)
+        self.widget_id.destroy()
+        self.canvas = self.widget_id = self.window_id = None
 
-    def onMouseDown(self, inEvent):
-        # print('onMouseDown:', (inEvent.x, inEvent.x), inEvent.widget)
-        if dnd.dnd_start(self, inEvent):
+    def onMouseDown(self, event) -> None:
+        # print('onMouseDown:', (event.x, event.x), event.widget)
+        if dnd.dnd_start(self, event):
             # where the pointer is relative to the label widget:
-            self.mXOffset = inEvent.x
-            self.mYOffset = inEvent.y
+            self.x_offset = event.x
+            self.y_offset = event.y
             # where the widget is relative to the canvas:
-            self.mXOrigin, self.mYOrigin = self.mCanvas.coords(self.mWindowID)
+            self.x_origin, self.y_origin = self.canvas.coords(self.window_id)
 
-    def move(self, inEvent):
-        x, y = self.where(self.mCanvas, inEvent)
-        self.mCanvas.coords(self.mWindowID, x, y)
+    def move(self, event) -> None:
+        x, y = self.where(self.canvas, event)
+        self.canvas.coords(self.window_id, x, y)
 
-    def putback(self):
-        self.canvas.coords(self.mWindowID, self.mXOrigin, self.mYOrigin)
+    def putback(self) -> None:
+        self.canvas.coords(self.window_id, self.x_origin, self.y_origin)
 
-    def where(self, inCanvas, inEvent):
+    def where(self, canvas, event) -> Tuple[int, int]:
         # where the corner of the canvas is relative to the screen:
-        mXOrigin = inCanvas.winfo_rootx()
-        mYOrigin = inCanvas.winfo_rooty()
+        x_origin = canvas.winfo_rootx()
+        y_origin = canvas.winfo_rooty()
         # where the pointer is relative to the canvas widget:
-        x = inEvent.x_root - mXOrigin
-        y = inEvent.y_root - mYOrigin
+        x = event.x_root - x_origin
+        y = event.y_root - y_origin
         # compensate for initial pointer offset
-        return x - self.mXOffset, y - self.mYOffset
+        return x - self.x_offset, y - self.y_offset
 
-    def windowCoords(self):
-        return self.mCanvas.bbox(self.mWindowID)
+    def window_coords(self):
+        return self.canvas.bbox(self.window_id)
 
     def dnd_end(self, target, event):
         pass
@@ -267,14 +260,14 @@ def main():
 
     top3 = tk.Toplevel(root)
     top3.geometry("+240+80")
-    t3 = DropTarget(top3, inWidth=1280, inHeight=720)
+    t3 = DropTarget(top3, width=1280, height=720)
     top3.geometry("1280x720")
 
     i1 = Draggable("ICON1")
-    i2 = Draggable("ICON2", myDrawRoutine)
-    d1 = Draggable("[1,2]", buildADomino)
-    d2 = Draggable("[2,3]", buildADomino)
-    d3 = Draggable("[3,4]", buildADomino)
+    i2 = Draggable("ICON2", my_draw_routine)
+    d1 = Draggable("[1,2]", build_a_domino)
+    d2 = Draggable("[2,3]", build_a_domino)
+    d3 = Draggable("[3,4]", build_a_domino)
     i1.attach(t1)
     i2.attach(t2)
     d1.attach(t3)

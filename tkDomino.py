@@ -32,9 +32,7 @@ class tkDomino(Draggable):
         self.domino = domino
         self.name = str(self.domino).replace(" ", "")
         self.orientation = tk.VERTICAL
-        Draggable.__init__(
-            self, self.name, self.orientation, inDrawRoutine=build_a_domino
-        )
+        Draggable.__init__(self, self.orientation)
 
     def __lt__(self, other) -> bool:
         return self.domino < other.domino
@@ -73,19 +71,19 @@ class tkDominoBoard(ttk.Frame):
         theLabelframe = ttk.Labelframe(self, text="Player 0", labelanchor=tk.N)
         theLabelframe.grid(column=1, row=0, columnspan=8, sticky=NSEW)
         self.drop_zone_player0 = DropTarget(
-            theLabelframe, inWidth=128 * 8, inHeight=128, inBgColor="pink"
+            theLabelframe, width=128 * 8, height=128, bg_color="pink"
         )
 
         theLabelframe = ttk.Labelframe(self, text="Player 1", labelanchor=tk.N)
         theLabelframe.grid(column=1, row=9, columnspan=8, sticky=NSEW)
         self.drop_zone_player1 = DropTarget(
-            theLabelframe, inWidth=128 * 8, inHeight=128, inBgColor="lightblue"
+            theLabelframe, width=128 * 8, height=128, bg_color="lightblue"
         )
 
         theLabelframe = ttk.Labelframe(self, text="Boneyard", labelanchor=tk.N)
         theLabelframe.grid(column=0, row=1, rowspan=8, sticky=NSEW)
         self.drop_zone_boneyard = DropTarget(
-            theLabelframe, inWidth=128, inHeight=464, inBgColor="lightyellow"
+            theLabelframe, width=128, height=464, bg_color="lightyellow"
         )
 
         theLabelframe = ttk.Labelframe(self, text="Score Board", labelanchor=tk.N)
@@ -98,7 +96,7 @@ class tkDominoBoard(ttk.Frame):
         theLabelframe = ttk.Labelframe(self, text="Play Area", labelanchor=tk.N)
         theLabelframe.grid(column=1, row=1, columnspan=8, sticky=NSEW)
         self.drop_zone_play_area = DropTarget(
-            theLabelframe, inWidth=128 * 8, inHeight=464, inBgColor="PeachPuff"
+            theLabelframe, width=128 * 8, height=464, bg_color="PeachPuff"
         )
 
 
