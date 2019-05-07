@@ -7,10 +7,11 @@
 # from PlayedDomino import printPlayedDominos
 # from drawDomino import drawDomino
 # from tkDomino import tkDominoBoard
+from typing import List, Tuple
 
 
 class DominoBoard:
-    def __init__(self, max_die=6):
+    def __init__(self, max_die: int = 6):
         # print(1, self.__class__.__name__)
         # print(2, self.super())
         # iprint(3, super(DominoBoard))
@@ -55,7 +56,7 @@ class DominoBoard:
             number_list += d.playable_numbers
         return sorted(set(number_list))
 
-    def playable_dominos(self, inDomino):
+    def playable_dominos(self, inDomino: List):
         returnValue = []
         for d in self.played_dominos:
             pn = d.playable_numbers
@@ -63,7 +64,7 @@ class DominoBoard:
                 returnValue.append(d)
         return returnValue
 
-    def is_domino_playable(self, inDomino):
+    def is_domino_playable(self, inDomino: List):
         if not self.played_dominos:
             return True  # on an empty board, all dominos are playable
         for d in self.played_dominos:
@@ -103,10 +104,9 @@ class DominoBoard:
             for d in self.played_dominos:
                 d.location[0] += hOffset
                 d.location[1] += vOffset
-        canvasDimensions = [
-            (max(horiz) - min(horiz)) + 5,
-            (max(verts) - min(verts)) + 3,
-        ]
+        canvasDimensions = tuple(
+            (max(horiz) - min(horiz)) + 5, (max(verts) - min(verts)) + 3
+        )
         return build_canvas(canvasDimensions)
 
     def set_tk_locations(self):
@@ -131,7 +131,7 @@ class DominoBoard:
                 d.tk_location[0] += hOffset
                 d.tk_location[1] += vOffset
 
-    def fill_canvas(self, inCanvas):
+    def fill_canvas(self, inCanvas: List):
         for theDomino in self.played_dominos:
             theDomino.fillCanvas(inCanvas)
 
@@ -142,15 +142,15 @@ class DominoBoard:
     def print_played_dominos(self):
         if not self.played_dominos:
             return
-        theCanvas = self.set_locations()
-        self.fill_canvas(theCanvas)
-        print_canvas(theCanvas)
-        del theCanvas
+        canvas = self.set_locations()
+        self.fill_canvas(canvas)
+        print_canvas(tuple(canvas))
+        del canvas
         s = "Playable: {}, Value: {}"
         print(s.format(self.playable_numbers, self.get_value))
 
 
-def build_canvas(dimensions):
+def build_canvas(dimensions: Tuple):
     canvas = []
     for j in range(dimensions[1] + 5):
         canvas.append([])
@@ -159,7 +159,7 @@ def build_canvas(dimensions):
     return canvas
 
 
-def print_canvas(canvas):
+def print_canvas(canvas: Tuple):
     lines = ["".join(line).rstrip() for line in canvas]
     longest_line = max(len(line) for line in lines)
     border = "=" * longest_line

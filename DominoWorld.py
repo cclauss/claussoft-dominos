@@ -51,7 +51,8 @@ class DominoWorld(tkDominoBoard):
            players + played on the board + in the boneyard"""
         holders = [player.dominos for player in self.players]
         holders += [self.board.played_dominos, self.board.boneyard]
-        assert sum(len(holder) for holder in holders) == len(self.dominos)
+        lengths = [len(holder) for holder in holders]
+        assert sum(lengths) == len(self.dominos), (lengths, len(self.dominos))
 
     def deal(self, inDominosPerPlayer: int = 7):
         self.board.mPlayedDominos = []
