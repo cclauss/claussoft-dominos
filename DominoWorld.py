@@ -190,17 +190,7 @@ def main():
         dw.playAGame(human_wants_to_play)
     print("=" * 10)
     print(dw)
-
-    # dw = DominoWorld()
-    # print(dw)
-    # print('==========')
-    # dw.playAGame(True)
-    # while dw.highest_score < 25:
-    #    print('Spining the bones...')
-    # dw.playAHand()
-    # dw.reorientDominos()
-    # print('==========')
-    # print(dw)
+    print(f"{dw.games_ending_in_a_draw} games ended in a draw")
 
 
 if __name__ == "__main__":
