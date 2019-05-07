@@ -59,12 +59,12 @@ class DominoBoard:
                 playable_dominos.append(d)
         return playable_dominos
 
-    def is_domino_playable(self, inDomino: List) -> bool:
+    def is_domino_playable(self, domino: List[int]) -> bool:
         if not self.played_dominos:
             return True  # on an empty board, all dominos are playable
         for d in self.played_dominos:
             pn = d.playable_numbers
-            if inDomino[0] in pn or inDomino[1] in pn:
+            if domino[0] in pn or domino[1] in pn:
                 return True
         return False
 
@@ -126,7 +126,7 @@ class DominoBoard:
                 d.tk_location[0] += hOffset
                 d.tk_location[1] += vOffset
 
-    def fill_canvas(self, inCanvas: List[List[str]]):
+    def fill_canvas(self, inCanvas: List[List[str]]) -> None:
         for theDomino in self.played_dominos:
             theDomino.fillCanvas(inCanvas)
 
@@ -155,6 +155,9 @@ def build_canvas(dimensions: Tuple[int, int]) -> List[List[str]]:
 
 
 def print_canvas(canvas: Tuple[List[str]]) -> None:
+    print(f"CSFT: {type(canvas)}")
+    print(f"CSFT: {type(canvas[0])}")
+    print(f"CSFT: {type(canvas[0][0])}")
     lines = ["".join(line).rstrip() for line in canvas]
     longest_line = max(len(line) for line in lines)
     border = "=" * longest_line
