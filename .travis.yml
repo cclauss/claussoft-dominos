@@ -7,7 +7,7 @@ services:
   - xvfb
 install:
   # - pip install -r requirements.txt
-  - pip install black flake8 wily
+  - pip install beautifulsoup4 black flake8 requests wily
 before_script:
   - black . --check
   - flake8 . --count --ignore=E203,W503 --max-complexity=10 --max-line-length=127 --show-source --statistics
@@ -15,6 +15,7 @@ before_script:
   - wily build .
   - wily report --format HTML .
   - cat wily_report/index.html
+  - python -c "import bs4, requests ; wily_report = open('wily_report/index.html').read() ; print(bs4.soup(wily_report).prettify())"
 script:
   - python DominoWorld.py  # Play some computer vs. computer games
 notifications:
