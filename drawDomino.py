@@ -11,7 +11,7 @@ def on_mouse_down_in_die(event):
 
 
 # The locations of the dots on a 3x3 grid.
-pip_locations = [
+pip_locations: List = [
     [[]],
     [[1, 1]],
     [[0, 0], [2, 2]],
@@ -42,10 +42,10 @@ def draw_die(
     canvas = tk.Canvas(in_canvas)
     if die in [0, 1]:  # draw invisible pips to correct grid spacing
         for location in pip_locations[2]:
-            draw_pip_in_grid(canvas, location, "white", None)
+            draw_pip_in_grid(canvas, location, "white", "")
     if die in [0, 2, 4, 6]:  # draw invisible pips to correct grid spacing
         for location in pip_locations[1]:
-            draw_pip_in_grid(canvas, location, "white", None)
+            draw_pip_in_grid(canvas, location, "white", "")
     for location in pip_locations[die]:
         if location:
             draw_pip_in_grid(canvas, location, outline_color, fill_color)

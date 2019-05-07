@@ -42,7 +42,7 @@ class tkDominoBoard(ttk.Frame):
 
     def __init__(self, inMaster=None, inWidth: int = 1920, inHeight: int = 0):
         NSEW = (tk.N, tk.S, tk.E, tk.W)
-        inHeight = inHeight or 9 / 16 * inWidth  # HiDef aspect ratio is 9/16
+        inHeight = inHeight or int(9 / 16 * inWidth)  # HiDef aspect ratio is 9/16
         # super(tkDominoBoard, self).__init__()
         ttk.Frame.__init__(self, inMaster, width=inWidth, height=inHeight)
         self.grid(sticky=NSEW)

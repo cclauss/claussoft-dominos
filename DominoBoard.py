@@ -19,8 +19,8 @@ class DominoBoard:
         # super().__init__()
         # print(2, super().__class__.__name__)
         self.max_die = max_die
-        self.boneyard = []
-        self.played_dominos = []
+        self.boneyard: List = []
+        self.played_dominos: List = []
 
     def __str__(self):
         s = "{} dominos in {} = {}\nPlayable numbers: {}, value = {}\n{}"
@@ -151,7 +151,7 @@ class DominoBoard:
 
 
 def build_canvas(dimensions: Tuple):
-    canvas = []
+    canvas: List = []
     for j in range(dimensions[1] + 5):
         canvas.append([])
         for _ in range(dimensions[0] + 5):
