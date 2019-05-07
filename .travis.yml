@@ -14,7 +14,7 @@ before_script:
   - mypy .
 script:
   - vulture *.py || true
-  - DominoWorld.py  # Play some computer vs. computer games
+  - ./DominoWorld.py  # Play some computer vs. computer games
   #- monkeytype run DominoWorld.py  # Play some computer vs. computer games
   #- monkeytype list-modules
   #- monkeytype stub --diff DominoBoard

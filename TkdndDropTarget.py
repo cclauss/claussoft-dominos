@@ -36,7 +36,7 @@ class DropTarget(tk.Canvas):
         self.master = master
         # if not inHeight:
         height or int(9 / 16 * width)  # HiDef aspect ratio is 9/16
-        tk.Canvas.__init__(self, master, width=width, height=height, bg_color=bg_color)
+        tk.Canvas.__init__(self, master, width=width, height=height, bg=bg_color)
         self.dnd_id = None
         self.grid()
 
