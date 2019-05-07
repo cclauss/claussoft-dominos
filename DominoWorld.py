@@ -11,7 +11,7 @@ import tkinter as tk
 # from PlayedDomino import PlayedDomino
 from DominoPlayer import DominoPlayer
 from DominoBoard import DominoBoard
-from drawDomino import drawDomino
+from drawDomino import draw_domino
 from tkDomino import tkDominoBoard
 
 
@@ -151,24 +151,24 @@ class DominoWorld(tkDominoBoard):
                 return p.name
 
     def update_ui(self):
-        for i, child in enumerate(self.mDropZoneBoneyard.winfo_children()):
+        for i, child in enumerate(self.drop_zone_boneyard.winfo_children()):
             child.destroy()
         for i, domino in enumerate(self.board.boneyard):
-            drawDomino(self.mDropZoneBoneyard, domino).grid(row=i)
-        uis = (self.mDropZonePlayer0, self.mDropZonePlayer1)
+            draw_domino(self.drop_zone_boneyard, domino).grid(row=i)
+        uis = (self.drop_zone_player0, self.drop_zone_player1)
         for player, ui in zip(self.players, uis):
             for i, child in enumerate(ui.winfo_children()):
                 child.destroy()
             for i, domino in enumerate(player.dominos):
-                drawDomino(ui, domino).grid(row=0, column=i * 3)
+                draw_domino(ui, domino).grid(row=0, column=i * 3)
         self.board.set_tk_locations()
-        for i, child in enumerate(self.mDropZonePlayArea.winfo_children()):
+        for i, child in enumerate(self.drop_zone_play_area.winfo_children()):
             child.destroy()
         for d in self.board.played_dominos:
             column, row = d.tk_location
             orientation = tk.HORIZONTAL if d.left_right else tk.VERTICAL
             # print("pd>", d, orientation, row, column)
-            drawDomino(self.mDropZonePlayArea, d.domino, orientation).grid(
+            draw_domino(self.drop_zone_play_area, d.domino, orientation).grid(
                 row=row, column=column
             )
 

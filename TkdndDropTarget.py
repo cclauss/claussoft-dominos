@@ -15,7 +15,7 @@ except:  # Python2
     import Tkdnd as dnd
 """
 
-from drawDomino import drawDomino
+from drawDomino import draw_domino
 
 
 class DropTarget(tk.Canvas):
@@ -149,7 +149,7 @@ def gridSlaveBindPropogate(inSlave, inBindType, inCallback):
 def buildADomino(inMaster, inName="[5, 6]", inOrientation=tk.VERTICAL):
     theDomino = eval(inName)
     assert len(theDomino) == 2
-    return drawDomino(inMaster, theDomino, inOrientation)
+    return draw_domino(inMaster, theDomino, inOrientation)
 
 
 def myDrawRoutine(inMaster, inName="????", inOrientation=tk.VERTICAL):
@@ -163,8 +163,8 @@ class Draggable(object):
     """
 
     def __init__(self, inName, inOrientation=tk.VERTICAL, inDrawRoutine=myDrawRoutine):
-        self.mName = inName
-        self.mOrientation = inOrientation
+        self.name = inName
+        self.orientation = inOrientation
         self.mDrawRoutine = inDrawRoutine
         self.mCanvas = self.mWidgetID = self.mWindowID = None
         self.mXOffset = self.mYOffset = None
@@ -184,7 +184,7 @@ class Draggable(object):
         # print('attach2:', self.mCanvas, inCanvas)
         # self.mWidgetID = ttk.Label(self.mCanvas, text=self.name, borderwidth=2,
         #                      relief="raised")
-        self.mWidgetID = self.mDrawRoutine(self.mCanvas, self.mName, self.mOrientation)
+        self.mWidgetID = self.mDrawRoutine(self.mCanvas, self.name, self.orientation)
         self.mWindowID = self.mCanvas.create_window(
             inX, inY, window=self.mWidgetID, anchor="nw"
         )
