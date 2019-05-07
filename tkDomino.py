@@ -3,6 +3,7 @@
 from random import shuffle
 import tkinter as tk
 import tkinter.ttk as ttk
+from typing import List
 
 # import Tkdnd as Tkdnd
 from drawDomino import draw_domino
@@ -12,11 +13,13 @@ from drawDomino import draw_domino
 from TkdndDropTarget import Draggable, DropTarget
 
 
-def init_dominos(max_die: int = 6):
+def init_dominos(max_die: int = 6) -> List[List[int]]:
     return [[x, y] for x in range(max_die + 1) for y in range(x + 1)]
 
 
-def build_a_domino(inMaster, inName="[5, 6]", inOrientation=tk.VERTICAL):
+def build_a_domino(
+    inMaster: tk.Frame, inName: str = "[5, 6]", inOrientation=tk.VERTICAL
+) -> tk.Canvas:
     domino = eval(inName)
     assert len(domino) == 2
     return draw_domino(inMaster, domino, inOrientation)
@@ -25,7 +28,7 @@ def build_a_domino(inMaster, inName="[5, 6]", inOrientation=tk.VERTICAL):
 class tkDomino(Draggable):
     """GUI Domino as a Draggable that uses Tkdnd to support drag and drop"""
 
-    def __init__(self, domino=[5, 6]):
+    def __init__(self, domino=[5, 6]) -> None:
         self.domino = domino
         self.name = str(self.domino).replace(" ", "")
         self.orientation = tk.VERTICAL
@@ -33,14 +36,14 @@ class tkDomino(Draggable):
             self, self.name, self.orientation, inDrawRoutine=build_a_domino
         )
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         return self.domino < other.domino
 
 
 class tkDominoBoard(ttk.Frame):
     """GUI Domino Board as a ttk.Frame that uses Tkdnd to support drag and drop"""
 
-    def __init__(self, inMaster=None, inWidth: int = 1920, inHeight: int = 0):
+    def __init__(self, inMaster=None, inWidth: int = 1920, inHeight: int = 0) -> None:
         NSEW = (tk.N, tk.S, tk.E, tk.W)
         inHeight = inHeight or int(9 / 16 * inWidth)  # HiDef aspect ratio is 9/16
         # super(tkDominoBoard, self).__init__()
@@ -134,7 +137,7 @@ class SampleApp(tk.Tk):
         # print('self.master', self.master) # None
         # print('self.children', self.children) # {tkDominoBoard}
 
-    def deal(self, dominos_per_player: int = 7):
+    def deal(self, dominos_per_player: int = 7) -> None:
         shuffle(self.dominos)
         shuffle(self.dominos)
         shuffle(self.dominos)
