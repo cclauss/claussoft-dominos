@@ -55,7 +55,7 @@ class DominoWorld(tkDominoBoard):
         assert sum(lengths) == len(self.dominos), (lengths, len(self.dominos))
 
     def deal(self, inDominosPerPlayer: int = 7):
-        self.board.mPlayedDominos = []
+        self.board.played_dominos = []
         for _ in range(3):
             shuffle(self.dominos)
         assert len(self.dominos) == 28
@@ -63,7 +63,7 @@ class DominoWorld(tkDominoBoard):
         for player in self.players:
             player.dominos = sorted(self.dominos[d : d + inDominosPerPlayer])
             d += inDominosPerPlayer
-        self.board.mBoneyard = self.dominos[d:]
+        self.board.boneyard = self.dominos[d:]
         self.detect_counterfeits()
         self.update_ui()
 
@@ -151,15 +151,9 @@ class DominoWorld(tkDominoBoard):
                 return p.name
 
     def update_ui(self):
-        # ui = self.board
-        # ui.mDropZoneBoneyard
-        # ui.mDropZonePlayArea
-        # ui.mDropZonePlayer0
-        # ui.mDropZonePlayer1
-        # ui.mDropZoneScoreBoard
         for i, child in enumerate(self.mDropZoneBoneyard.winfo_children()):
             child.destroy()
-        for i, domino in enumerate(self.board.mBoneyard):
+        for i, domino in enumerate(self.board.boneyard):
             drawDomino(self.mDropZoneBoneyard, domino).grid(row=i)
         uis = (self.mDropZonePlayer0, self.mDropZonePlayer1)
         for player, ui in zip(self.players, uis):
@@ -170,11 +164,11 @@ class DominoWorld(tkDominoBoard):
         self.board.set_tk_locations()
         for i, child in enumerate(self.mDropZonePlayArea.winfo_children()):
             child.destroy()
-        for d in self.board.mPlayedDominos:
+        for d in self.board.played_dominos:
             column, row = d.tk_location
-            orientation = tk.HORIZONTAL if d.mLeftRight else tk.VERTICAL
+            orientation = tk.HORIZONTAL if d.left_right else tk.VERTICAL
             # print("pd>", d, orientation, row, column)
-            drawDomino(self.mDropZonePlayArea, d.mDomino, orientation).grid(
+            drawDomino(self.mDropZonePlayArea, d.domino, orientation).grid(
                 row=row, column=column
             )
 
