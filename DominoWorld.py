@@ -88,12 +88,12 @@ class DominoWorld(tkDominoBoard):
             g_passes_in_a_row = 0
         else:
             g_passes_in_a_row += 1
+        self.detect_counterfeits()
         if g_passes_in_a_row > 1:  # TODO: Only allow passing once?
             for player in self.players:
                 player.dominos = []
         self.whose_turn_minor += 1
         self.update_ui()
-        self.detect_counterfeits()
 
     def playAHand(self):
         self.whose_turn_minor = self.whose_turn_major
