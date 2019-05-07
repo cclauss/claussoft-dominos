@@ -51,13 +51,13 @@ class DominoBoard:
             number_list += d.playable_numbers
         return sorted(set(number_list))
 
-    def playable_dominos(self, inDomino: List[int]) -> List[PlayedDomino]:
-        returnValue = []  # Python 3.8 walrus operator might help here
+    def playable_dominos(self, domino: List[int]) -> List[PlayedDomino]:
+        playable_dominos = []  # Python 3.8 walrus operator might help here
         for d in self.played_dominos:
             pn = d.playable_numbers
-            if inDomino[0] in pn or inDomino[1] in pn:
-                returnValue.append(d)
-        return returnValue
+            if domino[0] in pn or domino[1] in pn:
+                playable_dominos.append(d)
+        return playable_dominos
 
     def is_domino_playable(self, inDomino: List) -> bool:
         if not self.played_dominos:
