@@ -105,7 +105,7 @@ class DominoBoard:
                 d.location[0] += hOffset
                 d.location[1] += vOffset
         canvasDimensions = tuple(
-            (max(horiz) - min(horiz)) + 5, (max(verts) - min(verts)) + 3
+            [(max(horiz) - min(horiz)) + 5, (max(verts) - min(verts)) + 3]
         )
         return build_canvas(canvasDimensions)
 
