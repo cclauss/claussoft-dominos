@@ -14,7 +14,7 @@ before_script:
   - mypy .
 script:
   - monkeytype run DominoWorld.py  # Play some computer vs. computer games
-  - monkeytype list_modules
+  - monkeytype list-modules
   - monkeytype stub DominoWorld
   - monkeytype stub tkinter.dnd
   - monkeytype stub
