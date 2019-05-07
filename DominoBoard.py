@@ -7,7 +7,8 @@
 # from PlayedDomino import printPlayedDominos
 # from drawDomino import drawDomino
 # from tkDomino import tkDominoBoard
-from typing import Iterable, List, Tuple
+from typing import List, Tuple
+from PlayedDomino import PlayedDomino
 
 
 class DominoBoard:
@@ -42,15 +43,15 @@ class DominoBoard:
         return self.boneyard.pop() if bones_available else None
 
     @property
-    def playable_numbers(self) -> Iterable:
+    def playable_numbers(self) -> List[int]:
         if not self.played_dominos:
-            return range(self.max_die + 1)
+            return list(range(self.max_die + 1))
         number_list: List = []  # adding lists, not .append()
         for d in self.played_dominos:
             number_list += d.playable_numbers
         return sorted(set(number_list))
 
-    def playable_dominos(self, inDomino: List) -> List:
+    def playable_dominos(self, inDomino: List[int]) -> List[PlayedDomino]:
         returnValue = []  # Python 3.8 walrus operator might help here
         for d in self.played_dominos:
             pn = d.playable_numbers
@@ -125,7 +126,7 @@ class DominoBoard:
                 d.tk_location[0] += hOffset
                 d.tk_location[1] += vOffset
 
-    def fill_canvas(self, inCanvas: List):
+    def fill_canvas(self, inCanvas: List[List[str]]):
         for theDomino in self.played_dominos:
             theDomino.fillCanvas(inCanvas)
 
@@ -144,7 +145,7 @@ class DominoBoard:
         print(s.format(self.playable_numbers, self.get_value))
 
 
-def build_canvas(dimensions: Tuple):
+def build_canvas(dimensions: Tuple[int, int]) -> List[List[str]]:
     canvas: List = []
     for j in range(dimensions[1] + 5):
         canvas.append([])
@@ -153,7 +154,7 @@ def build_canvas(dimensions: Tuple):
     return canvas
 
 
-def print_canvas(canvas: Tuple):
+def print_canvas(canvas: Tuple[List[str]]) -> None:
     lines = ["".join(line).rstrip() for line in canvas]
     longest_line = max(len(line) for line in lines)
     border = "=" * longest_line
