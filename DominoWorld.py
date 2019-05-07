@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 from os import getenv
+
+# from itertools import combinations_with_replacement
 from random import shuffle
 import tkinter as tk
 
@@ -17,16 +19,17 @@ g_passes_in_a_row = 0
 # dominos = tuple((x, y) for x in range(7) for y in range(x + 1))
 
 
-def init_dominos(max_die=6):
+def init_dominos(max_die: int = 6):
+    # return sorted(itertools.combinations_with_replacement(range(7), 2))
     return [[x, y] for x in range(max_die + 1) for y in range(x + 1)]
 
 
-def pointsRounded(value, n=5):
+def pointsRounded(value: int, n: int = 5):
     return int(round((value + n // 2) // n))
 
 
 class DominoWorld(tkDominoBoard):
-    def __init__(self, max_die=6, inNumberOfPlayers=2):
+    def __init__(self, max_die: int = 6, inNumberOfPlayers: int = 2):
         super().__init__()  # start up tkinter
         self.dominos = init_dominos(max_die)
         assert len(self.dominos) == 28
@@ -43,7 +46,14 @@ class DominoWorld(tkDominoBoard):
     def __str__(self):
         return "\n".join(str(player) for player in self.players)
 
-    def deal(self, inDominosPerPlayer=7):
+    def detect_counterfeits(self):
+        """Verify the number of dominos are currently being held by
+           players + played on the board + in the boneyard"""
+        holders = [player.dominos for player in self.players]
+        holders += [self.board.played_dominos, self.board.boneyard]
+        assert sum(len(holder) for holder in holders) == len(self.dominos)
+
+    def deal(self, inDominosPerPlayer: int = 7):
         self.board.mPlayedDominos = []
         for _ in range(3):
             shuffle(self.dominos)
@@ -53,6 +63,7 @@ class DominoWorld(tkDominoBoard):
             player.dominos = sorted(self.dominos[d : d + inDominosPerPlayer])
             d += inDominosPerPlayer
         self.board.mBoneyard = self.dominos[d:]
+        self.detect_counterfeits()
         self.update_ui()
 
     def reorientDominos(self):
@@ -81,6 +92,7 @@ class DominoWorld(tkDominoBoard):
                 player.dominos = []
         self.whose_turn_minor += 1
         self.update_ui()
+        self.detect_counterfeits()
 
     def playAHand(self):
         self.whose_turn_minor = self.whose_turn_major
@@ -105,7 +117,7 @@ class DominoWorld(tkDominoBoard):
         if winner and winner != -1:
             print("=" * 10 + " NEW HAND " + "=" * 10)
 
-    def playAGame(self, human_wants_to_play):
+    def playAGame(self, human_wants_to_play: bool):
         self.players[0].player_is_human = human_wants_to_play
         # self.board.clearBoard()
         winner = None
