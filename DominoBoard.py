@@ -7,17 +7,11 @@
 # from PlayedDomino import printPlayedDominos
 # from drawDomino import drawDomino
 # from tkDomino import tkDominoBoard
-from typing import List, Tuple
+from typing import Iterable, List, Tuple
 
 
 class DominoBoard:
     def __init__(self, max_die: int = 6):
-        # print(1, self.__class__.__name__)
-        # print(2, self.super())
-        # iprint(3, super(DominoBoard))
-        # self.super(DominoBoard, self).__init__()
-        # super().__init__()
-        # print(2, super().__class__.__name__)
         self.max_die = max_die
         self.boneyard: List = []
         self.played_dominos: List = []
@@ -34,13 +28,13 @@ class DominoBoard:
         )
 
     @property
-    def get_value(self):
+    def get_value(self) -> int:
         return sum(d.played_value for d in self.played_dominos)
 
     @property
-    def get_points(self):
-        theValue = self.get_value
-        return 0 if theValue % 5 else theValue / 5
+    def get_points(self) -> int:
+        value = self.get_value
+        return 0 if value % 5 else value // 5
 
     def pick_from_boneyard(self):
         # not clear what the rule is for other values of self.max_die
@@ -48,23 +42,23 @@ class DominoBoard:
         return self.boneyard.pop() if bones_available else None
 
     @property
-    def playable_numbers(self):
+    def playable_numbers(self) -> Iterable:
         if not self.played_dominos:
             return range(self.max_die + 1)
-        number_list = []
+        number_list: List = []  # adding lists, not .append()
         for d in self.played_dominos:
             number_list += d.playable_numbers
         return sorted(set(number_list))
 
-    def playable_dominos(self, inDomino: List):
-        returnValue = []
+    def playable_dominos(self, inDomino: List) -> List:
+        returnValue = []  # Python 3.8 walrus operator might help here
         for d in self.played_dominos:
             pn = d.playable_numbers
             if inDomino[0] in pn or inDomino[1] in pn:
                 returnValue.append(d)
         return returnValue
 
-    def is_domino_playable(self, inDomino: List):
+    def is_domino_playable(self, inDomino: List) -> bool:
         if not self.played_dominos:
             return True  # on an empty board, all dominos are playable
         for d in self.played_dominos:
