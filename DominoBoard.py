@@ -155,9 +155,6 @@ def build_canvas(dimensions: Tuple[int, int]) -> List[List[str]]:
 
 
 def print_canvas(canvas: Tuple[List[str]]) -> None:
-    print(f"CSFT: {type(canvas)}")
-    print(f"CSFT: {type(canvas[0])}")
-    print(f"CSFT: {type(canvas[0][0])}")
     lines = ["".join(line).rstrip() for line in canvas]
     longest_line = max(len(line) for line in lines)
     border = "=" * longest_line
