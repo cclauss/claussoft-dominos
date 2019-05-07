@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from typing import List
 from askNumberFromOneTo import ask_number_from_one_to
 from PlayedDomino import PlayedDomino
 
@@ -23,15 +24,15 @@ class DominoRunMove(object):
 
 
 class DominoPlayer(object):
-    def __init__(self, name, board):
-        self.name = name
+    def __init__(self, name: str, board):
+        self.name: str = name
         self.board = board
-        self.points = 0
-        self.dominos = []
-        self.go_agains = 0
-        self.hands_won = 0
-        self.games_won = 0
-        self.player_is_human = False  # assume humans are not interested in playing
+        self.points: int = 0
+        self.dominos: List = []
+        self.go_agains: int = 0
+        self.hands_won: int = 0
+        self.games_won: int = 0
+        self.player_is_human: bool = False  # assume humans are not interested in playing
         # self.player_is_human = True
 
     def __str__(self):
@@ -45,10 +46,10 @@ class DominoPlayer(object):
             self.games_won,
         )
 
-    def hand_as_string(self):
+    def hand_as_string(self) -> str:
         return f"{self.name}'s hand: {len(self.dominos)} {self.dominos}"
 
-    def award_points(self, points):
+    def award_points(self, points: int):
         if not points:
             return
         old_points = self.points
@@ -60,13 +61,13 @@ class DominoPlayer(object):
         )
 
     @property
-    def points_still_holding(self):
+    def points_still_holding(self) -> int:
         return sum(sum(domino) for domino in self.dominos)
 
-    def is_domino_playable(self, inIndex):
+    def is_domino_playable(self, inIndex) -> bool:
         return self.board.is_domino_playable(self.dominos[inIndex])
 
-    def star_if_playable(self, inIndex):
+    def star_if_playable(self, inIndex) -> str:
         return "*" if self.is_domino_playable(inIndex) else ""
 
     @property

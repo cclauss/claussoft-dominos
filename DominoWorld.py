@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-from os import getenv
 
 # from itertools import combinations_with_replacement
+from os import getenv
 from random import shuffle
+from typing import List
 import tkinter as tk
 
 # from sys import argv
@@ -19,12 +20,12 @@ g_passes_in_a_row = 0
 # dominos = tuple((x, y) for x in range(7) for y in range(x + 1))
 
 
-def init_dominos(max_die: int = 6):
+def init_dominos(max_die: int = 6) -> List:
     # return sorted(itertools.combinations_with_replacement(range(7), 2))
     return [[x, y] for x in range(max_die + 1) for y in range(x + 1)]
 
 
-def pointsRounded(value: int, n: int = 5):
+def pointsRounded(value: int, n: int = 5) -> int:
     return int(round((value + n // 2) // n))
 
 
