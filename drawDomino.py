@@ -29,7 +29,10 @@ def pip_canvas(in_canvas, outline_color: str = "blue", fill_color: str = "gray")
 
 
 def draw_pip_in_grid(
-    in_canvas, location: List, outline_color: str = "blue", fill_color: str = "gray"
+    in_canvas,
+    location: List[int],
+    outline_color: str = "blue",
+    fill_color: str = "gray",
 ):
     pip_canvas(in_canvas, outline_color, fill_color).grid(
         row=location[0], column=location[1]
@@ -69,7 +72,7 @@ def draw_the_domino_divider(
 
 def draw_domino(
     in_canvas,
-    domino: List = [5, 6],
+    domino: List[int] = [5, 6],
     orientation=tk.HORIZONTAL,
     outline_color: str = "blue",
     fill_color: str = "gray",
