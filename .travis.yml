@@ -15,8 +15,13 @@ before_script:
 script:
   - monkeytype run DominoWorld.py  # Play some computer vs. computer games
   - monkeytype list-modules
-  - monkeytype stub DominoWorld
-  - monkeytype stub tkinter.dnd
-  - monkeytype stub
+  - monkeytype stub DominoBoard
+  - monkeytype stub DominoPlayer
+  - monkeytype stub PlayedDomino
+  - monkeytype stub TkdndDropTarget
+  - monkeytype stub drawDomino
+  - monkeytype stub tkDomino
+  # - monkeytype stub DominoWorld
+  # - monkeytype stub tkinter.dnd
 notifications:
   email: false
