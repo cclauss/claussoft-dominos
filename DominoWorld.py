@@ -196,4 +196,4 @@ def main(human_wants_to_play: bool = True):
 if __name__ == "__main__":
     import sys
 
-    main(bool(not sys.argv[1:]))  # any param will force a computer-vs.-computer game
+    main(bool(sys.argv[1:]))  # any param will force a computer-vs.-computer game
