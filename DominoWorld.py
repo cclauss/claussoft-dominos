@@ -178,7 +178,7 @@ def main(human_wants_to_play: bool = True):
     print("Enter 1 to play 100 computer vs. computer games.")
     print("Enter 2 to play 1 human vs. computer game.")
     games_to_play = 2  # ask_number_from_one_to(2)
-    human_wants_to_play = games_to_play != 1
+    # human_wants_to_play = games_to_play != 1
     if not games_to_play:
         games_to_play = 100
     if getenv("TRAVIS"):  # If we are running under Travis CI...
