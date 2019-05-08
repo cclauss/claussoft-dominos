@@ -174,7 +174,7 @@ class DominoWorld(tkDominoBoard):
             )
 
 
-def main():
+def main(human_wants_to_play: bool = True):
     print("Enter 1 to play 100 computer vs. computer games.")
     print("Enter 2 to play 1 human vs. computer game.")
     games_to_play = 2  # ask_number_from_one_to(2)
@@ -194,4 +194,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    main(bool(not sys.argv[1:]))  # any param will force a computer-vs.-computer game
