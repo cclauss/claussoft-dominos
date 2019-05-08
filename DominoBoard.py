@@ -128,7 +128,7 @@ class DominoBoard:
 
     def fill_canvas(self, inCanvas: List[List[str]]) -> None:
         for theDomino in self.played_dominos:
-            theDomino.fillCanvas(inCanvas)
+            theDomino.fill_canvas(inCanvas)
 
     @property
     def location_list(self):

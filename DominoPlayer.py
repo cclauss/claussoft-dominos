@@ -100,7 +100,7 @@ class DominoPlayer(object):
             return
         self.points -= self.board.get_points
         theDomino = self.board.played_dominos.pop()
-        theDomino.notifyNeighborsOfUndo()
+        theDomino.notify_neighbors_of_undo()
         self.dominos.append(theDomino.domino)
 
     def get_fresh_copy(self, older_domino):
@@ -137,7 +137,7 @@ class DominoPlayer(object):
             older_domino = self.get_fresh_copy(
                 older_domino
             )  # the toughest bug to find!!
-            domino = older_domino.newNeighbor(self, newer_domino)
+            domino = older_domino.new_neighbor(self, newer_domino)
         else:  # firstPlayedDomino
             domino = PlayedDomino(self, newer_domino)
         self.board.played_dominos.append(domino)
@@ -264,7 +264,7 @@ class DominoPlayer(object):
 
     def best_run_for_domino_and_neighbor(self, in_domino, neighbor):
         if neighbor:
-            domino = neighbor.newNeighbor(self, in_domino)
+            domino = neighbor.new_neighbor(self, in_domino)
         else:
             domino = PlayedDomino(self, in_domino)
         best_score_and_run = [0, []]  # run is a list of DominoRunMoves
@@ -279,7 +279,7 @@ class DominoPlayer(object):
             if score_and__run[0] > best_score_and_run[0]:
                 best_score_and_run[0] = score_and__run[0]
                 best_score_and_run[1] = run + score_and__run[1]
-        self.board.played_dominos.pop().notifyNeighborsOfUndo()
+        self.board.played_dominos.pop().notify_neighbors_of_undo()
         return best_score_and_run
 
 
