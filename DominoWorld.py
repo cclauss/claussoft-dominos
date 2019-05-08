@@ -2,10 +2,12 @@
 
 
 # from itertools import combinations_with_replacement
+import sys
+import tkinter as tk
+
 from os import getenv
 from random import shuffle
 from typing import List
-import tkinter as tk
 
 # from sys import argv
 # from ask_number_from_one_to import ask_number_from_one_to
@@ -95,6 +97,8 @@ class DominoWorld(tkDominoBoard):
                 player.dominos = []
         self.whose_turn_minor += 1
         self.update_ui()
+        if not getenv("TRAVIS"):
+            sys.sleep(0.5)
 
     def playAHand(self):
         self.whose_turn_minor = self.whose_turn_major
@@ -194,6 +198,4 @@ def main(human_wants_to_play: bool = True):
 
 
 if __name__ == "__main__":
-    import sys
-
     main(bool(not sys.argv[1:]))  # any param will force a computer-vs.-computer game
