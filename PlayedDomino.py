@@ -17,7 +17,8 @@ import tkinter as tk
 # udOtherDoubleOffset
 from random import choice
 from typing import List, Optional
-from DominoPlayer import DominoPlayer
+
+# from DominoPlayer import DominoPlayer
 
 # print(argv)
 LEFT, RIGHT, UP, DOWN = range(4)
@@ -64,12 +65,12 @@ TK_OFFSETS = {
 class PlayedDomino(object):
     def __init__(
         self,
-        player: DominoPlayer,
+        player,
         domino,
         neighbor: Optional["PlayedDomino"] = None,
         direction: int = LEFT,
     ) -> None:
-        self.player: DominoPlayer = player
+        self.player = player
         self.domino = domino
         self.location: List[int] = [0, 0]
         self.tk_location: List[int] = [0, 0]
@@ -181,7 +182,7 @@ class PlayedDomino(object):
             )
         )
 
-    def new_neighbor(self, player: DominoPlayer, domino: List[int]) -> "PlayedDomino":
+    def new_neighbor(self, player, domino: List[int]) -> "PlayedDomino":
         playable_directions = self.playable_directions
         assert playable_directions
         if self.is_double:
