@@ -117,6 +117,7 @@ def demo_play():
     draw_domino(window, [3, 1], tk.HORIZONTAL).grid(row=4, column=9)
     draw_domino(window, [5, 6], tk.VERTICAL).grid(row=0, column=5)
     draw_domino(window, [6, 4], tk.VERTICAL).grid(row=6, column=5)
+    window.lift()
 
 
 if __name__ == "__main__":
@@ -140,4 +141,5 @@ if __name__ == "__main__":
                 #    theOrientation = tk.HORIZONTAL
                 # drawDomino(root, [i, j], theOrientation).grid(row=theRow, column=theColumn)
     demo_play()
+    root.lower()  # put demo on top
     root.mainloop()

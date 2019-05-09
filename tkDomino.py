@@ -18,11 +18,11 @@ def init_dominos(max_die: int = 6) -> List[List[int]]:
 
 
 def build_a_domino(
-    inMaster: tk.Frame, inName: str = "[5, 6]", inOrientation=tk.VERTICAL
+    master: tk.Frame, name: str = "[5, 6]", orientation=tk.VERTICAL
 ) -> tk.Canvas:
-    domino = eval(inName)
+    domino = eval(name)
     assert len(domino) == 2
-    return draw_domino(inMaster, domino, inOrientation)
+    return draw_domino(master, domino, orientation)
 
 
 class tkDomino(Draggable):
@@ -31,21 +31,25 @@ class tkDomino(Draggable):
     def __init__(self, domino=[5, 6]) -> None:
         self.domino = domino
         self.name = str(self.domino).replace(" ", "")
-        self.orientation = tk.VERTICAL
-        Draggable.__init__(self, self.orientation)
+        self.orientation = tk.HORIZONTAL  # tk.VERTICAL
+        Draggable.__init__(self, self.name, self.orientation)
+        # self.canvas = build_a_domino(self, self.name, self.orientation)
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: "tkDomino") -> bool:
         return self.domino < other.domino
 
 
 class tkDominoBoard(ttk.Frame):
     """GUI Domino Board as a ttk.Frame that uses Tkdnd to support drag and drop"""
 
-    def __init__(self, inMaster=None, inWidth: int = 1920, inHeight: int = 0) -> None:
+    def __init__(
+        self, master: tk.Toplevel = None, width: int = 1920, height: int = 0
+    ) -> None:
+        print(isinstance(master, tk.Toplevel))
         NSEW = (tk.N, tk.S, tk.E, tk.W)
-        inHeight = inHeight or int(9 / 16 * inWidth)  # HiDef aspect ratio is 9/16
+        height = height or int(9 / 16 * width)  # HiDef aspect ratio is 9/16
         # super(tkDominoBoard, self).__init__()
-        ttk.Frame.__init__(self, inMaster, width=inWidth, height=inHeight)
+        ttk.Frame.__init__(self, master, width=width, height=height)
         self.grid(sticky=NSEW)
         self.drop_zone_boneyard = None
         self.drop_zone_play_area = None
@@ -139,7 +143,6 @@ class SampleApp(tk.Tk):
         shuffle(self.dominos)
         shuffle(self.dominos)
         shuffle(self.dominos)
-        # shuffle(shuffle(shuffle(self.dominos)))
         d = 0  # start with the first domino.
         for player in [
             self.domino_board.drop_zone_player0,
@@ -149,7 +152,7 @@ class SampleApp(tk.Tk):
                 domino.attach(player)
             d += dominos_per_player
         for domino in self.dominos[d:]:
-            domino.mOrientation = tk.HORIZONTAL
+            domino.orientation = tk.HORIZONTAL
             domino.attach(self.domino_board.drop_zone_boneyard)
 
 

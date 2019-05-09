@@ -127,8 +127,8 @@ class DominoBoard:
                 d.tk_location[1] += vOffset
 
     def fill_canvas(self, inCanvas: List[List[str]]) -> None:
-        for theDomino in self.played_dominos:
-            theDomino.fill_canvas(inCanvas)
+        for domino in self.played_dominos:
+            domino.fill_canvas(inCanvas)
 
     @property
     def location_list(self):
