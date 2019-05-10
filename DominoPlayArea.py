@@ -8,25 +8,32 @@
 # from drawDomino import drawDomino
 # from tkDomino import tkDominoBoard
 from typing import List, Tuple
+from DominoBoard import DominoBoard
 from PlayedDomino import PlayedDomino
 
+""" Removed:
+pick_from_boneyard
+get_fresh_copy
+"""
 
-class DominoBoard:
-    def __init__(self, max_die: int = 6):
-        self.max_die = max_die
-        self.boneyard: List = []
-        self.played_dominos: List = []
+
+class DominoPlayArea:
+    def __init__(self, domino_board: DominoBoard):
+        self.domino_board = domino_board
+        self.played_dominos: List[PlayedDomino] = []
 
     def __str__(self):
-        s = "{} dominos in {} = {}\nPlayable numbers: {}, value = {}\n{}"
-        return s.format(
-            len(self.boneyard),
-            "Boneyard",
-            self.boneyard,
-            self.playable_numbers,
-            self.get_value,
-            self.played_dominos,
+        return (
+            f"Playable numbers: {self.playable_numbers}, value = {self.get_value}\n"
+            f"{self.played_dominos}"
         )
+
+    def refresh(self, played_dominos: List[PlayedDomino]) -> int:
+        self.played_dominos = played_dominos
+        self.print_played_dominos()
+        self.set_tk_locations()
+        print(self)  # TODO: Remove this in production
+        return self.get_value
 
     @property
     def get_value(self) -> int:
@@ -37,15 +44,10 @@ class DominoBoard:
         value = self.get_value
         return 0 if value % 5 else value // 5
 
-    def pick_from_boneyard(self):
-        # not clear what the rule is for other values of self.max_die
-        bones_available = len(self.boneyard) > (2 if self.max_die == 6 else 0)
-        return self.boneyard.pop() if bones_available else None
-
     @property
     def playable_numbers(self) -> List[int]:
         if not self.played_dominos:
-            return list(range(self.max_die + 1))
+            return list(range(self.domino_board.max_die + 1))
         number_list: List = []  # adding lists, not .append()
         for d in self.played_dominos:
             number_list += d.playable_numbers
@@ -68,63 +70,53 @@ class DominoBoard:
                 return True
         return False
 
-    def get_fresh_copy(self, in_older_domino):
-        if in_older_domino in self.played_dominos:
-            # print('freshCopy NOT required')
-            return in_older_domino
-        print("freshCopy WAS required")
-        for d in self.played_dominos:
-            if d.domino == in_older_domino.domino:
-                return d
-        assert True
-
     def set_locations(self):
         if not self.played_dominos:
             return
-        for d in self.played_dominos:
-            d.location = None
+        for domino in self.played_dominos:
+            domino.location = None
         self.played_dominos[0].location = [0, 0]
         horiz = []
         verts = []
-        for d in self.played_dominos:
-            if not d.location:  # for all but firstPlayedDomino
-                d.set_location()
-            horiz.append(d.location[0])
-            verts.append(d.location[1])
+        for domino in self.played_dominos:
+            if not domino.location:  # for all but firstPlayedDomino
+                domino.set_location()
+            horiz.append(domino.location[0])
+            verts.append(domino.location[1])
         assert min(horiz) < 1
         assert min(verts) < 1
-        hOffset = abs(min(horiz))
-        vOffset = abs(min(verts))
-        if hOffset or vOffset:
-            for d in self.played_dominos:
-                d.location[0] += hOffset
-                d.location[1] += vOffset
-        canvasDimensions = tuple(
+        h_offset = abs(min(horiz))
+        v_offset = abs(min(verts))
+        if h_offset or v_offset:
+            for domino in self.played_dominos:
+                domino.location[0] += h_offset
+                domino.location[1] += v_offset
+        dimensions = tuple(
             [(max(horiz) - min(horiz)) + 5, (max(verts) - min(verts)) + 3]
         )
-        return build_canvas(canvasDimensions)
+        return build_canvas(dimensions)
 
     def set_tk_locations(self):
         if not self.played_dominos:
             return
-        for d in self.played_dominos:
-            d.tk_location = None
+        for domino in self.played_dominos:
+            domino.tk_location = None
         self.played_dominos[0].tk_location = [0, 0]
         horiz = []
         verts = []
-        for d in self.played_dominos:
-            if not d.tk_location:  # for all but firstPlayedDomino
-                d.set_tk_location()
-            horiz.append(d.tk_location[0])
-            verts.append(d.tk_location[1])
+        for domino in self.played_dominos:
+            if not domino.tk_location:  # for all but firstPlayedDomino
+                domino.set_tk_location()
+            horiz.append(domino.tk_location[0])
+            verts.append(domino.tk_location[1])
         assert min(horiz) < 1
         assert min(verts) < 1
-        hOffset = abs(min(horiz))
-        vOffset = abs(min(verts))
-        if hOffset or vOffset:
-            for d in self.played_dominos:
-                d.tk_location[0] += hOffset
-                d.tk_location[1] += vOffset
+        h_offset = abs(min(horiz))
+        v_offset = abs(min(verts))
+        if h_offset or v_offset:
+            for domino in self.played_dominos:
+                domino.tk_location[0] += h_offset
+                domino.tk_location[1] += v_offset
 
     def fill_canvas(self, inCanvas: List[List[str]]) -> None:
         for domino in self.played_dominos:
@@ -164,6 +156,21 @@ def print_canvas(canvas: Tuple[List[str]]) -> None:
 
 
 if __name__ == "__main__":
-    from DominoWorld import main
+    # from DominoWorld import main
+    # main()
+    LEFT, RIGHT, UP, DOWN = range(4)
+    from DominoPlayer import DominoPlayer
 
-    main()
+    board = DominoBoard(max_die=6)
+    player = DominoPlayer("test dummy", board)
+    played_dominos = [PlayedDomino(player, [6, 4])]
+    play_area = DominoPlayArea(board)
+    play_area.refresh(played_dominos)
+    played_dominos.append(PlayedDomino(player, [6, 6], played_dominos[0], LEFT))
+    play_area.refresh(played_dominos)
+    played_dominos.append(PlayedDomino(player, [4, 3], played_dominos[0], RIGHT))
+    play_area.refresh(played_dominos)
+    played_dominos.append(PlayedDomino(player, [2, 6], played_dominos[1], LEFT))
+    play_area.refresh(played_dominos)
+    played_dominos.append(PlayedDomino(player, [5, 6], played_dominos[0], UP))
+    play_area.refresh(played_dominos)

@@ -220,7 +220,7 @@ class PlayedDomino(object):
     def domino_and_loc_and_neighbors(self) -> str:
         return f"{self.domino} @ {self.location} n: {self.neighbors_as_string}"
 
-    def setLocation(self) -> None:
+    def set_location(self) -> None:
         for i, neighbor in enumerate(self.neighbors):
             if neighbor and neighbor.location:
                 self.location = neighbor.get_offset(self, opposite_direction(i))
