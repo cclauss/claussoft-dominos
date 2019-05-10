@@ -7,11 +7,11 @@ from typing import List
 
 
 def on_mouse_down_in_die(event):
-    print("on_mouse_down_in_die:", (event.x, event.x), event.widget)
+    print("on_mouse_down_in_die:", (event.x, event.y), event.widget)
 
 
 # The locations of the dots on a 3x3 grid.
-pip_locations: List = [
+pip_locations: List[List[List[int]]] = [
     [[]],
     [[1, 1]],
     [[0, 0], [2, 2]],
@@ -22,73 +22,70 @@ pip_locations: List = [
 ]
 
 
-def pip_canvas(in_canvas, outline_color: str = "blue", fill_color: str = "gray"):
+def pip_canvas(in_canvas, outline: str = "blue", fill: str = "gray") -> tk.Canvas:
     canvas = tk.Canvas(in_canvas, width=13, height=13)
-    canvas.create_oval(3, 3, 13, 13, outline=outline_color, fill=fill_color)
+    canvas.create_oval(3, 3, 13, 13, outline=outline, fill=fill)
     return canvas
 
 
 def draw_pip_in_grid(
-    in_canvas,
-    location: List[int],
-    outline_color: str = "blue",
-    fill_color: str = "gray",
-):
-    pip_canvas(in_canvas, outline_color, fill_color).grid(
+    in_canvas, location: List[int], outline: str = "blue", fill: str = "gray"
+) -> tk.Canvas:
+    return pip_canvas(in_canvas, outline, fill).grid(
         row=location[0], column=location[1]
     )
 
 
 def draw_die(
-    in_canvas, die: int = 6, outline_color: str = "blue", fill_color: str = "gray"
-):
+    in_canvas, die: int = 6, outline: str = "blue", fill: str = "gray"
+) -> tk.Canvas:
     canvas = tk.Canvas(in_canvas)
-    if die in [0, 1]:  # draw invisible pips to correct grid spacing
+    if die in (0, 1):  # draw invisible pips to correct grid spacing
         for location in pip_locations[2]:
             draw_pip_in_grid(canvas, location, "white", "")
-    if die in [0, 2, 4, 6]:  # draw invisible pips to correct grid spacing
+    if die in (0, 2, 4, 6):  # draw invisible pips to correct grid spacing
         for location in pip_locations[1]:
             draw_pip_in_grid(canvas, location, "white", "")
     for location in pip_locations[die]:
         if location:
-            draw_pip_in_grid(canvas, location, outline_color, fill_color)
+            draw_pip_in_grid(canvas, location, outline, fill)
     in_canvas.bind("<ButtonPress>", on_mouse_down_in_die)
     canvas.bind("<ButtonPress>", on_mouse_down_in_die)
     return canvas
 
 
-def draw_the_domino_divider(
-    in_canvas, orientation=tk.HORIZONTAL, inFillColor: str = "gray"
-):
+def draw_domino_divider(
+    in_canvas, orientation=tk.HORIZONTAL, fill: str = "gray"
+) -> tk.Canvas:
     # return ttk.Separator(in_canvas, orient=orientation)
     if orientation == tk.HORIZONTAL:
         canvas = tk.Canvas(in_canvas, width=1, height=51)
-        canvas.create_rectangle(2, 5, 3, 50, fill=inFillColor)
+        canvas.create_rectangle(2, 5, 3, 50, fill=fill)
     else:
         canvas = tk.Canvas(in_canvas, width=51, height=1)
-        canvas.create_rectangle(5, 2, 50, 3, fill=inFillColor)
+        canvas.create_rectangle(5, 2, 50, 3, fill=fill)
     return canvas
 
 
 def draw_domino(
     in_canvas,
     domino: List[int] = [5, 6],
-    orientation=tk.HORIZONTAL,
-    outline_color: str = "blue",
-    fill_color: str = "gray",
-):
+    orientation: str = tk.HORIZONTAL,
+    outline: str = "blue",
+    fill: str = "gray",
+) -> tk.Canvas:
     canvas = tk.Canvas(in_canvas)
-    frame = tk.Frame(canvas, bd=4, bg=outline_color, relief=tk.GROOVE)
+    frame = tk.Frame(canvas, bd=4, bg=outline, relief=tk.GROOVE)
     frame.grid()  # pack(fill=tk.BOTH, padx=1, pady=1)
 
     if orientation == tk.HORIZONTAL:
         draw_die(frame, domino[0]).grid(row=0, column=0)
-        draw_the_domino_divider(frame, orientation).grid(row=0, column=1)
+        draw_domino_divider(frame, orientation).grid(row=0, column=1)
         draw_die(frame, domino[1]).grid(row=0, column=2)
         canvas.grid(columnspan=3)
     else:
         draw_die(frame, domino[0]).grid(row=0, column=0)
-        draw_the_domino_divider(frame, orientation).grid(row=1, column=0)
+        draw_domino_divider(frame, orientation).grid(row=1, column=0)
         draw_die(frame, domino[1]).grid(row=2, column=0)
         canvas.grid(rowspan=3)
     return canvas
@@ -107,7 +104,7 @@ junk = """
 """  # noqa: F841
 
 
-def demo_play():
+def demo_play() -> None:
     window = tk.Toplevel()
     window.title("demo_play")
     draw_domino(window, [6, 6], tk.VERTICAL).grid(row=3, column=5)

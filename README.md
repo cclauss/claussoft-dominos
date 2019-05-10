@@ -1,12 +1,13 @@
 # Claussoft Dominos from Claussoft International
-Racehorse dominos
+[__Racehorse dominos__](http://www.dominorules.com/racehorse)
 
 Rules:
 * Each player is initially dealt a hand of 7 dominos
+* The remaining dominos go face down in the boneyard
 * Dominos can only be played against matching numbers
-* If no domino in a player's hand matches an outside domino then the player must take a domino from the boneyard until one can play or until the boneyard only has two dominos
-* If all outside dominos add up to a multiple of 5 then the player gets points and goes again
-* If the player plays doubles they get to go again.  Note: Doubles are played sideways and count 2x.
+* If no domino in a player's hand matches an outside domino then the player must take a domino from the boneyard until a domino can play or until the boneyard only has two dominos left
+* If all outside dominos add up to a multiple of 5 then the player gets points (sum // 5) and goes again
+* If the player plays doubles, they get to go again.  Note: Doubles are played sideways and when exposed count 2x.
 * The player who has no dominos gets all points on the other player's dominos // 5
 * First player to 30 points wins the match
 
@@ -28,7 +29,7 @@ RECAP:playARun() run length: 6
 3 Playing [4, 3] on [4, 4] 1.0 points, go again...
 4 Playing [4, 5] on [4, 4] 2.0 points, go again...
 5 Playing [3, 3] on [4, 3] is a double, go again...
-6 Playing [6, 2] on [2, 5] 
+6 Playing [6, 2] on [2, 5]
 Player 1 has 1 dominos, 9.0 points, 10 go agains, 1 hands and 0 games won.
 ```
 
