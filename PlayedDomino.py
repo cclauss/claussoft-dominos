@@ -16,7 +16,7 @@ import tkinter as tk
 # from PrintableDomino import lrNoDoublesOffset, lrMeDoubleOffset, lrOtherDoubleOffset, udNoDoublesOffset, udMeDoubleOffset,
 # udOtherDoubleOffset
 from random import choice
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 # from DominoPlayer import DominoPlayer
 
@@ -97,6 +97,19 @@ class PlayedDomino(object):
             self.played_value,
             self.neighbors,
         )
+
+    @property
+    def two_str(self) -> str:
+        """For domino (5, 6), return '56'"""
+        return "{}{}".format(*self.domino)
+
+    @property
+    def as_dict(self) -> Dict[str, Dict[str, str]]:
+        """Return {self.two_str: dict of all neighbors plus orientation}"""
+        keys = "left right up down".split()
+        d = {key: n.two_str for key, n in zip(keys, self.neighbors) if n}
+        d["orientation"] = self.orientation
+        return {self.two_str: d}
 
     @property
     def is_double(self) -> bool:

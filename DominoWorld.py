@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
-
 # from itertools import combinations_with_replacement
-import tkinter as tk
-
+from datetime import datetime as dt
 from os import getenv
 from random import shuffle
+import tkinter as tk
 
 # from time import sleep
-from typing import List
+from typing import Dict, List
+
+import toml
 
 # from sys import argv
 # from ask_number_from_one_to import ask_number_from_one_to
@@ -32,11 +33,19 @@ def pointsRounded(value: int, n: int = 5) -> int:
     return int(round((value + n // 2) // n))
 
 
+def dump_to_toml_file(data: Dict, filepath: str = "") -> None:
+    if not data or not toml:
+        return
+    filepath = filepath or f"dominos_{dt.today():%Y_%m_%d_%H_%M_%S}.toml"
+    with open(filepath, "w") as out_file:
+        toml.dump(data, out_file)
+
+
 class DominoWorld(tkDominoBoard):
     def __init__(self, max_die: int = 6, inNumberOfPlayers: int = 2):
         super().__init__()  # start up tkinter
         self.dominos = init_dominos(max_die)
-        assert len(self.dominos) == 28
+        assert len(self.dominos) == 28  # a few quick sanity checks
         assert all(self.dominos.count(d) == 1 for d in self.dominos), self.dominos
         assert len(self.dominos) == len(set(str(d) for d in self.dominos)), self.dominos
         self.board = DominoBoard(max_die)
@@ -121,6 +130,10 @@ class DominoWorld(tkDominoBoard):
                 player.hands_won += 1
                 break
         print()
+        domino_dicts = {}
+        for domino in self.board.played_dominos:
+            domino_dicts.update(domino.as_dict)
+        dump_to_toml_file(domino_dicts)
         winner = self.checkForWinner()
         if winner and winner != -1:
             print("=" * 10 + " NEW HAND " + "=" * 10)
