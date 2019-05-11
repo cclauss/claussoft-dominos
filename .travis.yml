@@ -15,6 +15,7 @@ before_script:
 script:
   - vulture *.py || true
   - ./DominoWorld.py  # Play some computer vs. computer games
+  - ls *.toml || true
   #- monkeytype run DominoWorld.py  # Play some computer vs. computer games
   #- monkeytype list-modules
   #- monkeytype stub --diff DominoBoard
