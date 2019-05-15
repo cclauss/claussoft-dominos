@@ -7,15 +7,21 @@ services:
   - xvfb
 install:
   # - pip install -r requirements.txt
-  - pip install black flake8 mypy vulture  # MonkeyType
+  - pip install black flake8 mypy
+  - pip install graphviz pycallgraph
+  #- pip install vulture
+  #- pip install MonkeyType
 before_script:
   - black . --check
-  - flake8 . --count --ignore=E203,W503 --max-complexity=10 --max-line-length=127 --show-source --statistics
+  - flake8 . --count --ignore=E203,W503 --max-complexity=10 --max-line-length=88 --show-source --statistics
   - mypy .
 script:
-  - vulture *.py || true
-  - ./DominoWorld.py  # Play some computer vs. computer games
+  - pycallgraph graphviz -- ./DominoWorld.py  # Play some computer vs. computer games
+
+  #- vulture *.py || true
+  # - ./DominoWorld.py  # Play some computer vs. computer games
   - ls *.toml || true
+
   #- monkeytype run DominoWorld.py  # Play some computer vs. computer games
   #- monkeytype list-modules
   #- monkeytype stub --diff DominoBoard
