@@ -29,12 +29,12 @@ class DominoBoard:
         )
 
     @property
-    def get_value(self) -> int:
+    def z_get_value(self) -> int:
         return sum(d.played_value for d in self.played_dominos)
 
     @property
-    def get_points(self) -> int:
-        value = self.get_value
+    def z_get_points(self) -> int:
+        value = self.z_get_value
         return 0 if value % 5 else value // 5
 
     def pick_from_boneyard(self):
@@ -43,7 +43,7 @@ class DominoBoard:
         return self.boneyard.pop() if bones_available else None
 
     @property
-    def playable_numbers(self) -> List[int]:
+    def z_playable_numbers(self) -> List[int]:
         if not self.played_dominos:
             return list(range(self.max_die + 1))
         number_list: List = []  # adding lists, not .append()
@@ -51,7 +51,7 @@ class DominoBoard:
             number_list += d.playable_numbers
         return sorted(set(number_list))
 
-    def playable_dominos(self, domino: List[int]) -> List[PlayedDomino]:
+    def z_playable_dominos(self, domino: List[int]) -> List[PlayedDomino]:
         playable_dominos = []  # Python 3.8 walrus operator might help here
         for d in self.played_dominos:
             pn = d.playable_numbers
@@ -59,7 +59,7 @@ class DominoBoard:
                 playable_dominos.append(d)
         return playable_dominos
 
-    def is_domino_playable(self, domino: List[int]) -> bool:
+    def z_is_domino_playable(self, domino: List[int]) -> bool:
         if not self.played_dominos:
             return True  # on an empty board, all dominos are playable
         for d in self.played_dominos:
@@ -78,7 +78,7 @@ class DominoBoard:
                 return d
         assert True
 
-    def set_locations(self):
+    def z_set_locations(self):
         if not self.played_dominos:
             return
         for d in self.played_dominos:
@@ -102,9 +102,9 @@ class DominoBoard:
         canvasDimensions = tuple(
             [(max(horiz) - min(horiz)) + 5, (max(verts) - min(verts)) + 3]
         )
-        return build_canvas(canvasDimensions)
+        return z_build_canvas(canvasDimensions)
 
-    def set_tk_locations(self):
+    def z_set_tk_locations(self):
         if not self.played_dominos:
             return
         for d in self.played_dominos:
@@ -126,26 +126,26 @@ class DominoBoard:
                 d.tk_location[0] += hOffset
                 d.tk_location[1] += vOffset
 
-    def fill_canvas(self, inCanvas: List[List[str]]) -> None:
+    def z_fill_canvas(self, inCanvas: List[List[str]]) -> None:
         for domino in self.played_dominos:
             domino.fill_canvas(inCanvas)
 
     @property
-    def location_list(self):
+    def z_location_list(self):
         return [d.location for d in self.played_dominos]
 
-    def print_played_dominos(self):
+    def z_print_played_dominos(self):
         if not self.played_dominos:
             return
         canvas = self.set_locations()
         self.fill_canvas(canvas)
-        print_canvas(tuple(canvas))
+        z_print_canvas(tuple(canvas))
         del canvas
         s = "Playable: {}, Value: {}"
         print(s.format(self.playable_numbers, self.get_value))
 
 
-def build_canvas(dimensions: Tuple[int, int]) -> List[List[str]]:
+def z_build_canvas(dimensions: Tuple[int, int]) -> List[List[str]]:
     canvas: List = []
     for j in range(dimensions[1] + 5):
         canvas.append([])
@@ -154,7 +154,7 @@ def build_canvas(dimensions: Tuple[int, int]) -> List[List[str]]:
     return canvas
 
 
-def print_canvas(canvas: Tuple[List[str]]) -> None:
+def z_print_canvas(canvas: Tuple[List[str]]) -> None:
     lines = ["".join(line).rstrip() for line in canvas]
     longest_line = max(len(line) for line in lines)
     border = "=" * longest_line
