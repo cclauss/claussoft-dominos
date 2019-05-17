@@ -9,6 +9,7 @@
 # from tkDomino import tkDominoBoard
 from typing import List, Tuple
 from PlayedDomino import PlayedDomino
+from DominoPlayArea import DominoPlayArea
 
 
 class DominoBoard:
@@ -16,6 +17,7 @@ class DominoBoard:
         self.max_die = max_die
         self.boneyard: List = []
         self.played_dominos: List = []
+        self.play_area = DominoPlayArea(self)
 
     def __str__(self):
         s = "{} dominos in {} = {}\nPlayable numbers: {}, value = {}\n{}"
@@ -30,12 +32,14 @@ class DominoBoard:
 
     @property
     def z_get_value(self) -> int:
-        return sum(d.played_value for d in self.played_dominos)
+        return self.play_area.get_value
+        # return sum(d.played_value for d in self.played_dominos)
 
     @property
     def z_get_points(self) -> int:
-        value = self.z_get_value
-        return 0 if value % 5 else value // 5
+        return self.play_area.get_points
+        # value = self.z_get_value
+        #  return 0 if value % 5 else value // 5
 
     def pick_from_boneyard(self):
         # not clear what the rule is for other values of self.max_die
@@ -44,22 +48,30 @@ class DominoBoard:
 
     @property
     def z_playable_numbers(self) -> List[int]:
+        return self.play_area.playable_numbers
+        """
         if not self.played_dominos:
             return list(range(self.max_die + 1))
         number_list: List = []  # adding lists, not .append()
         for d in self.played_dominos:
             number_list += d.playable_numbers
         return sorted(set(number_list))
+        """
 
     def z_playable_dominos(self, domino: List[int]) -> List[PlayedDomino]:
+        return self.play_area.playable_dominos(domino)
+        """
         playable_dominos = []  # Python 3.8 walrus operator might help here
         for d in self.played_dominos:
             pn = d.playable_numbers
             if domino[0] in pn or domino[1] in pn:
                 playable_dominos.append(d)
         return playable_dominos
+        """
 
     def z_is_domino_playable(self, domino: List[int]) -> bool:
+        return self.play_area.is_domino_playable(domino)
+        """
         if not self.played_dominos:
             return True  # on an empty board, all dominos are playable
         for d in self.played_dominos:
@@ -67,6 +79,7 @@ class DominoBoard:
             if domino[0] in pn or domino[1] in pn:
                 return True
         return False
+        """
 
     def get_fresh_copy(self, in_older_domino):
         if in_older_domino in self.played_dominos:
@@ -79,6 +92,8 @@ class DominoBoard:
         assert True
 
     def z_set_locations(self):
+        return self.play_area.set_locations()
+        """
         if not self.played_dominos:
             return
         for d in self.played_dominos:
@@ -103,8 +118,11 @@ class DominoBoard:
             [(max(horiz) - min(horiz)) + 5, (max(verts) - min(verts)) + 3]
         )
         return z_build_canvas(canvasDimensions)
+        """
 
     def z_set_tk_locations(self):
+        return self.play_area.set_tk_location()
+        """
         if not self.played_dominos:
             return
         for d in self.played_dominos:
@@ -125,16 +143,23 @@ class DominoBoard:
             for d in self.played_dominos:
                 d.tk_location[0] += hOffset
                 d.tk_location[1] += vOffset
+        """
 
     def z_fill_canvas(self, inCanvas: List[List[str]]) -> None:
+        return self.play_area.fill_canvas(inCanvas)
+        """
         for domino in self.played_dominos:
             domino.fill_canvas(inCanvas)
+        """
 
     @property
     def z_location_list(self):
-        return [d.location for d in self.played_dominos]
+        return self.play_area.location_list
+        # return [d.location for d in self.played_dominos]
 
     def z_print_played_dominos(self):
+        return self.play_area.print_played_dominos()
+        """
         if not self.played_dominos:
             return
         canvas = self.set_locations()
@@ -143,6 +168,7 @@ class DominoBoard:
         del canvas
         s = "Playable: {}, Value: {}"
         print(s.format(self.playable_numbers, self.get_value))
+        """
 
 
 def z_build_canvas(dimensions: Tuple[int, int]) -> List[List[str]]:
