@@ -3,22 +3,26 @@
 # from random import shuffle
 # from sys import argv
 # from ask_number_from_one_to import ask_number_from_one_to
-# import tkinter as tk
-# from PlayedDomino import printPlayedDominos
+
+
 # from drawDomino import drawDomino
 # from tkDomino import tkDominoBoard
 from typing import List, Tuple
-from PlayedDomino import PlayedDomino
 
-# from DominoPlayArea import DominoPlayArea
+from DominoPlayArea import DominoPlayArea
+
+# import tkinter as tk
+# from PlayedDomino import printPlayedDominos
+from PlayedDomino import PlayedDomino
 
 
 class DominoBoard:
     def __init__(self, max_die: int = 6):
         self.max_die = max_die
         self.boneyard: List = []
-        self.played_dominos: List = []
-        self.play_area = None  # DominoPlayArea(self)
+        #  self.played_dominos: List = []
+        self.play_area = None
+        self.play_area_x = DominoPlayArea(self)
 
     def __str__(self):
         s = "{} dominos in {} = {}\nPlayable numbers: {}, value = {}\n{}"
@@ -30,6 +34,10 @@ class DominoBoard:
             self.get_value,
             self.played_dominos,
         )
+
+    @property
+    def played_dominos(self) -> List:
+        return self.play_area_x.played_dominos  #  TODO: remove _x in play_area_x
 
     @property
     def get_value(self) -> int:

@@ -79,7 +79,8 @@ class DominoWorld(tkDominoBoard):
         assert sum(lengths) == len(self.dominos), (lengths, len(self.dominos))
 
     def deal(self, inDominosPerPlayer: int = 7):
-        self.board.played_dominos = []
+        #  self.board.played_dominos = []
+        self.board.play_area_x.played_dominos = []  # TODO: Remove _x
         for _ in range(3):
             shuffle(self.dominos)
         assert len(self.dominos) == 28
