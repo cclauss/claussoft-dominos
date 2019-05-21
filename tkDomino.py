@@ -66,41 +66,41 @@ class tkDominoBoard(ttk.Frame):
         NSEW = (tk.N, tk.S, tk.E, tk.W)
         # NEW = (tk.N, tk.E, tk.W)
 
-        theStyle = ttk.Style()
-        # theStyle.configure('TLabelframe', labelanchor=tk.N, borderwidth=2, relief=tk.RAISED)
-        # theStyle.configure('TLabelframe.TLabelframe', labelanchor=tk.N, borderwidth=2, relief=tk.RAISED)
+        style = ttk.Style()
+        # style.configure('TLabelframe', labelanchor=tk.N, borderwidth=2, relief=tk.RAISED)
+        # style.configure('TLabelframe.TLabelframe', labelanchor=tk.N, borderwidth=2, relief=tk.RAISED)
         # , borderwidth=9, relief=tk.RAISED)
-        theStyle.configure("TLabelframe.Label", foreground="dark blue")
+        style.configure("TLabelframe.Label", foreground="dark blue")
 
-        theLabelframe = ttk.Labelframe(self, text="Player 0", labelanchor=tk.N)
-        theLabelframe.grid(column=1, row=0, columnspan=8, sticky=NSEW)
+        labelframe = ttk.Labelframe(self, text="Player 0", labelanchor=tk.N)
+        labelframe.grid(column=1, row=0, columnspan=8, sticky=NSEW)
         self.drop_zone_player0 = DropTarget(
-            theLabelframe, width=128 * 8, height=128, bg_color="pink"
+            labelframe, width=128 * 8, height=128, bg_color="pink"
         )
 
-        theLabelframe = ttk.Labelframe(self, text="Player 1", labelanchor=tk.N)
-        theLabelframe.grid(column=1, row=9, columnspan=8, sticky=NSEW)
+        labelframe = ttk.Labelframe(self, text="Player 1", labelanchor=tk.N)
+        labelframe.grid(column=1, row=9, columnspan=8, sticky=NSEW)
         self.drop_zone_player1 = DropTarget(
-            theLabelframe, width=128 * 8, height=128, bg_color="lightblue"
+            labelframe, width=128 * 8, height=128, bg_color="lightblue"
         )
 
-        theLabelframe = ttk.Labelframe(self, text="Boneyard", labelanchor=tk.N)
-        theLabelframe.grid(column=0, row=1, rowspan=8, sticky=NSEW)
+        labelframe = ttk.Labelframe(self, text="Boneyard", labelanchor=tk.N)
+        labelframe.grid(column=0, row=1, rowspan=8, sticky=NSEW)
         self.drop_zone_boneyard = DropTarget(
-            theLabelframe, width=128, height=464, bg_color="lightyellow"
+            labelframe, width=128, height=464, bg_color="lightyellow"
         )
 
-        theLabelframe = ttk.Labelframe(self, text="Score Board", labelanchor=tk.N)
-        theLabelframe.grid(column=9, row=1, rowspan=8, sticky=NSEW)
+        labelframe = ttk.Labelframe(self, text="Score Board", labelanchor=tk.N)
+        labelframe.grid(column=9, row=1, rowspan=8, sticky=NSEW)
         self.drop_zone_score_board = tk.Canvas(
-            theLabelframe, height=464, width=128, bg="lightgreen"
+            labelframe, height=464, width=128, bg="lightgreen"
         )
         self.drop_zone_score_board.grid()  # pack(fill=tk.BOTH, expand=tk.YES)
 
-        theLabelframe = ttk.Labelframe(self, text="Play Area", labelanchor=tk.N)
-        theLabelframe.grid(column=1, row=1, columnspan=8, sticky=NSEW)
+        labelframe = ttk.Labelframe(self, text="Play Area", labelanchor=tk.N)
+        labelframe.grid(column=1, row=1, columnspan=8, sticky=NSEW)
         self.drop_zone_play_area = DropTarget(
-            theLabelframe, width=128 * 8, height=464, bg_color="PeachPuff"
+            labelframe, width=128 * 8, height=464, bg_color="PeachPuff"
         )
 
 

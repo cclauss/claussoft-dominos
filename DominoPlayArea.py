@@ -8,7 +8,8 @@
 # from drawDomino import drawDomino
 # from tkDomino import tkDominoBoard
 from typing import List, Tuple
-from DominoBoard import DominoBoard
+
+# from DominoBoard import DominoBoard
 from PlayedDomino import PlayedDomino
 
 """ Removed:
@@ -18,7 +19,7 @@ get_fresh_copy
 
 
 class DominoPlayArea:
-    def __init__(self, domino_board: DominoBoard):
+    def __init__(self, domino_board: "DominoBoard"):
         self.domino_board = domino_board
         self.played_dominos: List[PlayedDomino] = []
 
@@ -156,6 +157,8 @@ def print_canvas(canvas: Tuple[List[str]]) -> None:
 
 
 if __name__ == "__main__":
+    from DominoBoard import DominoBoard
+
     # from DominoWorld import main
     # main()
     LEFT, RIGHT, UP, DOWN = range(4)

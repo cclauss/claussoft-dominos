@@ -16,6 +16,8 @@ import toml
 # from PlayedDomino import PlayedDomino
 from DominoPlayer import DominoPlayer
 from DominoBoard import DominoBoard
+
+# from DominoPlayArea import DominoPlayArea
 from drawDomino import draw_domino
 from tkDomino import tkDominoBoard
 
@@ -44,20 +46,29 @@ def dump_to_toml_file(data: Dict, filepath: str = "") -> None:
 class DominoWorld(tkDominoBoard):
     def __init__(self, max_die: int = 6, inNumberOfPlayers: int = 2):
         super().__init__()  # start up tkinter
+        # self.max_die = max_die
         self.dominos = init_dominos(max_die)
         assert len(self.dominos) == 28  # a few quick sanity checks
         assert all(self.dominos.count(d) == 1 for d in self.dominos), self.dominos
         assert len(self.dominos) == len(set(str(d) for d in self.dominos)), self.dominos
         self.board = DominoBoard(max_die)
+        #  self.boneyard: List = []
+        # self.play_area = DominoPlayArea(self)
+        # self.played_dominos: List = []
         self.players = [
             DominoPlayer(f"Player {i}", self.board) for i in range(inNumberOfPlayers)
         ]
+
         self.whose_turn_major = 0
         self.whose_turn_minor = 0
         self.games_ending_in_a_draw = 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "\n".join(str(player) for player in self.players)
+
+    # @property
+    # def play_area(self) -> DominoPlayArea:
+    #     return self.board.play_area
 
     def detect_counterfeits(self):
         """Verify the number of dominos are currently being held by

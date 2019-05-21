@@ -119,10 +119,10 @@ class LabeledDropTarget(DropTarget):
     def __init__(
         self, master, width: int = 101, height: int = 100, bg_color: str = "lightblue"
     ) -> None:
-        theLabelframe = ttk.Labelframe(master, text=width, labelanchor=tk.N)
-        theLabelframe.grid()
+        labelframe = ttk.Labelframe(master, text=width, labelanchor=tk.N)
+        labelframe.grid()
         DropTarget.__init__(
-            self, theLabelframe, width=height, height=height, bg_color=bg_color
+            self, labelframe, width=height, height=height, bg_color=bg_color
         )
 
 
