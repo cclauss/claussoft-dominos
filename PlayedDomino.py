@@ -13,8 +13,9 @@ import tkinter as tk
 
 # from sys import argv
 # from ask_number_from_one_to import ask_number_from_one_to
-# from PrintableDomino import lrNoDoublesOffset, lrMeDoubleOffset, lrOtherDoubleOffset, udNoDoublesOffset, udMeDoubleOffset,
-# udOtherDoubleOffset
+# from PrintableDomino import (lrNoDoublesOffset, lrMeDoubleOffset,
+#                              lrOtherDoubleOffset, udNoDoublesOffset,
+#                              udMeDoubleOffset, udOtherDoubleOffset)
 from random import choice
 from typing import Dict, List, Optional
 
@@ -147,9 +148,11 @@ class PlayedDomino(object):
         for theDirection in range(len(self.neighbors)):
             if self.neighbors[theDirection]:
                 oppDir = opposite_direction(theDirection)
-                # print('Notify Before:', self.neighbors[theDirection].neighbors_as_string)
+                # print('Notify Before:',
+                #       self.neighbors[theDirection].neighbors_as_string)
                 self.neighbors[theDirection].neighbors[oppDir] = None  # type: ignore
-                # print(' Notify After:', self.neighbors[theDirection].neighbors_as_string)
+                # print(' Notify After:',
+                #       self.neighbors[theDirection].neighbors_as_string)
 
     @property
     def playable_directions(self) -> List[int]:

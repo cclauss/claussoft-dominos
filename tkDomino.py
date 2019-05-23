@@ -67,8 +67,10 @@ class tkDominoBoard(ttk.Frame):
         # NEW = (tk.N, tk.E, tk.W)
 
         style = ttk.Style()
-        # style.configure('TLabelframe', labelanchor=tk.N, borderwidth=2, relief=tk.RAISED)
-        # style.configure('TLabelframe.TLabelframe', labelanchor=tk.N, borderwidth=2, relief=tk.RAISED)
+        # style.configure('TLabelframe', labelanchor=tk.N, borderwidth=2,
+        #                 relief=tk.RAISED)
+        # style.configure('TLabelframe.TLabelframe', labelanchor=tk.N, borderwidth=2,
+        #                 relief=tk.RAISED)
         # , borderwidth=9, relief=tk.RAISED)
         style.configure("TLabelframe.Label", foreground="dark blue")
 

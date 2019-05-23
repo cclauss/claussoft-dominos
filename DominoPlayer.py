@@ -32,7 +32,7 @@ class DominoPlayer(object):
         self.go_agains: int = 0
         self.hands_won: int = 0
         self.games_won: int = 0
-        self.player_is_human: bool = False  # assume humans are not interested in playing
+        self.player_is_human: bool = False  # assume humans are not interested to play
         # self.player_is_human = True
 
     def __str__(self):
@@ -218,7 +218,7 @@ class DominoPlayer(object):
         return self.play_a_run(run)
 
     def best_run(self):
-        """return the most valuable of an exhaustive series of lists of DominoRunMoves"""
+        """return the DominoRunMoves that has the highest value"""
         if not self.dominos:
             # going out with goAgain more valuable than not goAgain
             return [12, []]

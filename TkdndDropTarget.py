@@ -9,8 +9,8 @@ from drawDomino import draw_domino
 
 
 class DropTarget(tk.Canvas):
-    """DropTarget(inMaster, inWidth=100, inHeight=100, inBgColor='lightblue'): uses tkinter.dnd
-    to enable Draggables to be Drag and Dropped.
+    """DropTarget(inMaster, inWidth=100, inHeight=100, inBgColor='lightblue'):
+       uses tkinter.dnd to enable Draggables to be Drag and Dropped.
 
     See the somewhat confusing comments at the top of tkinter.dnd.py
     +---------------------------------------------------------+
@@ -96,7 +96,8 @@ class DropTarget(tk.Canvas):
             # print(self, child, 'arrange child i:', i)
             # .4453228272.4457567080.4457567152 1 arrange child i: 0
             # print(self.show_config())
-            # print('{} children in {}x{}'.format(len(self.children), self['width'], self.cget('height')))
+            # print('{} children in {}x{}'.format(len(self.children), self['width'],
+            #                                     self.cget('height')))
             # 1 children in 1024x128
             # print(self.configure('width, -height'))
 
@@ -146,9 +147,10 @@ def my_draw_routine(
 
 
 class Draggable(object):
-    """Draggable(inName): uses tkinter.dnd to enable the widget (self.widget_id) to be Drag and
-    Dropped into DropTargets.  attach() must be called to initially add your Draggable to
-    a DropTarget.  The widget will need to be modified to meet specific requirements.
+    """Draggable(inName): uses tkinter.dnd to enable the widget (self.widget_id) to be
+    Drag and Dropped into DropTargets.  attach() must be called to initially add your
+    Draggable to a DropTarget.  The widget will need to be modified to meet specific
+    requirements.
     """
 
     def __init__(self, name, orientation=tk.VERTICAL, draw_routine=my_draw_routine):
@@ -284,7 +286,8 @@ def main():
     #        i += 1
     #        print('voodooChild:', theChild.__class__, theChild.bbox())
     #        for theAttribute in sorted(theChild.configure()):
-    #            print('    {}: {}'.format(theAttribute, theChild.configure(theAttribute)))
+    #            print('    {}: {}'.format(theAttribute,
+    #                                      theChild.configure(theAttribute)))
     root.mainloop()
 
 
