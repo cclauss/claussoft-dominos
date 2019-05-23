@@ -136,7 +136,8 @@ if __name__ == "__main__":
                 #    theOrientation = tk.VERTICAL
                 # else:
                 #    theOrientation = tk.HORIZONTAL
-                # drawDomino(root, [i, j], theOrientation).grid(row=theRow, column=theColumn)
+                # drawDomino(root, [i, j], theOrientation).grid(row=theRow,
+                #                                               column=theColumn)
     demo_play()
     root.lower()  # put demo on top
     root.mainloop()
