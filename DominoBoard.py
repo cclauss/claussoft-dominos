@@ -22,7 +22,7 @@ class DominoBoard:
         self.boneyard: List = []
         #  self.played_dominos: List = []
         self.play_area = None
-        self.play_area_x = DominoPlayArea(self)
+        self.play_area_x = DominoPlayArea(max_die)
 
     def __str__(self):
         s = "{} dominos in {} = {}\nPlayable numbers: {}, value = {}\n{}"

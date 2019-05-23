@@ -19,8 +19,8 @@ get_fresh_copy
 
 
 class DominoPlayArea:
-    def __init__(self, domino_board: "DominoBoard"):
-        self.domino_board = domino_board
+    def __init__(self, max_die: int = 6):
+        self.max_die = max_die
         self.played_dominos: List[PlayedDomino] = []
 
     def __str__(self):
@@ -30,7 +30,8 @@ class DominoPlayArea:
         )
 
     def refresh(self, played_dominos: List[PlayedDomino]) -> int:
-        self.played_dominos = played_dominos
+        if played_dominos:  # played_dominos are now in the class
+            self.played_dominos = played_dominos
         self.print_played_dominos()
         self.set_tk_locations()
         print(self)  # TODO: Remove this in production
@@ -48,7 +49,7 @@ class DominoPlayArea:
     @property
     def playable_numbers(self) -> List[int]:
         if not self.played_dominos:
-            return list(range(self.domino_board.max_die + 1))
+            return list(range(self.max_die + 1))
         number_list: List = []  # adding lists, not .append()
         for d in self.played_dominos:
             number_list += d.playable_numbers
@@ -166,14 +167,31 @@ if __name__ == "__main__":
 
     board = DominoBoard(max_die=6)
     player = DominoPlayer("test dummy", board)
-    played_dominos = [PlayedDomino(player, [6, 4])]
-    play_area = DominoPlayArea(board)
-    play_area.refresh(played_dominos)
-    played_dominos.append(PlayedDomino(player, [6, 6], played_dominos[0], LEFT))
-    play_area.refresh(played_dominos)
-    played_dominos.append(PlayedDomino(player, [4, 3], played_dominos[0], RIGHT))
-    play_area.refresh(played_dominos)
-    played_dominos.append(PlayedDomino(player, [2, 6], played_dominos[1], LEFT))
-    play_area.refresh(played_dominos)
-    played_dominos.append(PlayedDomino(player, [5, 6], played_dominos[0], UP))
-    play_area.refresh(played_dominos)
+    play_area = DominoPlayArea(max_die=6)
+    play_area.refresh([])
+    # print(play_area)
+    play_area.played_dominos.append(PlayedDomino(player, [6, 4]))
+    play_area.refresh([])
+    # print(play_area)
+    play_area.played_dominos.append(
+        PlayedDomino(player, [6, 6], play_area.played_dominos[0], LEFT)
+    )
+    play_area.refresh([])
+    # print(play_area)
+    play_area.played_dominos.append(
+        PlayedDomino(player, [4, 3], play_area.played_dominos[0], RIGHT)
+    )
+    # play_area.refresh(played_dominos)
+    play_area.refresh([])
+    # print(play_area)
+    play_area.played_dominos.append(
+        PlayedDomino(player, [2, 6], play_area.played_dominos[1], LEFT)
+    )
+    # play_area.refresh(played_dominos)
+    play_area.refresh([])
+    # print(play_area)
+    play_area.played_dominos.append(
+        PlayedDomino(player, [5, 6], play_area.played_dominos[1], UP)
+    )
+    # play_area.refresh(played_dominos)
+    play_area.refresh([])
