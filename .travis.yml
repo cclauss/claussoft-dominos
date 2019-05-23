@@ -21,7 +21,7 @@ script:
 
   #- vulture *.py || true
   # - ./DominoWorld.py  # Play some computer vs. computer games
-  - ls -l *.toml || true
+  - ls -l *.toml | ./cat_biggest.py
 
   #- monkeytype run DominoWorld.py  # Play some computer vs. computer games
   #- monkeytype list-modules
