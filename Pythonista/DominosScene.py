@@ -1,19 +1,22 @@
 import scene
+
 ui = scene.ui
 
 # pip_loc is a tuple of lists of tuples.  Use tuples where possible because
 # lists require slightly more RAM.  For each domino die from 0 to 9 there is a
 # list of the coordinates of the dots/pips.
-pip_locs = ([()],
-            [(1, 1)],
-            [(0, 0), (2, 2)],
-            [(0, 0), (1, 1), (2, 2)],
-            [(0, 0), (2, 0), (0, 2), (2, 2)],
-            [(0, 0), (0, 2), (1, 1), (2, 0), (2, 2)],
-            [(0, 0), (1, 0), (2, 0), (0, 2), (1, 2), (2, 2)],
-            [(0, 0), (1, 0), (2, 0), (1, 1), (0, 2), (1, 2), (2, 2)],
-            [(0, 0), (1, 0), (2, 0), (0, 1), (2, 1), (0, 2), (1, 2), (2, 2)],
-            [(0, 0), (1, 0), (2, 0), (0,1), (1,1), (2,1), (0,2), (1,2), (2,2)])
+pip_locs = (
+    [()],
+    [(1, 1)],
+    [(0, 0), (2, 2)],
+    [(0, 0), (1, 1), (2, 2)],
+    [(0, 0), (2, 0), (0, 2), (2, 2)],
+    [(0, 0), (0, 2), (1, 1), (2, 0), (2, 2)],
+    [(0, 0), (1, 0), (2, 0), (0, 2), (1, 2), (2, 2)],
+    [(0, 0), (1, 0), (2, 0), (1, 1), (0, 2), (1, 2), (2, 2)],
+    [(0, 0), (1, 0), (2, 0), (0, 1), (2, 1), (0, 2), (1, 2), (2, 2)],
+    [(0, 0), (1, 0), (2, 0), (0, 1), (1, 1), (2, 1), (0, 2), (1, 2), (2, 2)],
+)
 
 
 def generateDominosYield(inMaxDie=6):  # Yield = Generator -- is an iterator
@@ -23,7 +26,7 @@ def generateDominosYield(inMaxDie=6):  # Yield = Generator -- is an iterator
                 yield (x, y)
 
 
-def domino_image(pips=(5, 6), die_size=70, fg_color='blue', bg_color='grey'):
+def domino_image(pips=(5, 6), die_size=70, fg_color="blue", bg_color="grey"):
     width = die_size * 2
     height = die_size
     with ui.ImageContext(width, height) as ctx:
@@ -40,8 +43,12 @@ def domino_image(pips=(5, 6), die_size=70, fg_color='blue', bg_color='grey'):
             for loc in pip_locs[pips[which_pip]]:
                 if loc:
                     x, y = loc
-                    ui.Path.oval(x * pip_size + b + die_size * which_pip,
-                                 y * pip_size + b, wh, wh).fill()
+                    ui.Path.oval(
+                        x * pip_size + b + die_size * which_pip,
+                        y * pip_size + b,
+                        wh,
+                        wh,
+                    ).fill()
         # draw dividing line
         path = ui.Path()
         # path.line_width = 4
@@ -62,14 +69,15 @@ class MyScene(scene.Scene):
         h = dieSize
         for (i, j) in generateDominosYield(maxDie):
             theDomino = self.make_domino(pips=(i, j), die_size=dieSize)
-            theDomino.position = (j * (w + bufferSize) + dieSize,
-                                  top + i * (h + bufferSize))
+            theDomino.position = (
+                j * (w + bufferSize) + dieSize,
+                top + i * (h + bufferSize),
+            )
         self.dragging_domino = None
 
     def make_domino(self, pips=(5, 6), die_size=70):
         image = domino_image(pips=pips, die_size=die_size)
-        return scene.SpriteNode(image, parent=self,
-                                position=self.bounds.center())
+        return scene.SpriteNode(image, parent=self, position=self.bounds.center())
 
     def touch_began(self, touch):
         for domino in self.children:
@@ -87,5 +95,5 @@ class MyScene(scene.Scene):
         self.dragging_domino = None
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     scene.run(MyScene(), show_fps=False)
