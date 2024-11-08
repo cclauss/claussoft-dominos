@@ -1,1 +1,2 @@
-assert True
+def test_dominos() -> None:
+    assert True
