@@ -68,7 +68,7 @@ class Domino(scene.SpriteNode):
         *args,
         **kwargs
     ):
-        assert len(pips) == 2, "Need two pips!"
+        assert len(pips) == 2, "Need two pips!"  # noqa: S101
         image = domino_image(
             pips=pips, die_size=die_size, fg_color=fg_color, bg_color=bg_color
         )
@@ -91,12 +91,13 @@ class Domino(scene.SpriteNode):
 
     @property
     def horizontal(self):
-        print("{} {}".format(self.rotation, self.rotation % scene.math.pi))
+        print(f"{self.rotation=} {self.rotation % scene.math.pi=}")
         return not self.rotation % scene.math.pi
 
     def __str__(self):
-        fmt = "Domino({}), r: {}, h: {}, f: {}"
-        return fmt.format(self.pips, self.rotation, self.horizontal, self.frame)
+        return (
+            f"Domino({self.pip=}), {self.rotation=}, {self.horizontal=}, {self.frame=}"
+        )
 
 
 if __name__ == "__main__":
@@ -115,10 +116,10 @@ if __name__ == "__main__":
             )
             domino.anchor_point = (0.5, 0.5)
 
-        def touch_began(self, touch):
+        def touch_began(self, touch):  # noqa: ARG002
             domino = self.children[0]
             domino.rotate_90()
             # domino.rotate_180()
-            print(domino)
+            print(f"{domino=}")
 
     scene.run(OneDominoScene(), show_fps=False)
