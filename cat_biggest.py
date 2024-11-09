@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+from pathlib import Path
 
 d = {s.split()[4]: s.split()[8] for s in sys.stdin}
-with open(d[max(d)]) as in_file:
-    print(in_file.read())
+print(Path(d[max(d)]).read_text())

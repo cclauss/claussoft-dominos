@@ -91,7 +91,7 @@ class MyScene(scene.Scene):
         if self.dragging_domino:
             self.dragging_domino.position = touch.location
 
-    def touch_ended(self, touch):
+    def touch_ended(self, touch):  # noqa: ARG002
         self.dragging_domino = None
 
 

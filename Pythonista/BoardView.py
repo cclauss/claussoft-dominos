@@ -32,7 +32,7 @@ PlayerHandView object at 0x10f174128>: (102.00, 0.00, 816.00, 96.00), (510.00, 4
 
 
 def DominoRunMove():
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 class ColoredLayer(scene.ShapeNode):  # scene.Layer):
@@ -49,11 +49,7 @@ class ColoredLayer(scene.ShapeNode):  # scene.Layer):
             *args,
             **kwargs
         )
-        print(
-            "{} {} frame: {}, {}, {}, {}".format(
-                self.__class__.__name__, fill_color, x, y, w, h
-            )
-        )
+        print(f"{self.__class__.__name__} {fill_color=} {x=}, ({y=}, {w=}, {h=})")
         # self.position = inParent.bounds.center()
         # self.parent = inParent
         # print(inBgColor)
@@ -141,7 +137,7 @@ class PegboardView(ColoredLayer):
         for x in [0, 1, 3, 4]:
             for y in range(int(self.max_score / 2)):
                 if x == 0 and y == 29:
-                    print(x, y, self.square_rect(x, y))
+                    print(f"{x=}, {y=}, {self.square_rect(x, y)=}")
                 scene.ellipse(*self.square_rect(x, y))
 
     def syncView(self):
@@ -256,7 +252,7 @@ class BoneyardView(ColoredLayer):
         print(pixelsBetweenDominos)
         dieSpan = dieWidth + pixelsBetweenDominos
         x = self.frame.x - dieWidth - 2
-        print(x, self.frame.x, dieWidth)
+        print(f"{x=}, {self.frame.x=}, {dieWidth=}")
         for i in range(dominoCount):
             d = self.boneyard[i]
             dominoLayer = self.scene.getDominoView(d)
@@ -281,14 +277,14 @@ class DominoBoardView(scene.Scene):
         #    sublayer.syncView()
 
     def setup(self):
-        print("bounds: {}".format(self.bounds))
+        print(f"{self.bounds=}")
         # self.root_node = root_node = ColoredLayer(self.bounds, self, 'silver')
         portrait = self.bounds.w > self.bounds.h
         deltaW = 10 if portrait else 8
         deltaH = 8 if portrait else 10
         w = int(self.bounds.w / deltaW)
         h = int(self.bounds.h / deltaH)
-        print("dw, dh, w, h: {}, {}, {}, {}".format(deltaW, deltaH, w, h))
+        print(f"{deltaW=}, {deltaH=}, {w=}, {h=}")
         # exit()
 
         # bottomOfPlayArea = h * deltaH - 2
@@ -394,7 +390,7 @@ class DominoBoardView(scene.Scene):
         dominoValues = self.touchedLayer.pips  # getValues()
         if self.getPlayedDominos():
             dominoDroppedOn = self.playAreaView.findDominoByLoc(touch.location)
-            print(dominoDroppedOn)
+            print(f"{dominoDroppedOn=}")
             if dominoDroppedOn and dominoDroppedOn.isPossibleNeighbor(dominoValues):
                 theMove = DominoRunMove(dominoDroppedOn, dominoValues, -1)
                 self.dominoWorld.playAMove(theMove)
