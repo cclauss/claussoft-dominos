@@ -1,2 +1,2 @@
-trailing whitespace line 1    
-trailing whitespace line 2    
+trailing whitespace line 1
+trailing whitespace line 2
