@@ -16,7 +16,6 @@ domino.  Images are 200x400 pixels with the pips (dots) being 5.5% of the domino
 
 # python3 ./dominoes_svg.py && open dominoes_svg/*
 #from pyscript import display
-import asyncio
 #import pyodide
 #display(dir(pyodide))
 #asyncio.run(pyodide.load_package("micropip"))
@@ -29,7 +28,6 @@ import asyncio
 
 import svgwrite
 from svgwrite.drawing import Drawing
-
 
 pip_offsets = (0.25, 0.5, 0.75)
 pip_locations = (
