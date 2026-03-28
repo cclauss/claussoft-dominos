@@ -1,4 +1,13 @@
-#! /usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "beautifulsoup4",
+#     "httpx",
+#     "pydantic",
+# ]
+# ///
 
 """
 Create SVG files for all 28 dominoes and save them in the `dominoes_svg` directory.
