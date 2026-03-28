@@ -79,16 +79,13 @@ def _half_svg(pip: int, half: int, pad: int, w: int) -> str:
     """Return SVG elements for one half of a domino (one die face)."""
     y0 = pad + half * w
     parts: list[str] = [
-        f'<rect x="{pad}" y="{y0}" width="{w}" height="{w}" '
-        f'fill="white" stroke="blue" stroke-width="1"/>'
+        f'<rect x="{pad}" y="{y0}" width="{w}" height="{w}" fill="white" stroke="blue" stroke-width="1"/>'
     ]
     r = max(2.0, w * 0.055)
     for xi, yi in PIP_LOCATIONS[pip]:
         cx = pad + PIP_OFFSETS[xi] * w
         cy = y0 + PIP_OFFSETS[yi] * w
-        parts.append(
-            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="blue"/>'
-        )
+        parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="blue"/>')
     return "".join(parts)
 
 
@@ -169,6 +166,42 @@ def _half_svg(pip, half, pad, w):
     return "".join(parts)
 
 
+def _half_svg_h(pip, half, pad, w):
+    x0 = pad + half * w
+    r = max(2.0, w * 0.055)
+    parts = [
+        f'<rect x="{x0}" y="{pad}" width="{w}" height="{w}" '
+        f'fill="white" stroke="blue" stroke-width="1"/>'
+    ]
+    for xi, yi in _PIP_LOCATIONS[pip]:
+        cx = x0 + _PIP_OFFSETS[xi] * w
+        cy = pad + _PIP_OFFSETS[yi] * w
+        parts.append(
+            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="blue"/>'
+        )
+    return "".join(parts)
+
+
+def _domino_svg_h(top, bottom, w=55, face_down=False):
+    h, pad = w * 2, 3
+    tw, th = h + 2 * pad, w + 2 * pad
+    rx = w // 10
+    if face_down:
+        return (
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
+            f'<rect x="{pad}" y="{pad}" width="{h}" height="{w}" rx="{rx}" '
+            f'fill="#666" stroke="#444" stroke-width="1.5"/></svg>'
+        )
+    dx = pad + w
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
+        f"{_half_svg_h(top, 0, pad, w)}"
+        f"{_half_svg_h(bottom, 1, pad, w)}"
+        f'<line x1="{dx}" y1="{pad}" x2="{dx}" y2="{pad + w}" '
+        f'stroke="blue" stroke-width="1.5"/></svg>'
+    )
+
+
 def _domino_svg(top, bottom, w=55, face_down=False):
     h, pad = w * 2, 3
     tw, th = w + 2 * pad, h + 2 * pad
@@ -206,22 +239,25 @@ _current_player = 0            # 0 = human, 1 = computer
 # ---------------------------------------------------------------------------
 # Rendering helpers
 # ---------------------------------------------------------------------------
-def _make_tile_div(top, bottom, draggable=False, face_down=False):
+def _make_tile_div(top, bottom, draggable=False, face_down=False, horizontal=False):
     div = document.createElement("div")
     div.className = "domino-tile"
     div.setAttribute("data-top", str(top))
     div.setAttribute("data-bottom", str(bottom))
     div.setAttribute("draggable", "true" if draggable else "false")
-    div.innerHTML = _domino_svg(top, bottom, face_down=face_down)
+    if horizontal:
+        div.innerHTML = _domino_svg_h(top, bottom, face_down=face_down)
+    else:
+        div.innerHTML = _domino_svg(top, bottom, face_down=face_down)
     return div
 
 
-def _render_hand(hand, area_id, draggable=False, face_down=False):
+def _render_hand(hand, area_id, draggable=False, face_down=False, horizontal=False):
     area = document.getElementById(area_id)
     area.innerHTML = ""
     for tile in hand:
         tile_div = _make_tile_div(tile[0], tile[1], draggable=draggable,
-                                  face_down=face_down)
+                                  face_down=face_down, horizontal=horizontal)
         area.appendChild(tile_div)
     if draggable:
         for el in area.querySelectorAll(".domino-tile[draggable='true']"):
@@ -248,7 +284,7 @@ def _set_message(msg):
 def _render_all():
     _render_hand(_hand0, "player0-hand", draggable=(_current_player == 0))
     _render_hand(_hand1, "player1-hand", face_down=True)
-    _render_hand(_boneyard, "boneyard-area", face_down=True)
+    _render_hand(_boneyard, "boneyard-area", face_down=True, horizontal=True)
     _render_play_area()
     _render_scores()
 
@@ -404,7 +440,7 @@ body {
 h1 { font-size: 1.1rem; letter-spacing: 2px; }
 #board {
     display: grid;
-    grid-template-columns: 80px 1fr 90px;
+    grid-template-columns: 200px 1fr 90px;
     grid-template-rows: auto 1fr auto;
     gap: 6px;
     width: 100%;
@@ -421,10 +457,12 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     padding: 6px;
     min-height: 70px;
     align-items: center;
+    justify-content: space-evenly;
 }
 #boneyard-area {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 3px;
     background: rgba(0,0,0,.4);
     border-radius: 8px;
@@ -441,6 +479,7 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     gap: 4px;
     padding: 8px;
     align-content: flex-start;
+    justify-content: space-evenly;
     overflow-y: auto;
 }
 #scoreboard {
@@ -492,8 +531,7 @@ def _check_pyscript_cdn() -> None:
             )
     except httpx.RequestError:
         print(
-            "Warning: Could not reach PyScript CDN. "
-            "The page requires an internet connection to load.",
+            "Warning: Could not reach PyScript CDN. The page requires an internet connection to load.",
             file=sys.stderr,
         )
 
@@ -510,7 +548,9 @@ def _build_head(soup: BeautifulSoup, html_tag: Tag) -> None:
     head = _add_tag(soup, html_tag, "head")
     _add_tag(soup, head, "meta", charset="UTF-8")
     _add_tag(
-        soup, head, "meta",
+        soup,
+        head,
+        "meta",
         name="viewport",
         content="width=device-width, initial-scale=1.0",
     )
@@ -616,9 +656,7 @@ def main() -> None:
     _check_pyscript_cdn()
     state = deal_game()
     html = build_html(state)
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".html", delete=False, encoding="utf-8"
-    ) as fh:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".html", delete=False, encoding="utf-8") as fh:
         fh.write(html)
         html_path = Path(fh.name)
     print(f"Opening {html_path}")
