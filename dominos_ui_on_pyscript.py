@@ -30,7 +30,7 @@ import httpx
 from bs4 import BeautifulSoup, Tag
 from pydantic import BaseModel
 
-PYSCRIPT_VERSION = "2024.11.1"
+PYSCRIPT_VERSION = "2026.3.1"
 PYSCRIPT_JS_URL = f"https://pyscript.net/releases/{PYSCRIPT_VERSION}/core.js"
 PYSCRIPT_CSS_URL = f"https://pyscript.net/releases/{PYSCRIPT_VERSION}/core.css"
 
