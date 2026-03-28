@@ -219,7 +219,7 @@ class PlayerHandView(ColoredLayer):
         # x, y = self.frame.center()
         # y = self.frame.y
         dominoSpan = dieWidth + pixelsBetweenDominos
-        x, y, w, h = self.frame
+        x, y, _w, _h = self.frame
         y += dieWidth
         for i in range(dominoCount):
             d = self.player.mDominos[i]
