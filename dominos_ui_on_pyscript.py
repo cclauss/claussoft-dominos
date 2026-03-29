@@ -314,18 +314,6 @@ def _render_linear_chain(area, w):
         area.appendChild(div)
 
 
-def _render_drop_zone(label, chain_end, w):
-    dz = document.createElement("div")
-    dz.className = "spinner-drop"
-    dz.setAttribute("data-chain-end", chain_end)
-    dz.textContent = label
-    dz.style.width = f"{w + 6}px"
-    dz.style.height = f"{w + 6}px"
-    dz.addEventListener("dragover", ffi.create_proxy(_on_dragover))
-    dz.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
-    return dz
-
-
 def _render_cross_chain(area, w, si):
     # Bones to the left of the spinner
     for i in range(si):
@@ -352,12 +340,16 @@ def _render_cross_chain(area, w, si):
         fc.setAttribute("data-chain-end", "top")
         fc.addEventListener("dragover", ffi.create_proxy(_on_dragover))
         fc.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
-    else:
-        top_col.appendChild(_render_drop_zone("^", "top", w))
     junc.appendChild(top_col)
 
+    # Spinner bone: drop on top half → top branch, bottom half → bottom branch
     sp_bone = _chain[si]
-    junc.appendChild(_make_bone_div(sp_bone[0], sp_bone[1], w=w))
+    sp_div = _make_bone_div(sp_bone[0], sp_bone[1], w=w)
+    sp_div.setAttribute("data-chain-end", "spinner")
+    sp_div.className = sp_div.className + " spinner-bone-droptarget"
+    sp_div.addEventListener("dragover", ffi.create_proxy(_on_dragover))
+    sp_div.addEventListener("drop", ffi.create_proxy(_on_drop_spinner_bone))
+    junc.appendChild(sp_div)
 
     bot_col = document.createElement("div")
     bot_col.className = "branch-col"
@@ -369,8 +361,6 @@ def _render_cross_chain(area, w, si):
         lc.setAttribute("data-chain-end", "bottom")
         lc.addEventListener("dragover", ffi.create_proxy(_on_dragover))
         lc.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
-    else:
-        bot_col.appendChild(_render_drop_zone("v", "bottom", w))
     junc.appendChild(bot_col)
 
     area.appendChild(junc)
@@ -600,10 +590,11 @@ def _valid_plays(hand):
 
 
 def _spinner_index():
+    # Find the spinner (the first double), identified by both halves equaling spinner_val.
     if _spinner_val is None:
         return None
     for i, b in enumerate(_chain):
-        if b[0] == _spinner_val:
+        if b[0] == _spinner_val and b[1] == _spinner_val:
             return i
     return None
 
@@ -933,18 +924,62 @@ def _on_drop(event):
     if not _can_play(top, bottom):
         _set_message(f"[{top}|{bottom}] cannot be played here - try another bone.")
         return
-    # If the bone fits multiple positions, require a targeted drop.
-    if _is_ambiguous_play(top, bottom):
-        opts = _play_options(top, bottom)
-        ends_str = " or ".join(f"the {o} end" for o in opts)
+    opts = _play_options(top, bottom)
+    lr_opts = [o for o in opts if o in ("left", "right")]
+    sp_opts = [o for o in opts if o in ("top", "bottom")]
+    # Bone only fits the spinner branches - guide player to drop on the spinner bone.
+    if sp_opts and not lr_opts:
         _set_message(
-            f"[{top}|{bottom}] fits multiple positions! Drop it on {ends_str}."
+            f"[{top}|{bottom}] fits the spinner! Drop it on the central double bone "
+            f"(top half for above, bottom half for below)."
+        )
+        return
+    # Bone fits both a chain end and the spinner - require a targeted drop.
+    if lr_opts and sp_opts:
+        ends_str = " or ".join(f"the {o} end" for o in lr_opts)
+        _set_message(
+            f"[{top}|{bottom}] fits multiple positions! Drop it on {ends_str} "
+            f"or on the central double bone for a branch."
+        )
+        return
+    # Truly ambiguous between left and right chain ends.
+    if len(lr_opts) > 1:
+        _set_message(
+            f"[{top}|{bottom}] fits both ends! Drop it on the leftmost or rightmost bone."
         )
         return
     if _apply_play(top, bottom, _hand0):
         _after_play(0, [top, bottom])
     else:
         _set_message("That move is not valid.")
+
+
+def _on_drop_spinner_bone(event):
+    # Hand bone dropped directly onto the spinner bone - use Y position to pick top/bottom.
+    event.preventDefault()
+    event.stopPropagation()
+    if _current_player != 0 or _needs_boneyard_draw or _game_over:
+        return
+    data = event.dataTransfer.getData("text/plain")
+    if data.startswith("boneyard:"):
+        return
+    top_s, bottom_s = data.split(",")
+    top, bottom = int(top_s), int(bottom_s)
+    # Determine top vs bottom from where on the bone the drop occurred.
+    offset_y = event.offsetY
+    el_h = event.currentTarget.offsetHeight
+    target_end = "top" if offset_y < el_h / 2 else "bottom"
+    if not _can_play(top, bottom):
+        _set_message(f"[{top}|{bottom}] cannot be played here - try another bone.")
+        return
+    if _apply_play(top, bottom, _hand0, target_end=target_end):
+        _after_play(0, [top, bottom])
+    else:
+        half = "top" if target_end == "top" else "bottom"
+        _set_message(
+            f"[{top}|{bottom}] does not fit the {half} branch. "
+            f"Try dropping on the other half of the double."
+        )
 
 
 def _on_drop_chain_bone(event):
@@ -1085,6 +1120,7 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     gap: 4px;
     padding: 8px;
     align-items: center;
+    justify-content: center;
 }
 #scoreboard {
     display: flex;
@@ -1135,14 +1171,10 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     align-items: center;
     gap: 2px;
 }
-.spinner-drop {
-    border: 2px dashed rgba(255,255,255,0.4);
+.spinner-bone-droptarget {
+    outline: 2px dashed rgba(255,255,255,0.6);
     border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255,255,255,0.5);
-    font-size: 0.75rem;
+    cursor: copy;
 }
 .area-label {
     font-size: 0.7rem;

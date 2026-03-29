@@ -143,9 +143,33 @@ def test_pyscript_spinner_cross_rendering() -> None:
     """Cross-shaped spinner rendering functions are present."""
     assert "_render_cross_chain" in _PYSCRIPT_CODE
     assert "_render_linear_chain" in _PYSCRIPT_CODE
-    assert "_render_drop_zone" in _PYSCRIPT_CODE
+    # Drop zones are now the spinner bone itself (no separate placeholder boxes).
+    assert "_on_drop_spinner_bone" in _PYSCRIPT_CODE
     assert "_spinner_index" in _PYSCRIPT_CODE
     assert "_spinner_is_surrounded" in _PYSCRIPT_CODE
+
+
+def test_pyscript_spinner_index_requires_double() -> None:
+    """_spinner_index must match both pips to avoid confusing non-double bones."""
+    # The check must include b[1] so a [3,4] bone is not mistaken for the [3,3] spinner.
+    assert "b[0] == _spinner_val and b[1] == _spinner_val" in _PYSCRIPT_CODE
+
+
+def test_pyscript_spinner_bone_direct_drop() -> None:
+    """The spinner bone itself is the drop target (no separate dashed zone)."""
+    # New handler uses offsetY to determine top vs bottom.
+    assert "_on_drop_spinner_bone" in _PYSCRIPT_CODE
+    assert "offset_y" in _PYSCRIPT_CODE
+    assert "el_h" in _PYSCRIPT_CODE
+    # The old separate placeholder _render_drop_zone is gone.
+    assert "_render_drop_zone" not in _PYSCRIPT_CODE
+
+
+def test_html_play_area_centered() -> None:
+    """Play area centers the chain both horizontally and vertically."""
+    state = deal_game()
+    html = build_html(state)
+    assert "justify-content: center" in html
 
 
 def test_pyscript_spinner_top_bottom_placement() -> None:
