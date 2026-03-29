@@ -138,6 +138,7 @@ _SPINNER_MULTIPLIER = 2   # doubles score both open ends of a spinner
 _SCORING_DIVISOR = 5      # racehorse: score a point for every 5 pips
 _WIN_SCORE = 30           # first player to reach this score wins the match
 _BONEYARD_MIN = 2         # must leave at least this many bones in boneyard
+_BONE_GAP_PX = 4          # uniform gap (px) between adjacent dominos in every direction
 
 # ---------------------------------------------------------------------------
 # Pip data (mirrors the host-side PIP_OFFSETS / PIP_LOCATIONS)
@@ -350,8 +351,8 @@ def _render_cross_chain(area, w, si):
     junc = document.createElement("div")
     junc.className = "spinner-junction"
 
-    # Bone pixel height: SVG vertical height (2*w + 6px padding) plus 4px flex gap.
-    bone_h = 2 * w + 6 + 4
+    # Bone pixel height: SVG vertical height (2*w + 6px padding) plus flex gap.
+    bone_h = 2 * w + 6 + _BONE_GAP_PX
     max_branch_h = max(len(_top_branch), len(_bottom_branch)) * bone_h
 
     top_col = document.createElement("div")
@@ -687,7 +688,7 @@ def _compute_bone_size():
     h_bones = sum(1 for b in _chain if b[0] != b[1])
     v_bones = len(_chain) - h_bones
     n = len(_chain)
-    gaps = max(0, n - 1) * 4
+    gaps = max(0, n - 1) * _BONE_GAP_PX
     # At half-width w: horizontal bone = (2w+6) px wide, vertical = (w+6) px wide.
     # Solve: h_bones*(2w+6) + v_bones*(w+6) + gaps <= avail
     coeff = 2 * h_bones + v_bones
@@ -704,10 +705,12 @@ def _compute_bone_size():
             win_h = int(document.documentElement.clientHeight)
             avail_h = win_h - 280  # ~280px overhead
             if avail_h > 60:
-                # Junction height = 2 * max_b * (2w+10) + (2w+6)
-                # = w * (4*max_b + 2) + (20*max_b + 6)
-                # Solve for w: w <= (avail_h - 20*max_b - 6) / (4*max_b + 2)
-                num = avail_h - 20 * max_b - 6
+                # bone_h = 2w + 6 + g (g = _BONE_GAP_PX)
+                # junction_h = 2*max_b*bone_h + (2w+6)
+                #            = w*(4*max_b+2) + (12+2g)*max_b + 6
+                # Solve for w: w <= (avail_h - (12+2g)*max_b - 6) / (4*max_b + 2)
+                gap = _BONE_GAP_PX
+                num = avail_h - (12 + 2 * gap) * max_b - 6
                 denom = 4 * max_b + 2
                 if denom > 0 and num > 0:
                     w = min(w, num / denom)
@@ -1132,21 +1135,21 @@ body {
     font-family: sans-serif;
     background: #2d5a1b;
     color: #fff;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 8px;
     gap: 6px;
+    overflow-y: auto;
 }
 h1 { font-size: 1.1rem; letter-spacing: 2px; }
 #board {
     display: grid;
     grid-template-columns: 130px 1fr 130px;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto auto auto;
     gap: 6px;
     width: 100%;
-    flex: 1;
 }
 .player-hand {
     grid-column: 1 / -1;
@@ -1168,6 +1171,7 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     border-radius: 8px;
     padding: 6px;
     align-items: center;
+    align-self: start;
     overflow-y: auto;
 }
 #play-area {
@@ -1193,6 +1197,7 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     padding: 8px;
     font-size: 0.85rem;
     align-items: center;
+    align-self: start;
 }
 #scoreboard h2 { font-size: 0.9rem; }
 .score-row { display: flex; flex-direction: column; align-items: center; gap: 2px; }
@@ -1227,13 +1232,13 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
 }
 .branch-col {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
 }
 .area-label {
     font-size: 0.7rem;

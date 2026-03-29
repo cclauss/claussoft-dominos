@@ -265,3 +265,51 @@ def test_compute_bone_size_height_formula() -> None:
                     f"Junction height {junction_h:.1f} > avail_h {avail_h} "
                     f"with max_b={max_b}, w={w:.2f}"
                 )
+
+
+def test_pyscript_bone_gap_constant() -> None:
+    """_BONE_GAP_PX constant is defined and used in spacing calculations."""
+    assert "_BONE_GAP_PX = 4" in _PYSCRIPT_CODE
+    # Used in compute_bone_size gap calculation
+    assert "* _BONE_GAP_PX" in _PYSCRIPT_CODE
+    # Used in branch column bone_h calculation
+    assert "+ _BONE_GAP_PX" in _PYSCRIPT_CODE
+
+
+def test_html_board_shrinks_to_content() -> None:
+    """Board grid uses auto rows so boneyard/play-area shrink to their content height."""
+    state = deal_game()
+    html = build_html(state)
+    # grid-template-rows must use auto for all rows (not 1fr which forces expansion)
+    assert "grid-template-rows: auto auto auto" in html
+    # body uses min-height instead of fixed height so page can grow with content
+    assert "min-height: 100vh" in html
+    # #board must not have a 1fr row (which would force expansion)
+    assert "grid-template-rows: auto 1fr auto" not in html
+
+
+def test_html_boneyard_scoreboard_align_start() -> None:
+    """Boneyard and scoreboard use align-self: start so they don't stretch in the grid row."""
+    state = deal_game()
+    html = build_html(state)
+    assert "align-self: start" in html
+
+
+def test_html_uniform_branch_gap() -> None:
+    """Spinner junction and branch columns use the same gap as the horizontal chain."""
+    state = deal_game()
+    html = build_html(state)
+    # .spinner-junction and .branch-col must both appear with gap: 4px
+    assert ".spinner-junction" in html
+    assert ".branch-col" in html
+    # Verify 4px gap appears (used by both spinner-junction and branch-col)
+    # and the old 2px value is not used for these elements
+    # We check by ensuring spinner-junction section contains gap: 4px
+    spinner_start = html.find(".spinner-junction")
+    assert spinner_start != -1
+    spinner_block = html[spinner_start : spinner_start + 120]
+    assert "gap: 4px" in spinner_block
+    branch_start = html.find(".branch-col")
+    assert branch_start != -1
+    branch_block = html[branch_start : branch_start + 120]
+    assert "gap: 4px" in branch_block
