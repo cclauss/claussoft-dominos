@@ -302,10 +302,28 @@ def _render_boneyard(draggable_to_hand=False):
     area.className = "draw-mode" if draggable_to_hand else ""
 
 
+def _apply_bone_rotation(div, w):
+    # CSS-rotate the whole landscape bone 90° to appear portrait (perpendicular to chain).
+    # Margin compensation makes the element occupy portrait-sized space in the flex layout:
+    #   natural box: (2w+6) wide x (w+6) tall
+    #   after rotate: appears (w+6) wide x (2w+6) tall
+    #   delta = w -> shrink horizontal by w/2 each side, grow vertical by w/2 each side
+    div.className += " bone-rotated"
+    hw = w // 2
+    div.style.marginTop = f"{hw}px"
+    div.style.marginBottom = f"{hw}px"
+    div.style.marginLeft = f"-{hw}px"
+    div.style.marginRight = f"-{hw}px"
+
+
 def _render_linear_chain(area, w):
     for i, bone in enumerate(_chain):
         is_double = bone[0] == bone[1]
-        div = _make_bone_div(bone[0], bone[1], horizontal=not is_double, w=w)
+        # All bones use the landscape (horizontal) SVG.
+        # Doubles are CSS-rotated 90° so they appear portrait, perpendicular to the chain.
+        div = _make_bone_div(bone[0], bone[1], horizontal=True, w=w)
+        if is_double:
+            _apply_bone_rotation(div, w)
         if i == 0 or i == len(_chain) - 1:
             end_side = "left" if i == 0 else "right"
             div.setAttribute("data-chain-end", end_side)
@@ -319,7 +337,9 @@ def _render_cross_chain(area, w, si):
     for i in range(si):
         bone = _chain[i]
         is_double = bone[0] == bone[1]
-        div = _make_bone_div(bone[0], bone[1], horizontal=not is_double, w=w)
+        div = _make_bone_div(bone[0], bone[1], horizontal=True, w=w)
+        if is_double:
+            _apply_bone_rotation(div, w)
         if i == 0:
             div.setAttribute("data-chain-end", "left")
             div.addEventListener("dragover", ffi.create_proxy(_on_dragover))
@@ -343,8 +363,10 @@ def _render_cross_chain(area, w, si):
     if _top_branch:
         # Render outermost bone first (reversed order → tip at top of column).
         # Bones are stored as [connector, free_end]; swap so free end faces outward (up).
+        # Doubles are landscape (perpendicular to vertical branch direction).
         for b in reversed(_top_branch):
-            bd = _make_bone_div(b[1], b[0], w=w)
+            is_dbl = b[0] == b[1]
+            bd = _make_bone_div(b[1], b[0], horizontal=is_dbl, w=w)
             top_col.appendChild(bd)
         fc = top_col.firstChild
         fc.setAttribute("data-chain-end", "top")
@@ -366,8 +388,10 @@ def _render_cross_chain(area, w, si):
     bot_col.style.minHeight = f"{max_branch_h}px"
     if _bottom_branch:
         # Render closest-to-spinner bone first (forward order → connector at top, touching spinner).
+        # Doubles are landscape (perpendicular to vertical branch direction).
         for b in _bottom_branch:
-            bd = _make_bone_div(b[0], b[1], w=w)
+            is_dbl = b[0] == b[1]
+            bd = _make_bone_div(b[0], b[1], horizontal=is_dbl, w=w)
             bot_col.appendChild(bd)
         lc = bot_col.lastChild
         lc.setAttribute("data-chain-end", "bottom")
@@ -381,7 +405,9 @@ def _render_cross_chain(area, w, si):
     for i in range(si + 1, len(_chain)):
         bone = _chain[i]
         is_double = bone[0] == bone[1]
-        div = _make_bone_div(bone[0], bone[1], horizontal=not is_double, w=w)
+        div = _make_bone_div(bone[0], bone[1], horizontal=True, w=w)
+        if is_double:
+            _apply_bone_rotation(div, w)
         if i == len(_chain) - 1:
             div.setAttribute("data-chain-end", "right")
             div.addEventListener("dragover", ffi.create_proxy(_on_dragover))
@@ -1089,6 +1115,7 @@ body {
     background: #2d5a1b;
     color: #fff;
     height: 100vh;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1137,6 +1164,8 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     padding: 8px;
     align-items: center;
     justify-content: center;
+    height: fit-content;
+    align-self: center;
 }
 #scoreboard {
     display: flex;
@@ -1174,7 +1203,9 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     border-radius: 4px;
     transition: transform .1s;
 }
-.domino-bone:hover { transform: scale(1.08); }
+.domino-bone:not(.bone-rotated):hover { transform: scale(1.08); }
+.bone-rotated { transform: rotate(90deg); }
+.bone-rotated:hover { transform: rotate(90deg) scale(1.08); }
 .spinner-junction {
     display: flex;
     flex-direction: column;
