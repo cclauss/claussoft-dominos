@@ -1,6 +1,6 @@
 from dominos_ui_on_pyscript import (
     GameState,
-    all_domino_tiles,
+    all_domino_bones,
     deal_game,
 )
 
@@ -9,27 +9,27 @@ def test_dominos() -> None:
     assert True
 
 
-def test_all_domino_tiles_count() -> None:
-    """There are 28 unique domino tiles (0-6)."""
-    tiles = all_domino_tiles()
-    assert len(tiles) == 28
-    # Each tile is unique
-    assert len({tuple(t) for t in tiles}) == 28
+def test_all_domino_bones_count() -> None:
+    """There are 28 unique domino bones (0-6)."""
+    bones = all_domino_bones()
+    assert len(bones) == 28
+    # Each bone is unique
+    assert len({tuple(t) for t in bones}) == 28
 
 
-def test_deal_game_distributes_tiles() -> None:
+def test_deal_game_distributes_bones() -> None:
     state = deal_game()
     assert len(state.player0_hand) == 7
     assert len(state.player1_hand) == 7
     assert len(state.boneyard) == 14
-    all_tiles = state.player0_hand + state.player1_hand + state.boneyard
-    assert len(all_tiles) == 28
+    all_bones = state.player0_hand + state.player1_hand + state.boneyard
+    assert len(all_bones) == 28
 
 
 def test_deal_game_no_duplicates() -> None:
     state = deal_game()
-    all_tiles = state.player0_hand + state.player1_hand + state.boneyard
-    canonical = {(min(a, b), max(a, b)) for a, b in all_tiles}
+    all_bones = state.player0_hand + state.player1_hand + state.boneyard
+    canonical = {(min(a, b), max(a, b)) for a, b in all_bones}
     assert len(canonical) == 28
 
 

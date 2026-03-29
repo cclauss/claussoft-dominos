@@ -52,26 +52,26 @@ class GameState(BaseModel):
 
     player0_hand: list[list[int]]  # human player (shown at bottom)
     player1_hand: list[list[int]]  # computer player (shown at top)
-    boneyard: list[list[int]]  # tiles not yet dealt, shown face-down
+    boneyard: list[list[int]]  # bones not yet dealt, shown face-down
     play_chain: list[list[int]] = []
     scores: list[int] = [0, 0]
     current_player: int = 0
     message: str = "Your turn: drag a domino from your hand to the play area."
 
 
-def all_domino_tiles() -> list[list[int]]:
-    """Return all 28 unique domino tiles as [low, high] pairs."""
+def all_domino_bones() -> list[list[int]]:
+    """Return all 28 unique domino bones as [low, high] pairs."""
     return [[i, j] for i in range(7) for j in range(i, 7)]
 
 
 def deal_game() -> GameState:
-    """Shuffle all 28 tiles and deal 7 each; the rest go to the boneyard."""
-    tiles = all_domino_tiles()
-    random.shuffle(tiles)
+    """Shuffle all 28 bones and deal 7 each; the rest go to the boneyard."""
+    bones = all_domino_bones()
+    random.shuffle(bones)
     return GameState(
-        player0_hand=tiles[:7],
-        player1_hand=tiles[7:14],
-        boneyard=tiles[14:],
+        player0_hand=bones[:7],
+        player1_hand=bones[7:14],
+        boneyard=bones[14:],
     )
 
 
@@ -90,13 +90,13 @@ def _half_svg(pip: int, half: int, pad: int, w: int) -> str:
 
 
 def make_domino_svg(top: int, bottom: int, *, w: int = 55, face_down: bool = False) -> str:
-    """Generate an inline SVG string for one domino tile.
+    """Generate an inline SVG string for one domino bone.
 
     Args:
         top: pip count for the top half (0-6).
         bottom: pip count for the bottom half (0-6).
-        w: width of each half in pixels; the full tile is w x (2*w).
-        face_down: when True the tile is rendered as a plain grey rectangle.
+        w: width of each half in pixels; the full bone is w x (2*w).
+        face_down: when True the bone is rendered as a plain grey rectangle.
     """
     h, pad = w * 2, 3
     tw, th = w + 2 * pad, h + 2 * pad
@@ -136,7 +136,7 @@ from pyscript import document, ffi, window
 _SPINNER_MULTIPLIER = 2   # doubles score both open ends of a spinner
 _SCORING_DIVISOR = 5      # racehorse: score a point for every 5 pips
 _WIN_SCORE = 30           # first player to reach this score wins the match
-_BONEYARD_MIN = 2         # must leave at least this many tiles in boneyard
+_BONEYARD_MIN = 2         # must leave at least this many bones in boneyard
 
 # ---------------------------------------------------------------------------
 # Pip data (mirrors the host-side PIP_OFFSETS / PIP_LOCATIONS)
@@ -245,10 +245,10 @@ _consecutive_passes = 0        # tracks back-to-back passes; game stuck when >= 
 # ---------------------------------------------------------------------------
 # Rendering helpers
 # ---------------------------------------------------------------------------
-def _make_tile_div(top, bottom, draggable=False, face_down=False,
+def _make_bone_div(top, bottom, draggable=False, face_down=False,
                    horizontal=False, from_boneyard=False):
     div = document.createElement("div")
-    div.className = "domino-tile"
+    div.className = "domino-bone"
     div.setAttribute("data-top", str(top))
     div.setAttribute("data-bottom", str(bottom))
     if from_boneyard:
@@ -264,12 +264,12 @@ def _make_tile_div(top, bottom, draggable=False, face_down=False,
 def _render_hand(hand, area_id, draggable=False, face_down=False, horizontal=False):
     area = document.getElementById(area_id)
     area.innerHTML = ""
-    for tile in hand:
-        tile_div = _make_tile_div(tile[0], tile[1], draggable=draggable,
+    for bone in hand:
+        bone_div = _make_bone_div(bone[0], bone[1], draggable=draggable,
                                   face_down=face_down, horizontal=horizontal)
-        area.appendChild(tile_div)
+        area.appendChild(bone_div)
     if draggable:
-        for el in area.querySelectorAll(".domino-tile[draggable='true']"):
+        for el in area.querySelectorAll(".domino-bone[draggable='true']"):
             el.addEventListener("dragstart", ffi.create_proxy(_on_dragstart))
 
 
@@ -280,17 +280,17 @@ def _render_boneyard(draggable_to_hand=False):
     lbl.className = "area-label"
     lbl.textContent = f"Boneyard ({len(_boneyard)})"
     area.appendChild(lbl)
-    for tile in _boneyard:
-        tile_div = _make_tile_div(
-            tile[0], tile[1],
+    for bone in _boneyard:
+        bone_div = _make_bone_div(
+            bone[0], bone[1],
             draggable=draggable_to_hand,
             face_down=not draggable_to_hand,
             horizontal=True,
             from_boneyard=True,
         )
-        area.appendChild(tile_div)
+        area.appendChild(bone_div)
     if draggable_to_hand:
-        for el in area.querySelectorAll(".domino-tile[draggable='true']"):
+        for el in area.querySelectorAll(".domino-bone[draggable='true']"):
             el.addEventListener("dragstart", ffi.create_proxy(_on_dragstart_boneyard))
     area.className = "draw-mode" if draggable_to_hand else ""
 
@@ -298,9 +298,9 @@ def _render_boneyard(draggable_to_hand=False):
 def _render_play_area():
     area = document.getElementById("play-area")
     area.innerHTML = ""
-    for tile in _chain:
-        is_double = tile[0] == tile[1]
-        div = _make_tile_div(tile[0], tile[1], horizontal=not is_double)
+    for bone in _chain:
+        is_double = bone[0] == bone[1]
+        div = _make_bone_div(bone[0], bone[1], horizontal=not is_double)
         area.appendChild(div)
 
 
@@ -333,8 +333,8 @@ def _render_all():
 # ---------------------------------------------------------------------------
 # Game logic helpers
 # ---------------------------------------------------------------------------
-def _is_double(tile):
-    return tile[0] == tile[1]
+def _is_double(bone):
+    return bone[0] == bone[1]
 
 
 def _hand_value(hand):
@@ -351,9 +351,9 @@ def _score_chain():
     return total if total % _SCORING_DIVISOR == 0 else 0
 
 
-def _simulate_chain_score_after_play(tile):
-    # Return the chain sum that would result from playing tile (0 if not scoring).
-    a, b = tile[0], tile[1]
+def _simulate_chain_score_after_play(bone):
+    # Return the chain sum that would result from playing bone (0 if not scoring).
+    a, b = bone[0], bone[1]
     if not _chain:
         total = a * 2 if a == b else a + b
     elif a == _left_end:
@@ -369,19 +369,19 @@ def _simulate_chain_score_after_play(tile):
     return total if total % _SCORING_DIVISOR == 0 else 0
 
 
-def _find_tile(hand, top, bottom):
-    for tile in hand:
-        if tile == [top, bottom] or tile == [bottom, top]:
-            return tile
+def _find_bone(hand, top, bottom):
+    for bone in hand:
+        if bone == [top, bottom] or bone == [bottom, top]:
+            return bone
     return None
 
 
 def _apply_play(top, bottom, hand):
     global _left_end, _right_end
-    tile = _find_tile(hand, top, bottom)
-    if tile is None:
+    bone = _find_bone(hand, top, bottom)
+    if bone is None:
         return False
-    hand.remove(tile)
+    hand.remove(bone)
     if not _chain:
         _chain.append([top, bottom])
         _left_end = top
@@ -399,7 +399,7 @@ def _apply_play(top, bottom, hand):
         _chain.append([bottom, top])
         _right_end = top
     else:
-        hand.append(tile)  # put it back - invalid placement
+        hand.append(bone)  # put it back - invalid placement
         return False
     return True
 
@@ -449,14 +449,14 @@ def _check_win_after_play(player_idx):
 
 
 def _deal_new_hand():
-    # Shuffle and deal a fresh set of tiles, preserving match scores.
+    # Shuffle and deal a fresh set of bones, preserving match scores.
     global _hand0, _hand1, _boneyard, _chain, _left_end, _right_end
     global _current_player, _needs_boneyard_draw, _consecutive_passes
-    tiles = [[i, j] for i in range(7) for j in range(i, 7)]
-    random.shuffle(tiles)
-    _hand0 = [list(t) for t in tiles[:7]]
-    _hand1 = [list(t) for t in tiles[7:14]]
-    _boneyard = [list(t) for t in tiles[14:]]
+    bones = [[i, j] for i in range(7) for j in range(i, 7)]
+    random.shuffle(bones)
+    _hand0 = [list(t) for t in bones[:7]]
+    _hand1 = [list(t) for t in bones[7:14]]
+    _boneyard = [list(t) for t in bones[14:]]
     _chain.clear()
     _left_end = None
     _right_end = None
@@ -523,7 +523,7 @@ def _start_turn(player_idx, prefix=""):
         else:
             _needs_boneyard_draw = True
             _render_all()
-            _set_message(prefix + "No playable tiles! Drag a tile from the Boneyard to your hand.")
+            _set_message(prefix + "No playable bones! Drag a bone from the Boneyard to your hand.")
     else:
         _consecutive_passes += 1
         if _consecutive_passes >= 2:
@@ -534,14 +534,14 @@ def _start_turn(player_idx, prefix=""):
             _set_message(
                 prefix +
                 f"{'You' if player_idx == 0 else 'Computer'} passes "
-                f"(no valid tiles, boneyard too small). "
+                f"(no valid bones, boneyard too small). "
                 f"{'Computer' if player_idx == 0 else 'Your'} turn."
             )
             _start_turn(other)
 
 
-def _after_play(player_idx, tile_played):
-    # Called after player successfully places a tile; handles scoring, go-again, and win.
+def _after_play(player_idx, bone_played):
+    # Called after player successfully places a bone; handles scoring, go-again, and win.
     global _consecutive_passes
     _consecutive_passes = 0
     hand = _hand0 if player_idx == 0 else _hand1
@@ -550,7 +550,7 @@ def _after_play(player_idx, tile_played):
         return
     pts = _score_chain()
     scored = pts > 0
-    is_dbl = _is_double(tile_played)
+    is_dbl = _is_double(bone_played)
     if scored:
         _scores[player_idx] += pts // _SCORING_DIVISOR
     if scored or is_dbl:
@@ -583,7 +583,7 @@ def _computer_draw_and_play():
         drawn_count += 1
     _render_all()
     if drawn_count:
-        draw_msg = f"Computer drew {drawn_count} tile(s) from the boneyard. "
+        draw_msg = f"Computer drew {drawn_count} bone(s) from the boneyard. "
     else:
         draw_msg = ""
     if _valid_plays(_hand1):
@@ -595,17 +595,17 @@ def _computer_draw_and_play():
         if _consecutive_passes >= 2:
             _end_stuck_game()
         else:
-            _set_message(draw_msg + "Computer passes - no valid tiles. Your turn.")
+            _set_message(draw_msg + "Computer passes - no valid bones. Your turn.")
             _start_turn(0)
 
 
 def _computer_play():
-    # Computer picks the best available tile and plays it.
+    # Computer picks the best available bone and plays it.
     plays = _valid_plays(_hand1)
     if not plays:
         return
     # Rank plays: prefer (1) scoring plays by pts, (2) doubles for go-again,
-    # (3) highest pip total to shed high-value tiles from hand.
+    # (3) highest pip total to shed high-value bones from hand.
     best = max(
         plays,
         key=lambda t: (
@@ -650,11 +650,11 @@ def _on_drop(event):
         return
     data = event.dataTransfer.getData("text/plain")
     if data.startswith("boneyard:"):
-        return  # boneyard tiles go to hand, not play area
+        return  # boneyard bones go to hand, not play area
     top_s, bottom_s = data.split(",")
     top, bottom = int(top_s), int(bottom_s)
     if not _can_play(top, bottom):
-        _set_message(f"[{top}|{bottom}] cannot be played here - try another tile.")
+        _set_message(f"[{top}|{bottom}] cannot be played here - try another bone.")
         return
     if _apply_play(top, bottom, _hand0):
         _after_play(0, [top, bottom])
@@ -663,7 +663,7 @@ def _on_drop(event):
 
 
 def _on_drop_boneyard_to_hand(event):
-    # Boneyard tile dropped onto the human's hand area.
+    # Boneyard bone dropped onto the human's hand area.
     global _needs_boneyard_draw, _consecutive_passes
     event.preventDefault()
     if not _needs_boneyard_draw or _game_over:
@@ -674,11 +674,11 @@ def _on_drop_boneyard_to_hand(event):
     _, coords = data.split(":", 1)
     top_s, bottom_s = coords.split(",")
     top, bottom = int(top_s), int(bottom_s)
-    tile = _find_tile(_boneyard, top, bottom)
-    if tile is None:
+    bone = _find_bone(_boneyard, top, bottom)
+    if bone is None:
         return
-    _boneyard.remove(tile)
-    _hand0.append(tile)
+    _boneyard.remove(bone)
+    _hand0.append(bone)
     if _valid_plays(_hand0) or len(_boneyard) <= _BONEYARD_MIN:
         _needs_boneyard_draw = False
         if _valid_plays(_hand0):
@@ -691,13 +691,13 @@ def _on_drop_boneyard_to_hand(event):
             else:
                 _render_all()
                 _set_message(
-                    f"Drew [{top}|{bottom}] but still no playable tiles. Computer's turn."
+                    f"Drew [{top}|{bottom}] but still no playable bones. Computer's turn."
                 )
                 _start_turn(1)
     else:
         _render_all()
         _set_message(
-            f"Drew [{top}|{bottom}]. Still no playable tiles - draw another from the Boneyard."
+            f"Drew [{top}|{bottom}]. Still no playable bones - draw another from the Boneyard."
         )
 
 
@@ -807,12 +807,12 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     font-size: 0.9rem;
     text-align: center;
 }
-.domino-tile {
+.domino-bone {
     cursor: grab;
     border-radius: 4px;
     transition: transform .1s;
 }
-.domino-tile:hover { transform: scale(1.08); }
+.domino-bone:hover { transform: scale(1.08); }
 .area-label {
     font-size: 0.7rem;
     opacity: .7;
@@ -823,7 +823,7 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     border: 2px solid #ffd700;
     background: rgba(255, 215, 0, .15);
 }
-#boneyard-area.draw-mode .domino-tile {
+#boneyard-area.draw-mode .domino-bone {
     cursor: grab;
     outline: 2px solid #ffd700;
     border-radius: 4px;
@@ -936,7 +936,7 @@ def _build_board(soup: BeautifulSoup, body: Tag) -> None:
     p0_div["class"] = "player-hand"
     lbl0 = soup.new_tag("div")
     lbl0["class"] = "area-label"
-    lbl0.string = "Your hand (drag a tile to the play area)"
+    lbl0.string = "Your hand (drag a bone to the play area)"
     p0_div.append(lbl0)
 
 
