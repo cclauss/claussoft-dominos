@@ -163,6 +163,32 @@ def test_pyscript_spinner_bone_direct_drop() -> None:
     assert "el_h" in _PYSCRIPT_CODE
     # The old separate placeholder _render_drop_zone is gone.
     assert "_render_drop_zone" not in _PYSCRIPT_CODE
+    # No dashed outline on the spinner bone.
+    assert "spinner-bone-droptarget" not in _PYSCRIPT_CODE
+
+
+def test_pyscript_top_branch_orientation() -> None:
+    """Top branch bones are rendered with connector-pip at bottom (facing spinner)."""
+    # Branch bones stored as [connector, free_end].
+    # For top branch (column above spinner), free_end must face UP → render b[1], b[0].
+    assert "_make_bone_div(b[1], b[0], w=w)" in _PYSCRIPT_CODE
+    # Bottom branch still renders b[0], b[1] (connector faces UP toward spinner).
+    assert "_make_bone_div(b[0], b[1], w=w)" in _PYSCRIPT_CODE
+
+
+def test_pyscript_spinner_junction_balanced() -> None:
+    """Top and bottom branch columns have equal min-height so the spinner is centred."""
+    assert "max_branch_h" in _PYSCRIPT_CODE
+    # Both columns must get the same min-height value.
+    assert 'top_col.style.minHeight = f"{max_branch_h}px"' in _PYSCRIPT_CODE
+    assert 'bot_col.style.minHeight = f"{max_branch_h}px"' in _PYSCRIPT_CODE
+    # Top column pushes bones toward the spinner (flex-end).
+    assert 'top_col.style.justifyContent = "flex-end"' in _PYSCRIPT_CODE
+
+
+def test_pyscript_on_drop_chain_end_guard() -> None:
+    """_on_drop returns early when the drop target is a chain-end bone."""
+    assert 'closest("[data-chain-end]")' in _PYSCRIPT_CODE
 
 
 def test_html_play_area_centered() -> None:

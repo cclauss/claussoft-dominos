@@ -330,11 +330,21 @@ def _render_cross_chain(area, w, si):
     junc = document.createElement("div")
     junc.className = "spinner-junction"
 
+    # Bone pixel height: SVG vertical height (2*w + 6px padding) plus 4px flex gap.
+    bone_h = 2 * w + 6 + 4
+    max_branch_h = max(len(_top_branch), len(_bottom_branch)) * bone_h
+
     top_col = document.createElement("div")
     top_col.className = "branch-col"
+    # Give both columns equal min-height so the spinner stays vertically centred.
+    top_col.style.minHeight = f"{max_branch_h}px"
+    # Push bones downward (toward the spinner).
+    top_col.style.justifyContent = "flex-end"
     if _top_branch:
+        # Render outermost bone first (reversed order → tip at top of column).
+        # Bones are stored as [connector, free_end]; swap so free end faces outward (up).
         for b in reversed(_top_branch):
-            bd = _make_bone_div(b[0], b[1], w=w)
+            bd = _make_bone_div(b[1], b[0], w=w)
             top_col.appendChild(bd)
         fc = top_col.firstChild
         fc.setAttribute("data-chain-end", "top")
@@ -342,18 +352,20 @@ def _render_cross_chain(area, w, si):
         fc.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
     junc.appendChild(top_col)
 
-    # Spinner bone: drop on top half → top branch, bottom half → bottom branch
+    # Spinner bone: drop on top half → top branch, bottom half → bottom branch.
+    # No visual highlight — just a transparent drop target on the bone itself.
     sp_bone = _chain[si]
     sp_div = _make_bone_div(sp_bone[0], sp_bone[1], w=w)
     sp_div.setAttribute("data-chain-end", "spinner")
-    sp_div.className = sp_div.className + " spinner-bone-droptarget"
     sp_div.addEventListener("dragover", ffi.create_proxy(_on_dragover))
     sp_div.addEventListener("drop", ffi.create_proxy(_on_drop_spinner_bone))
     junc.appendChild(sp_div)
 
     bot_col = document.createElement("div")
     bot_col.className = "branch-col"
+    bot_col.style.minHeight = f"{max_branch_h}px"
     if _bottom_branch:
+        # Render closest-to-spinner bone first (forward order → connector at top, touching spinner).
         for b in _bottom_branch:
             bd = _make_bone_div(b[0], b[1], w=w)
             bot_col.appendChild(bd)
@@ -916,6 +928,10 @@ def _on_drop(event):
     event.preventDefault()
     if _current_player != 0 or _needs_boneyard_draw or _game_over:
         return
+    # If the drop landed on a chain-end or spinner bone, that element's dedicated
+    # handler takes priority (guards against stopPropagation not firing through proxies).
+    if event.target.closest("[data-chain-end]"):
+        return
     data = event.dataTransfer.getData("text/plain")
     if data.startswith("boneyard:"):
         return  # boneyard bones go to hand, not play area
@@ -1170,11 +1186,6 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     flex-direction: column;
     align-items: center;
     gap: 2px;
-}
-.spinner-bone-droptarget {
-    outline: 2px dashed rgba(255,255,255,0.6);
-    border-radius: 4px;
-    cursor: copy;
 }
 .area-label {
     font-size: 0.7rem;
