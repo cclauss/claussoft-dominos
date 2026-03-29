@@ -262,8 +262,7 @@ def test_compute_bone_size_height_formula() -> None:
                 # Verify the junction fits at this w
                 junction_h = w * (4 * max_b + 2) + (20 * max_b + 6)
                 assert junction_h <= avail_h + 1, (
-                    f"Junction height {junction_h:.1f} > avail_h {avail_h} "
-                    f"with max_b={max_b}, w={w:.2f}"
+                    f"Junction height {junction_h:.1f} > avail_h {avail_h} with max_b={max_b}, w={w:.2f}"
                 )
 
 
