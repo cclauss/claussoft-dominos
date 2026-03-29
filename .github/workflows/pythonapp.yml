@@ -23,5 +23,5 @@ jobs:
     - run: pipx run ruff check
     - name: Test with pytest
       run: |
-        pip install pytest
+        pip install beautifulsoup4 http pytest pydantic
         pytest
