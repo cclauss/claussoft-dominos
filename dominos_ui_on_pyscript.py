@@ -694,7 +694,25 @@ def _compute_bone_size():
     if coeff <= 0:
         return 55
     w = (avail - 6 * n - gaps) / coeff
-    return max(15, min(55, int(w)))
+
+    # Height constraint for cross-chain: reduce w so spinner branches fit vertically.
+    si = _spinner_index()
+    if si is not None and _spinner_is_surrounded():
+        max_b = max(len(_top_branch), len(_bottom_branch))
+        if max_b > 0:
+            # Viewport height minus UI overhead (h1 + two hand rows + status + gaps).
+            win_h = int(document.documentElement.clientHeight)
+            avail_h = win_h - 280  # ~280px overhead
+            if avail_h > 60:
+                # Junction height = 2 * max_b * (2w+10) + (2w+6)
+                # = w * (4*max_b + 2) + (20*max_b + 6)
+                # Solve for w: w <= (avail_h - 20*max_b - 6) / (4*max_b + 2)
+                num = avail_h - 20 * max_b - 6
+                denom = 4 * max_b + 2
+                if denom > 0 and num > 0:
+                    w = min(w, num / denom)
+
+    return max(10, min(55, int(w)))
 
 
 # ---------------------------------------------------------------------------
@@ -1115,7 +1133,6 @@ body {
     background: #2d5a1b;
     color: #fff;
     height: 100vh;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;

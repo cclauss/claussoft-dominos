@@ -235,3 +235,33 @@ def test_pyscript_spinner_cleared_on_new_hand() -> None:
     assert "_spinner_val = None" in _PYSCRIPT_CODE
     assert "_top_branch.clear()" in _PYSCRIPT_CODE
     assert "_bottom_branch.clear()" in _PYSCRIPT_CODE
+
+
+def test_pyscript_compute_bone_size_height_constraint() -> None:
+    """_compute_bone_size applies a height constraint when branches are present."""
+    # Height-based constraint: w <= (avail_h - 20*max_b - 6) / (4*max_b + 2)
+    assert "avail_h" in _PYSCRIPT_CODE
+    assert "clientHeight" in _PYSCRIPT_CODE
+    # Uses viewport height minus overhead to estimate available height.
+    assert "documentElement.clientHeight" in _PYSCRIPT_CODE
+    # Minimum w reduced to 10 so tall branches can be accommodated.
+    assert "max(10, min(55, int(w)))" in _PYSCRIPT_CODE
+
+
+def test_compute_bone_size_height_formula() -> None:
+    """The height-constraint formula is analytically correct."""
+    # Formula: junction_height = 2 * max_b * (2w+10) + (2w+6)
+    #        = w*(4*max_b+2) + (20*max_b+6)
+    # Solving for w: w = (avail_h - 20*max_b - 6) / (4*max_b + 2)
+    for max_b in (1, 3, 5, 8):
+        for avail_h in (200, 400, 600):
+            denom = 4 * max_b + 2
+            num = avail_h - 20 * max_b - 6
+            if num > 0:
+                w = num / denom
+                # Verify the junction fits at this w
+                junction_h = w * (4 * max_b + 2) + (20 * max_b + 6)
+                assert junction_h <= avail_h + 1, (
+                    f"Junction height {junction_h:.1f} > avail_h {avail_h} "
+                    f"with max_b={max_b}, w={w:.2f}"
+                )
