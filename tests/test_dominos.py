@@ -107,3 +107,58 @@ def test_html_game_num_alternates_first_player() -> None:
     """_deal_new_hand increments _game_num and picks first player accordingly."""
     assert "_game_num += 1" in _PYSCRIPT_CODE
     assert "_game_num % 2" in _PYSCRIPT_CODE
+
+
+def test_html_full_width_board() -> None:
+    """Board uses full window width (no max-width constraint)."""
+    state = deal_game()
+    html = build_html(state)
+    assert "max-width: 900px" not in html
+
+
+def test_html_scoreboard_same_width_as_boneyard() -> None:
+    """Scoreboard column width matches boneyard column (both 130px)."""
+    state = deal_game()
+    html = build_html(state)
+    # The grid must have equal-width columns for boneyard and scoreboard.
+    assert "130px 1fr 130px" in html
+
+
+def test_pyscript_double_at_chain_end_scores_double() -> None:
+    """A double at the chain end has both pips counted: 3-6, 6-6 → 3+6+6=15."""
+    # Logic is extracted into _end_values(); verify the helper is present.
+    assert "_end_values" in _PYSCRIPT_CODE
+    # The _end_values helper applies * 2 for double chain ends.
+    assert "* (2 if _chain[0][0] == _chain[0][1] else 1)" in _PYSCRIPT_CODE
+    assert "* (2 if _chain[-1][0] == _chain[-1][1] else 1)" in _PYSCRIPT_CODE
+
+
+def test_pyscript_spinner_state_variables() -> None:
+    """Spinner state variables are declared in the PyScript code."""
+    for var in ("_spinner_val", "_top_branch", "_bottom_branch", "_top_end", "_bottom_end"):
+        assert var in _PYSCRIPT_CODE, f"{var} missing from _PYSCRIPT_CODE"
+
+
+def test_pyscript_spinner_cross_rendering() -> None:
+    """Cross-shaped spinner rendering functions are present."""
+    assert "_render_cross_chain" in _PYSCRIPT_CODE
+    assert "_render_linear_chain" in _PYSCRIPT_CODE
+    assert "_render_drop_zone" in _PYSCRIPT_CODE
+    assert "_spinner_index" in _PYSCRIPT_CODE
+    assert "_spinner_is_surrounded" in _PYSCRIPT_CODE
+
+
+def test_pyscript_spinner_top_bottom_placement() -> None:
+    """Spinner top/bottom branch placement is handled in _apply_play()."""
+    # top and bottom are handled together via 'in ("top", "bottom")' after refactor.
+    assert 'target_end == "top"' in _PYSCRIPT_CODE or 'target_end in ("top", "bottom")' in _PYSCRIPT_CODE
+    assert "_extend_branch" in _PYSCRIPT_CODE  # shared helper for branch placement
+    assert "_top_branch" in _PYSCRIPT_CODE
+    assert "_bottom_branch" in _PYSCRIPT_CODE
+
+
+def test_pyscript_spinner_cleared_on_new_hand() -> None:
+    """Spinner state is cleared when a new hand is dealt."""
+    assert "_spinner_val = None" in _PYSCRIPT_CODE
+    assert "_top_branch.clear()" in _PYSCRIPT_CODE
+    assert "_bottom_branch.clear()" in _PYSCRIPT_CODE

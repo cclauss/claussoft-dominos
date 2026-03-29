@@ -242,6 +242,11 @@ _needs_boneyard_draw = False   # True when human must draw from boneyard
 _game_over = False             # True when the match has been won
 _consecutive_passes = 0        # tracks back-to-back passes; game stuck when >= 2
 _game_num = _raw.get("game_num", 0)  # how many hands dealt so far (first player alternates)
+_spinner_val = None            # pip value of first double placed (the spinner)
+_top_branch = []               # bones in the top branch above the spinner
+_bottom_branch = []            # bones in the bottom branch below the spinner
+_top_end = None                # open pip at the end of the top branch
+_bottom_end = None             # open pip at the end of the bottom branch
 
 
 # ---------------------------------------------------------------------------
@@ -297,12 +302,7 @@ def _render_boneyard(draggable_to_hand=False):
     area.className = "draw-mode" if draggable_to_hand else ""
 
 
-def _render_play_area():
-    area = document.getElementById("play-area")
-    area.innerHTML = ""
-    if not _chain:
-        return
-    w = _compute_bone_size()
+def _render_linear_chain(area, w):
     for i, bone in enumerate(_chain):
         is_double = bone[0] == bone[1]
         div = _make_bone_div(bone[0], bone[1], horizontal=not is_double, w=w)
@@ -312,6 +312,92 @@ def _render_play_area():
             div.addEventListener("dragover", ffi.create_proxy(_on_dragover))
             div.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
         area.appendChild(div)
+
+
+def _render_drop_zone(label, chain_end, w):
+    dz = document.createElement("div")
+    dz.className = "spinner-drop"
+    dz.setAttribute("data-chain-end", chain_end)
+    dz.textContent = label
+    dz.style.width = f"{w + 6}px"
+    dz.style.height = f"{w + 6}px"
+    dz.addEventListener("dragover", ffi.create_proxy(_on_dragover))
+    dz.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
+    return dz
+
+
+def _render_cross_chain(area, w, si):
+    # Bones to the left of the spinner
+    for i in range(si):
+        bone = _chain[i]
+        is_double = bone[0] == bone[1]
+        div = _make_bone_div(bone[0], bone[1], horizontal=not is_double, w=w)
+        if i == 0:
+            div.setAttribute("data-chain-end", "left")
+            div.addEventListener("dragover", ffi.create_proxy(_on_dragover))
+            div.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
+        area.appendChild(div)
+
+    # Spinner junction: column of [top branch / spinner / bottom branch]
+    junc = document.createElement("div")
+    junc.className = "spinner-junction"
+
+    top_col = document.createElement("div")
+    top_col.className = "branch-col"
+    if _top_branch:
+        for b in reversed(_top_branch):
+            bd = _make_bone_div(b[0], b[1], w=w)
+            top_col.appendChild(bd)
+        fc = top_col.firstChild
+        fc.setAttribute("data-chain-end", "top")
+        fc.addEventListener("dragover", ffi.create_proxy(_on_dragover))
+        fc.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
+    else:
+        top_col.appendChild(_render_drop_zone("^", "top", w))
+    junc.appendChild(top_col)
+
+    sp_bone = _chain[si]
+    junc.appendChild(_make_bone_div(sp_bone[0], sp_bone[1], w=w))
+
+    bot_col = document.createElement("div")
+    bot_col.className = "branch-col"
+    if _bottom_branch:
+        for b in _bottom_branch:
+            bd = _make_bone_div(b[0], b[1], w=w)
+            bot_col.appendChild(bd)
+        lc = bot_col.lastChild
+        lc.setAttribute("data-chain-end", "bottom")
+        lc.addEventListener("dragover", ffi.create_proxy(_on_dragover))
+        lc.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
+    else:
+        bot_col.appendChild(_render_drop_zone("v", "bottom", w))
+    junc.appendChild(bot_col)
+
+    area.appendChild(junc)
+
+    # Bones to the right of the spinner
+    for i in range(si + 1, len(_chain)):
+        bone = _chain[i]
+        is_double = bone[0] == bone[1]
+        div = _make_bone_div(bone[0], bone[1], horizontal=not is_double, w=w)
+        if i == len(_chain) - 1:
+            div.setAttribute("data-chain-end", "right")
+            div.addEventListener("dragover", ffi.create_proxy(_on_dragover))
+            div.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
+        area.appendChild(div)
+
+
+def _render_play_area():
+    area = document.getElementById("play-area")
+    area.innerHTML = ""
+    if not _chain:
+        return
+    w = _compute_bone_size()
+    si = _spinner_index()
+    if si is not None and _spinner_is_surrounded():
+        _render_cross_chain(area, w, si)
+    else:
+        _render_linear_chain(area, w)
 
 
 def _render_scores():
@@ -359,28 +445,28 @@ def _score_chain():
     if not _chain:
         return 0
     if len(_chain) == 1 and _chain[0][0] == _chain[0][1]:
-        total = _chain[0][0] * _SPINNER_MULTIPLIER   # spinner: count both ends
+        total = _chain[0][0] * _SPINNER_MULTIPLIER
     else:
-        total = (_left_end or 0) + (_right_end or 0)
+        lv, rv, tv, bv = _end_values()
+        total = lv + rv + tv + bv
     return total if total % _SCORING_DIVISOR == 0 else 0
 
 
 def _simulate_chain_score_after_play(bone):
-    # Return the chain sum that would result from playing bone (0 if not scoring).
+    # Return the best possible chain score after playing this bone on any valid end.
     a, b = bone[0], bone[1]
     if not _chain:
         total = a * 2 if a == b else a + b
-    elif a == _left_end:
-        total = (b or 0) + (_right_end or 0)
-    elif b == _left_end:
-        total = (a or 0) + (_right_end or 0)
-    elif a == _right_end:
-        total = (_left_end or 0) + (b or 0)
-    elif b == _right_end:
-        total = (_left_end or 0) + (a or 0)
-    else:
-        return 0
-    return total if total % _SCORING_DIVISOR == 0 else 0
+        return total if total % _SCORING_DIVISOR == 0 else 0
+    lv, rv, tv, bv = _end_values()
+    mult = 2 if a == b else 1
+    best = 0
+    for tgt in _play_options(a, b):
+        new_end = (b if a == _ref_pip(tgt) else a) * mult
+        total = _total_for_target(tgt, new_end, lv, rv, tv, bv)
+        sc = total if total % _SCORING_DIVISOR == 0 else 0
+        best = max(best, sc)
+    return best
 
 
 def _find_bone(hand, top, bottom):
@@ -390,17 +476,78 @@ def _find_bone(hand, top, bottom):
     return None
 
 
+def _end_values():
+    # Return (lv, rv, tv, bv): current chain end pip values with doubles counted twice.
+    lv = (_left_end or 0) * (2 if _chain[0][0] == _chain[0][1] else 1)
+    rv = (_right_end or 0) * (2 if _chain[-1][0] == _chain[-1][1] else 1)
+    top_dbl = _top_branch and _top_branch[-1][0] == _top_branch[-1][1]
+    tv = ((_top_end or 0) * (2 if top_dbl else 1)) if _top_branch else 0
+    bot_dbl = _bottom_branch and _bottom_branch[-1][0] == _bottom_branch[-1][1]
+    bv = ((_bottom_end or 0) * (2 if bot_dbl else 1)) if _bottom_branch else 0
+    return lv, rv, tv, bv
+
+
+def _ref_pip(tgt):
+    # Return the reference pip value for a given target end.
+    if tgt == "left":
+        return _left_end
+    if tgt == "right":
+        return _right_end
+    if tgt == "top":
+        return _top_end if _top_end is not None else _spinner_val
+    return _bottom_end if _bottom_end is not None else _spinner_val
+
+
+def _total_for_target(tgt, new_end, lv, rv, tv, bv):
+    # Return the chain end sum after placing new_end at tgt (other ends unchanged).
+    if tgt == "left":
+        return new_end + rv + tv + bv
+    if tgt == "right":
+        return lv + new_end + tv + bv
+    if tgt == "top":
+        return lv + rv + new_end + bv
+    return lv + rv + tv + new_end
+
+
+def _extend_branch(branch, end_ref, top, bottom):
+    # Extend a spinner branch by one bone. end_ref is a 1-element list [current_end].
+    # Mutates branch and end_ref[0] in-place; returns True on success.
+    ref = end_ref[0] if end_ref[0] is not None else _spinner_val
+    if top == ref:
+        branch.append([top, bottom])
+        end_ref[0] = bottom
+    elif bottom == ref:
+        branch.append([bottom, top])
+        end_ref[0] = top
+    else:
+        return False
+    return True
+
+
 def _apply_play(top, bottom, hand, target_end=None):
-    global _left_end, _right_end
+    global _left_end, _right_end, _spinner_val, _top_end, _bottom_end
     bone = _find_bone(hand, top, bottom)
     if bone is None:
         return False
-    hand.remove(bone)
+    # First bone: always valid, no target needed
     if not _chain:
+        hand.remove(bone)
         _chain.append([top, bottom])
         _left_end = top
         _right_end = bottom
-    elif target_end == "left":
+        if top == bottom and _spinner_val is None:
+            _spinner_val = top
+        return True
+    # Auto-detect target when not specified
+    if target_end is None:
+        opts = _play_options(top, bottom)
+        if not opts:
+            return False
+        if len(opts) > 1:
+            return False  # ambiguous; caller must specify
+        target_end = opts[0]
+    hand.remove(bone)
+    if target_end == "left":
         if top == _left_end:
             _chain.insert(0, [bottom, top])
             _left_end = bottom
@@ -420,41 +567,84 @@ def _apply_play(top, bottom, hand, target_end=None):
         else:
             hand.append(bone)
             return False
-    elif top == _left_end:
-        _chain.insert(0, [bottom, top])
-        _left_end = bottom
-    elif bottom == _left_end:
-        _chain.insert(0, [top, bottom])
-        _left_end = top
-    elif top == _right_end:
-        _chain.append([top, bottom])
-        _right_end = bottom
-    elif bottom == _right_end:
-        _chain.append([bottom, top])
-        _right_end = top
+    elif target_end in ("top", "bottom"):
+        if _spinner_val is None or not _spinner_is_surrounded():
+            hand.append(bone)
+            return False
+        branch = _top_branch if target_end == "top" else _bottom_branch
+        end_ref = [_top_end] if target_end == "top" else [_bottom_end]
+        if not _extend_branch(branch, end_ref, top, bottom):
+            hand.append(bone)
+            return False
+        if target_end == "top":
+            _top_end = end_ref[0]
+        else:
+            _bottom_end = end_ref[0]
     else:
-        hand.append(bone)  # put it back - invalid placement
+        hand.append(bone)
         return False
+    # Record first double as spinner
+    if _spinner_val is None and top == bottom:
+        _spinner_val = top
     return True
 
 
 def _can_play(top, bottom):
     if not _chain:
         return True
-    return top in (_left_end, _right_end) or bottom in (_left_end, _right_end)
+    return len(_play_options(top, bottom)) > 0
 
 
 def _valid_plays(hand):
     return [t for t in hand if _can_play(t[0], t[1])]
 
 
-def _is_ambiguous_play(top, bottom):
-    # Return True when the bone fits both ends and the ends differ.
-    if _left_end is None or _right_end is None or _left_end == _right_end:
+def _spinner_index():
+    if _spinner_val is None:
+        return None
+    for i, b in enumerate(_chain):
+        if b[0] == _spinner_val:
+            return i
+    return None
+
+
+def _spinner_is_surrounded():
+    si = _spinner_index()
+    if si is None:
         return False
-    can_left = top == _left_end or bottom == _left_end
-    can_right = top == _right_end or bottom == _right_end
-    return can_left and can_right
+    return 0 < si < len(_chain) - 1
+
+
+def _play_options(top, bottom):
+    # Returns list of valid target ends for an existing chain.
+    opts = []
+    can_left = _left_end is not None and (top == _left_end or bottom == _left_end)
+    can_right = _right_end is not None and (top == _right_end or bottom == _right_end)
+    if can_left and can_right and _left_end == _right_end:
+        opts.append("right")  # both ends same value - pick right (append) as canonical
+    else:
+        if can_left:
+            opts.append("left")
+        if can_right:
+            opts.append("right")
+    if _spinner_val is not None and _spinner_is_surrounded():
+        sv = _spinner_val
+        if _top_end is None:
+            if top == sv or bottom == sv:
+                opts.append("top")
+        elif top == _top_end or bottom == _top_end:
+            opts.append("top")
+        if _bottom_end is None:
+            if top == sv or bottom == sv:
+                opts.append("bottom")
+        elif top == _bottom_end or bottom == _bottom_end:
+            opts.append("bottom")
+    return opts
+
+
+def _is_ambiguous_play(top, bottom):
+    # Return True when the bone fits more than one placement position.
+    return len(_play_options(top, bottom)) > 1
 
 
 def _compute_bone_size():
@@ -516,6 +706,7 @@ def _deal_new_hand():
     # Shuffle and deal a fresh set of bones, preserving match scores.
     global _hand0, _hand1, _boneyard, _chain, _left_end, _right_end
     global _current_player, _needs_boneyard_draw, _consecutive_passes, _game_num
+    global _spinner_val, _top_end, _bottom_end
     bones = [[i, j] for i in range(7) for j in range(i, 7)]
     random.shuffle(bones)
     _hand0 = [list(t) for t in bones[:7]]
@@ -524,6 +715,11 @@ def _deal_new_hand():
     _chain.clear()
     _left_end = None
     _right_end = None
+    _spinner_val = None
+    _top_branch.clear()
+    _bottom_branch.clear()
+    _top_end = None
+    _bottom_end = None
     _game_num += 1
     _needs_boneyard_draw = False
     _consecutive_passes = 0
@@ -681,7 +877,22 @@ def _computer_play():
             t[0] + t[1],
         ),
     )
-    if _apply_play(best[0], best[1], _hand1):
+    # Pick the best target end for this bone (highest scoring; first option as tiebreak)
+    opts = _play_options(best[0], best[1]) if _chain else []
+    tgt = opts[0] if opts else None
+    if len(opts) > 1:
+        a, b = best[0], best[1]
+        lv, rv, tv, bv = _end_values()
+        mult = 2 if a == b else 1
+        best_sc = -1
+        for o in opts:
+            ne = (b if a == _ref_pip(o) else a) * mult
+            tot = _total_for_target(o, ne, lv, rv, tv, bv)
+            sc = tot if tot % _SCORING_DIVISOR == 0 else 0
+            if sc > best_sc:
+                best_sc = sc
+                tgt = o
+    if _apply_play(best[0], best[1], _hand1, target_end=tgt):
         _set_message(f"Computer played [{best[0]}|{best[1]}].")
         _after_play(1, best)
     else:
@@ -722,11 +933,12 @@ def _on_drop(event):
     if not _can_play(top, bottom):
         _set_message(f"[{top}|{bottom}] cannot be played here - try another bone.")
         return
-    # If the bone fits both ends, the player must drop it on the specific end bone.
+    # If the bone fits multiple positions, require a targeted drop.
     if _is_ambiguous_play(top, bottom):
+        opts = _play_options(top, bottom)
+        ends_str = " or ".join(f"the {o} end" for o in opts)
         _set_message(
-            f"[{top}|{bottom}] fits both ends! Drop it on the leftmost or "
-            f"rightmost bone in the play area to choose which end to attach."
+            f"[{top}|{bottom}] fits multiple positions! Drop it on {ends_str}."
         )
         return
     if _apply_play(top, bottom, _hand0):
@@ -835,11 +1047,10 @@ body {
 h1 { font-size: 1.1rem; letter-spacing: 2px; }
 #board {
     display: grid;
-    grid-template-columns: 130px 1fr 90px;
+    grid-template-columns: 130px 1fr 130px;
     grid-template-rows: auto 1fr auto;
     gap: 6px;
     width: 100%;
-    max-width: 900px;
     flex: 1;
 }
 .player-hand {
@@ -890,7 +1101,6 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
 .score-val { font-size: 1.4rem; font-weight: bold; color: #ffd700; }
 #status-bar {
     width: 100%;
-    max-width: 900px;
     background: rgba(0,0,0,.4);
     border-radius: 6px;
     padding: 6px 10px;
@@ -913,6 +1123,27 @@ h1 { font-size: 1.1rem; letter-spacing: 2px; }
     transition: transform .1s;
 }
 .domino-bone:hover { transform: scale(1.08); }
+.spinner-junction {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+.branch-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+.spinner-drop {
+    border: 2px dashed rgba(255,255,255,0.4);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.75rem;
+}
 .area-label {
     font-size: 0.7rem;
     opacity: .7;
