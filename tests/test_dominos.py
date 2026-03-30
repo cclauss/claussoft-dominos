@@ -341,7 +341,7 @@ def test_pyscript_last_bone_score_must_draw_and_continue() -> None:
     assert after_play_start != -1
     next_def = _PYSCRIPT_CODE.find("\ndef _", after_play_start + 1)
     after_play_body = _PYSCRIPT_CODE[after_play_start:next_def]
-    # Three cases: double+scored, double-only, score-only – all must trigger draw rule.
+    # Three cases: double+scored, double-only, score-only - all must trigger draw rule.
     assert "with their last bone! Must draw and keep playing." in after_play_body
     assert "played their last bone (a double)!" in after_play_body
     # When boneyard is at minimum or last bone is plain non-scoring, call check_win instead.
