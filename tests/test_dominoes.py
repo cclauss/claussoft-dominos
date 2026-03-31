@@ -1,13 +1,16 @@
-from dominos_ui_on_pyscript import (
+from dominoes_ui_on_pyscript import (
     _PYSCRIPT_CODE,
     GameState,
+    _load_domino_image_uris,
+    _load_facedown_image_uri,
     all_domino_bones,
     build_html,
     deal_game,
+    make_domino_svg,
 )
 
 
-def test_dominos() -> None:
+def test_dominoes() -> None:
     assert True
 
 
@@ -98,7 +101,7 @@ def test_html_boneyard_random_draw() -> None:
 def test_html_ambiguous_play_check() -> None:
     """Play area drop handler guards against ambiguous multi-end placement."""
     assert "_is_ambiguous_play" in _PYSCRIPT_CODE
-    assert "_on_drop_chain_bone" in _PYSCRIPT_CODE
+    assert "_on_drop_played_bone" in _PYSCRIPT_CODE
     # target_end parameter is required for directed placement.
     assert "target_end=" in _PYSCRIPT_CODE
 
@@ -129,8 +132,8 @@ def test_pyscript_double_at_chain_end_scores_double() -> None:
     # Logic is extracted into _end_values(); verify the helper is present.
     assert "_end_values" in _PYSCRIPT_CODE
     # The _end_values helper applies * 2 for double chain ends.
-    assert "* (2 if _chain[0][0] == _chain[0][1] else 1)" in _PYSCRIPT_CODE
-    assert "* (2 if _chain[-1][0] == _chain[-1][1] else 1)" in _PYSCRIPT_CODE
+    assert "* (2 if _played_dominoes[0][0] == _played_dominoes[0][1] else 1)" in _PYSCRIPT_CODE
+    assert "* (2 if _played_dominoes[-1][0] == _played_dominoes[-1][1] else 1)" in _PYSCRIPT_CODE
 
 
 def test_pyscript_spinner_state_variables() -> None:
@@ -141,8 +144,8 @@ def test_pyscript_spinner_state_variables() -> None:
 
 def test_pyscript_spinner_cross_rendering() -> None:
     """Cross-shaped spinner rendering functions are present."""
-    assert "_render_cross_chain" in _PYSCRIPT_CODE
-    assert "_render_linear_chain" in _PYSCRIPT_CODE
+    assert "_render_played_cross" in _PYSCRIPT_CODE
+    assert "_render_played_linear" in _PYSCRIPT_CODE
     # Drop zones are now the spinner bone itself (no separate placeholder boxes).
     assert "_on_drop_spinner_bone" in _PYSCRIPT_CODE
     assert "_spinner_index" in _PYSCRIPT_CODE
@@ -208,7 +211,7 @@ def test_pyscript_spinner_junction_balanced() -> None:
 
 def test_pyscript_on_drop_chain_end_guard() -> None:
     """_on_drop returns early when the drop target is a chain-end bone."""
-    assert 'closest("[data-chain-end]")' in _PYSCRIPT_CODE
+    assert 'closest("[data-play-end]")' in _PYSCRIPT_CODE
 
 
 def test_html_play_area_centered() -> None:
@@ -327,9 +330,9 @@ def test_pyscript_last_bone_double_must_draw_and_continue() -> None:
     # The check must guard against boneyard being at minimum.
     assert "(scored or is_dbl) and len(_boneyard) > _BONEYARD_MIN" in after_play_body
     # Hand-empty check must come AFTER scoring (not before), so pts are always counted.
-    pts_pos = after_play_body.find("pts = _score_chain()")
+    pts_pos = after_play_body.find("pts = _score_played()")
     not_hand_pos = after_play_body.find("if not hand:")
-    assert pts_pos != -1, "pts = _score_chain() must be in _after_play"
+    assert pts_pos != -1, "pts = _score_played() must be in _after_play"
     assert not_hand_pos != -1, "if not hand: must be in _after_play"
     assert pts_pos < not_hand_pos, "Scoring must happen before the empty-hand check"
 
@@ -346,3 +349,76 @@ def test_pyscript_last_bone_score_must_draw_and_continue() -> None:
     assert "played their last bone (a double)!" in after_play_body
     # When boneyard is at minimum or last bone is plain non-scoring, call check_win instead.
     assert "_check_win_after_play(player_idx)" in after_play_body
+
+
+def test_load_domino_image_uris_returns_28_entries() -> None:
+    """All 28 domino SVG images are loaded as base64 data URIs."""
+    uris = _load_domino_image_uris()
+    assert len(uris) == 28
+    # Each key is of the form "a_b" where a <= b
+    for i in range(7):
+        for j in range(i, 7):
+            key = f"{i}_{j}"
+            assert key in uris, f"Missing domino image: {key}"
+            assert uris[key].startswith("data:image/svg+xml;base64,")
+
+
+def test_make_domino_svg_face_up_uses_image() -> None:
+    """make_domino_svg uses <image> elements from the SVG files."""
+    svg = make_domino_svg(3, 4)
+    assert "<image" in svg
+    assert "data:image/svg+xml;base64," in svg
+    # No hand-drawn SVG primitives (circles/rects for pips)
+    assert "<circle" not in svg
+    assert "<rect" not in svg
+
+
+def test_make_domino_svg_flipped_uses_rotate_180() -> None:
+    """make_domino_svg rotates 180 deg when top > bottom."""
+    svg_normal = make_domino_svg(3, 4)   # top=3 <= bottom=4: no rotation
+    svg_flipped = make_domino_svg(4, 3)  # top=4 > bottom=3: rotate 180
+    assert "rotate(180" in svg_flipped
+    assert "rotate(180" not in svg_normal
+
+
+def test_make_domino_svg_face_down_uses_facedown_image() -> None:
+    """make_domino_svg face_down=True uses the face-down skin if Pillow is available."""
+    svg = make_domino_svg(3, 4, face_down=True)
+    assert "<image" in svg
+    # The face-down SVG should not expose pip counts
+    assert "<circle" not in svg
+
+
+def test_pyscript_uses_domino_image_uris() -> None:
+    """PyScript code loads domino images from the embedded DOM element at startup."""
+    assert "_DOMINO_IMAGE_URIS" in _PYSCRIPT_CODE
+    assert "_FACEDOWN_IMAGE_URI" in _PYSCRIPT_CODE
+    assert 'document.getElementById("domino-image-uris")' in _PYSCRIPT_CODE
+    assert 'document.getElementById("facedown-image-uri")' in _PYSCRIPT_CODE
+
+
+def test_html_embeds_domino_image_uris() -> None:
+    """The generated HTML embeds both the domino image URIs and face-down image URI."""
+    state = deal_game()
+    html = build_html(state)
+    assert 'id="domino-image-uris"' in html
+    assert 'id="facedown-image-uri"' in html
+    # Domino images are base64-encoded SVG data URIs
+    assert "data:image/svg+xml;base64," in html
+
+
+def test_pyscript_played_dominoes_not_chain() -> None:
+    """The play area data structure is named _played_dominoes, not _chain."""
+    assert "_played_dominoes" in _PYSCRIPT_CODE
+    # Old name must not appear
+    assert "\n_chain " not in _PYSCRIPT_CODE
+    assert "play_chain" not in _PYSCRIPT_CODE
+
+
+def test_pyscript_image_based_svg_uses_svgimage() -> None:
+    """New domino rendering uses SVG <image> elements, not generated pip circles."""
+    # The _domino_svg function uses <image href=
+    assert '<image href=' in _PYSCRIPT_CODE
+    # Old hand-drawn approach (rect/circle for pips) is gone
+    assert "_PIP_LOCATIONS" not in _PYSCRIPT_CODE
+    assert "_half_svg" not in _PYSCRIPT_CODE

@@ -23,5 +23,5 @@ jobs:
     - run: pipx run pre-commit run --all-files
     - name: Test with pytest
       run: |
-        pip install beautifulsoup4 httpx pydantic pytest
+        pip install beautifulsoup4 httpx pillow pydantic pytest
         pytest

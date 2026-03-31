@@ -2,12 +2,12 @@
 
 """
 Running this script opens a PyScript-based graphical user interface for
-playing racehorse dominos in the local web browser.
+playing racehorse dominoes in the local web browser.
 
 The game board looks similar to images/tkDomino.py.png but uses PyScript
-instead of tkinter.  Dominos are SVG images consistent with dominos_svg.py.
-Each player is dealt 7 random dominos shown in boxes at the top and bottom.
-The remaining dominos are placed face-down in the boneyard on the left.
+instead of tkinter.  Dominoes are SVG images from images/dominoes_faceup/.
+Each player is dealt 7 random dominoes shown in boxes at the top and bottom.
+The remaining dominoes are placed face-down in the boneyard on the left.
 The first player can drag a domino from their hand into the play area.
 """
 
@@ -16,10 +16,13 @@ The first player can drag a domino from their hand into the play area.
 # dependencies = [
 #     "beautifulsoup4",
 #     "httpx",
+#     "pillow",
 #     "pydantic",
 # ]
 # ///
 
+import base64
+import io
 import random
 import sys
 import tempfile
@@ -34,26 +37,14 @@ PYSCRIPT_VERSION = "2026.3.1"
 PYSCRIPT_JS_URL = f"https://pyscript.net/releases/{PYSCRIPT_VERSION}/core.js"
 PYSCRIPT_CSS_URL = f"https://pyscript.net/releases/{PYSCRIPT_VERSION}/core.css"
 
-# Pip locations consistent with dominos_svg.py (0-6 pips)
-PIP_OFFSETS = (0.25, 0.5, 0.75)
-PIP_LOCATIONS: tuple[tuple[tuple[int, int], ...], ...] = (
-    (),
-    ((1, 1),),
-    ((0, 0), (2, 2)),
-    ((0, 0), (1, 1), (2, 2)),
-    ((0, 0), (0, 2), (2, 0), (2, 2)),
-    ((0, 0), (0, 2), (1, 1), (2, 0), (2, 2)),
-    ((0, 0), (0, 1), (0, 2), (2, 0), (2, 1), (2, 2)),
-)
-
 
 class GameState(BaseModel):
-    """Pydantic model capturing a complete racehorse dominos game state."""
+    """Pydantic model capturing a complete racehorse dominoes game state."""
 
     player0_hand: list[list[int]]  # human player (shown at bottom)
     player1_hand: list[list[int]]  # computer player (shown at top)
     boneyard: list[list[int]]  # bones not yet dealt, shown face-down
-    play_chain: list[list[int]] = []
+    played_dominoes: list[list[int]] = []
     scores: list[int] = [0, 0]
     current_player: int = 0
     game_num: int = 0  # incremented at the start of each new hand; first_player = game_num % 2
@@ -76,48 +67,85 @@ def deal_game() -> GameState:
     )
 
 
-def _half_svg(pip: int, half: int, pad: int, w: int) -> str:
-    """Return SVG elements for one half of a domino (one die face)."""
-    y0 = pad + half * w
-    parts: list[str] = [
-        f'<rect x="{pad}" y="{y0}" width="{w}" height="{w}" fill="white" stroke="blue" stroke-width="1"/>'
-    ]
-    r = max(2.0, w * 0.055)
-    for xi, yi in PIP_LOCATIONS[pip]:
-        cx = pad + PIP_OFFSETS[xi] * w
-        cy = y0 + PIP_OFFSETS[yi] * w
-        parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="blue"/>')
-    return "".join(parts)
+def _load_domino_image_uris() -> dict[str, str]:
+    """Load all 28 domino SVG images and return them as base64 data URIs.
+
+    Keys are of the form "a_b" where a <= b (e.g. "3_4" for the [3,4] domino).
+    Values are data URIs suitable for use as SVG <image href="...">.
+    """
+    imgs_dir = Path(__file__).parent / "images" / "dominoes_faceup"
+    uris: dict[str, str] = {}
+    for i in range(7):
+        for j in range(i, 7):
+            key = f"{i}_{j}"
+            svg_path = imgs_dir / f"domino_{key}.svg"
+            if svg_path.exists():
+                b64 = base64.b64encode(svg_path.read_bytes()).decode("ascii")
+                uris[key] = f"data:image/svg+xml;base64,{b64}"
+    return uris
+
+
+def _load_facedown_image_uri() -> str:
+    """Load, compress, and return the face-down domino image as a JPEG data URI.
+
+    The source image (images/dominoes_facedown/*.png) can be very large; it is
+    resized to 200x400 px and saved as JPEG quality=80 before embedding so the
+    generated HTML stays fast to load.  Returns an empty string if Pillow is not
+    installed or no image file is found.
+    """
+    facedown_dir = Path(__file__).parent / "images" / "dominoes_facedown"
+    try:
+        from PIL import Image  # noqa: PLC0415
+    except ImportError:
+        return ""
+    for ext in ("*.png", "*.jpg", "*.jpeg"):
+        for img_path in sorted(facedown_dir.glob(ext)):
+            img = Image.open(img_path).convert("RGB")
+            img = img.resize((200, 400), Image.LANCZOS)
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=80)
+            b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+            return f"data:image/jpeg;base64,{b64}"
+    return ""
 
 
 def make_domino_svg(top: int, bottom: int, *, w: int = 55, face_down: bool = False) -> str:
-    """Generate an inline SVG string for one domino bone.
+    """Return an SVG string for one domino bone using pre-made image files.
+
+    For face-up bones, uses the SVG images in images/dominoes_faceup/.
+    For face-down bones, uses the compressed image from images/dominoes_facedown/.
+    The whole image is rotated when the pip order requires it; individual halves
+    are never rotated independently.
 
     Args:
         top: pip count for the top half (0-6).
         bottom: pip count for the bottom half (0-6).
         w: width of each half in pixels; the full bone is w x (2*w).
-        face_down: when True the bone is rendered as a plain grey rectangle.
+        face_down: when True the bone is rendered using the face-down skin image.
     """
     h, pad = w * 2, 3
     tw, th = w + 2 * pad, h + 2 * pad
-    rx = w // 10
-
     if face_down:
+        uri = _load_facedown_image_uri()
         return (
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
-            f'<rect x="{pad}" y="{pad}" width="{w}" height="{h}" rx="{rx}" '
-            f'fill="#666" stroke="#444" stroke-width="1.5"/>'
+            f'<image href="{uri}" width="{tw}" height="{th}"/>'
             f"</svg>"
         )
-
-    dy = pad + w
+    uris = _load_domino_image_uris()
+    a, b = (top, bottom) if top <= bottom else (bottom, top)
+    uri = uris.get(f"{a}_{b}", "")
+    if top > bottom:
+        cx, cy = tw / 2, th / 2
+        return (
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
+            f'<image href="{uri}" width="{tw}" height="{th}" '
+            f'transform="rotate(180, {cx:.1f}, {cy:.1f})"/>'
+            f"</svg>"
+        )
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
-        f"{_half_svg(top, 0, pad, w)}"
-        f"{_half_svg(bottom, 1, pad, w)}"
-        f'<line x1="{pad}" y1="{dy}" x2="{pad + w}" y2="{dy}" '
-        f'stroke="blue" stroke-width="1.5"/>'
+        f'<image href="{uri}" width="{tw}" height="{th}"/>'
         f"</svg>"
     )
 
@@ -138,92 +166,68 @@ _SPINNER_MULTIPLIER = 2   # doubles score both open ends of a spinner
 _SCORING_DIVISOR = 5      # racehorse: score a point for every 5 pips
 _WIN_SCORE = 30           # first player to reach this score wins the match
 _BONEYARD_MIN = 2         # must leave at least this many bones in boneyard
-_BONE_GAP_PX = 4          # uniform gap (px) between adjacent dominos in every direction
-
-# ---------------------------------------------------------------------------
-# Pip data (mirrors the host-side PIP_OFFSETS / PIP_LOCATIONS)
-# ---------------------------------------------------------------------------
-_PIP_OFFSETS = (0.25, 0.5, 0.75)
-_PIP_LOCATIONS = (
-    (),
-    ((1, 1),),
-    ((0, 0), (2, 2)),
-    ((0, 0), (1, 1), (2, 2)),
-    ((0, 0), (0, 2), (2, 0), (2, 2)),
-    ((0, 0), (0, 2), (1, 1), (2, 0), (2, 2)),
-    ((0, 0), (0, 1), (0, 2), (2, 0), (2, 1), (2, 2)),
-)
-
-
-def _half_svg(pip, half, pad, w):
-    y0 = pad + half * w
-    r = max(2.0, w * 0.055)
-    parts = [
-        f'<rect x="{pad}" y="{y0}" width="{w}" height="{w}" '
-        f'fill="white" stroke="blue" stroke-width="1"/>'
-    ]
-    for xi, yi in _PIP_LOCATIONS[pip]:
-        cx = pad + _PIP_OFFSETS[xi] * w
-        cy = y0 + _PIP_OFFSETS[yi] * w
-        parts.append(
-            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="blue"/>'
-        )
-    return "".join(parts)
-
-
-def _half_svg_h(pip, half, pad, w):
-    x0 = pad + half * w
-    r = max(2.0, w * 0.055)
-    parts = [
-        f'<rect x="{x0}" y="{pad}" width="{w}" height="{w}" '
-        f'fill="white" stroke="blue" stroke-width="1"/>'
-    ]
-    for xi, yi in _PIP_LOCATIONS[pip]:
-        cx = x0 + _PIP_OFFSETS[xi] * w
-        cy = pad + _PIP_OFFSETS[yi] * w
-        parts.append(
-            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="blue"/>'
-        )
-    return "".join(parts)
-
-
-def _domino_svg_h(top, bottom, w=55, face_down=False):
-    h, pad = w * 2, 3
-    tw, th = h + 2 * pad, w + 2 * pad
-    rx = w // 10
-    if face_down:
-        return (
-            f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
-            f'<rect x="{pad}" y="{pad}" width="{h}" height="{w}" rx="{rx}" '
-            f'fill="#666" stroke="#444" stroke-width="1.5"/></svg>'
-        )
-    dx = pad + w
-    return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
-        f"{_half_svg_h(top, 0, pad, w)}"
-        f"{_half_svg_h(bottom, 1, pad, w)}"
-        f'<line x1="{dx}" y1="{pad}" x2="{dx}" y2="{pad + w}" '
-        f'stroke="blue" stroke-width="1.5"/></svg>'
-    )
+_BONE_GAP_PX = 4          # uniform gap (px) between adjacent dominoes in every direction
 
 
 def _domino_svg(top, bottom, w=55, face_down=False):
+    # Portrait SVG using the pre-loaded domino image.
+    # face_down: use the face-down skin; otherwise look up the face-up SVG image.
+    # top > bottom: rotate the whole image 180 deg so the correct half is on top.
     h, pad = w * 2, 3
     tw, th = w + 2 * pad, h + 2 * pad
-    rx = w // 10
     if face_down:
         return (
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
-            f'<rect x="{pad}" y="{pad}" width="{w}" height="{h}" rx="{rx}" '
-            f'fill="#666" stroke="#444" stroke-width="1.5"/></svg>'
+            f'<image href="{_FACEDOWN_IMAGE_URI}" width="{tw}" height="{th}"/>'
+            f'</svg>'
         )
-    dy = pad + w
+    a, b = (top, bottom) if top <= bottom else (bottom, top)
+    uri = _DOMINO_IMAGE_URIS.get(f"{a}_{b}", "")
+    if top > bottom:
+        cx, cy = tw / 2, th / 2
+        return (
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
+            f'<image href="{uri}" width="{tw}" height="{th}" '
+            f'transform="rotate(180, {cx:.1f}, {cy:.1f})"/>'
+            f'</svg>'
+        )
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
-        f"{_half_svg(top, 0, pad, w)}"
-        f"{_half_svg(bottom, 1, pad, w)}"
-        f'<line x1="{pad}" y1="{dy}" x2="{pad + w}" y2="{dy}" '
-        f'stroke="blue" stroke-width="1.5"/></svg>'
+        f'<image href="{uri}" width="{tw}" height="{th}"/>'
+        f'</svg>'
+    )
+
+
+def _domino_svg_h(top, bottom, w=55, face_down=False):
+    # Landscape SVG by rotating the portrait domino image as a whole.
+    # top <= bottom: CCW -90 deg (translate(0,pw) rotate(-90)) -- top pips on left.
+    # top > bottom:  CW  +90 deg (translate(ph,0) rotate(90))  -- top pips on left.
+    h, pad = w * 2, 3
+    tw, th = h + 2 * pad, w + 2 * pad   # landscape output dimensions
+    pw, ph = w + 2 * pad, h + 2 * pad   # portrait image dimensions
+    if face_down:
+        return (
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
+            f'<image href="{_FACEDOWN_IMAGE_URI}" width="{pw}" height="{ph}" '
+            f'transform="translate(0, {pw}) rotate(-90)"/>'
+            f'</svg>'
+        )
+    a, b = (top, bottom) if top <= bottom else (bottom, top)
+    uri = _DOMINO_IMAGE_URIS.get(f"{a}_{b}", "")
+    if top > bottom:
+        # CW rotation: portrait-bottom ('top' pips in file) maps to landscape-left
+        return (
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
+            f'<image href="{uri}" width="{pw}" height="{ph}" '
+            f'transform="translate({ph}, 0) rotate(90)"/>'
+            f'</svg>'
+        )
+    # CCW rotation: portrait-top ('a' pips) maps to landscape-left
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{tw}" height="{th}">'
+        f'<image href="{uri}" width="{pw}" height="{ph}" '
+        f'transform="translate(0, {pw}) rotate(-90)"/>'
+        f'</svg>'
     )
 
 
@@ -234,9 +238,12 @@ _raw = json.loads(document.getElementById("game-state-data").textContent)
 _hand0 = [list(t) for t in _raw["player0_hand"]]   # human hand
 _hand1 = [list(t) for t in _raw["player1_hand"]]   # computer hand
 _boneyard = [list(t) for t in _raw["boneyard"]]
-_chain: list[list[int]] = []   # played dominos, in chain order
-_left_end: int | None = None   # open left end of the chain
-_right_end: int | None = None  # open right end of the chain
+# Load domino face-up SVG images and the face-down skin image embedded by the host
+_DOMINO_IMAGE_URIS = json.loads(document.getElementById("domino-image-uris").textContent)
+_FACEDOWN_IMAGE_URI = json.loads(document.getElementById("facedown-image-uri").textContent)
+_played_dominoes: list[list[int]] = []   # played dominoes, in play order
+_left_end: int | None = None   # open left end of the played dominoes
+_right_end: int | None = None  # open right end of the played dominoes
 _scores = [0, 0]
 _current_player = 0            # 0 = human, 1 = computer
 _needs_boneyard_draw = False   # True when human must draw from boneyard
@@ -317,34 +324,34 @@ def _apply_bone_rotation(div, w):
     div.style.marginRight = f"-{hw}px"
 
 
-def _render_linear_chain(area, w):
-    for i, bone in enumerate(_chain):
+def _render_played_linear(area, w):
+    for i, bone in enumerate(_played_dominoes):
         is_double = bone[0] == bone[1]
         # All bones use the landscape (horizontal) SVG.
         # Doubles are CSS-rotated 90° so they appear portrait, perpendicular to the chain.
         div = _make_bone_div(bone[0], bone[1], horizontal=True, w=w)
         if is_double:
             _apply_bone_rotation(div, w)
-        if i == 0 or i == len(_chain) - 1:
+        if i == 0 or i == len(_played_dominoes) - 1:
             end_side = "left" if i == 0 else "right"
-            div.setAttribute("data-chain-end", end_side)
+            div.setAttribute("data-play-end", end_side)
             div.addEventListener("dragover", ffi.create_proxy(_on_dragover))
-            div.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
+            div.addEventListener("drop", ffi.create_proxy(_on_drop_played_bone))
         area.appendChild(div)
 
 
-def _render_cross_chain(area, w, si):
+def _render_played_cross(area, w, si):
     # Bones to the left of the spinner
     for i in range(si):
-        bone = _chain[i]
+        bone = _played_dominoes[i]
         is_double = bone[0] == bone[1]
         div = _make_bone_div(bone[0], bone[1], horizontal=True, w=w)
         if is_double:
             _apply_bone_rotation(div, w)
         if i == 0:
-            div.setAttribute("data-chain-end", "left")
+            div.setAttribute("data-play-end", "left")
             div.addEventListener("dragover", ffi.create_proxy(_on_dragover))
-            div.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
+            div.addEventListener("drop", ffi.create_proxy(_on_drop_played_bone))
         area.appendChild(div)
 
     # Spinner junction: column of [top branch / spinner / bottom branch]
@@ -370,16 +377,16 @@ def _render_cross_chain(area, w, si):
             bd = _make_bone_div(b[1], b[0], horizontal=is_dbl, w=w)
             top_col.appendChild(bd)
         fc = top_col.firstChild
-        fc.setAttribute("data-chain-end", "top")
+        fc.setAttribute("data-play-end", "top")
         fc.addEventListener("dragover", ffi.create_proxy(_on_dragover))
-        fc.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
+        fc.addEventListener("drop", ffi.create_proxy(_on_drop_played_bone))
     junc.appendChild(top_col)
 
     # Spinner bone: drop on top half → top branch, bottom half → bottom branch.
     # No visual highlight — just a transparent drop target on the bone itself.
-    sp_bone = _chain[si]
+    sp_bone = _played_dominoes[si]
     sp_div = _make_bone_div(sp_bone[0], sp_bone[1], w=w)
-    sp_div.setAttribute("data-chain-end", "spinner")
+    sp_div.setAttribute("data-play-end", "spinner")
     sp_div.addEventListener("dragover", ffi.create_proxy(_on_dragover))
     sp_div.addEventListener("drop", ffi.create_proxy(_on_drop_spinner_bone))
     junc.appendChild(sp_div)
@@ -395,38 +402,38 @@ def _render_cross_chain(area, w, si):
             bd = _make_bone_div(b[0], b[1], horizontal=is_dbl, w=w)
             bot_col.appendChild(bd)
         lc = bot_col.lastChild
-        lc.setAttribute("data-chain-end", "bottom")
+        lc.setAttribute("data-play-end", "bottom")
         lc.addEventListener("dragover", ffi.create_proxy(_on_dragover))
-        lc.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
+        lc.addEventListener("drop", ffi.create_proxy(_on_drop_played_bone))
     junc.appendChild(bot_col)
 
     area.appendChild(junc)
 
     # Bones to the right of the spinner
-    for i in range(si + 1, len(_chain)):
-        bone = _chain[i]
+    for i in range(si + 1, len(_played_dominoes)):
+        bone = _played_dominoes[i]
         is_double = bone[0] == bone[1]
         div = _make_bone_div(bone[0], bone[1], horizontal=True, w=w)
         if is_double:
             _apply_bone_rotation(div, w)
-        if i == len(_chain) - 1:
-            div.setAttribute("data-chain-end", "right")
+        if i == len(_played_dominoes) - 1:
+            div.setAttribute("data-play-end", "right")
             div.addEventListener("dragover", ffi.create_proxy(_on_dragover))
-            div.addEventListener("drop", ffi.create_proxy(_on_drop_chain_bone))
+            div.addEventListener("drop", ffi.create_proxy(_on_drop_played_bone))
         area.appendChild(div)
 
 
 def _render_play_area():
     area = document.getElementById("play-area")
     area.innerHTML = ""
-    if not _chain:
+    if not _played_dominoes:
         return
     w = _compute_bone_size()
     si = _spinner_index()
     if si is not None and _spinner_is_surrounded():
-        _render_cross_chain(area, w, si)
+        _render_played_cross(area, w, si)
     else:
-        _render_linear_chain(area, w)
+        _render_played_linear(area, w)
 
 
 def _render_scores():
@@ -470,21 +477,21 @@ def _hand_value(hand):
     return sum(t[0] + t[1] for t in hand)
 
 
-def _score_chain():
-    if not _chain:
+def _score_played():
+    if not _played_dominoes:
         return 0
-    if len(_chain) == 1 and _chain[0][0] == _chain[0][1]:
-        total = _chain[0][0] * _SPINNER_MULTIPLIER
+    if len(_played_dominoes) == 1 and _played_dominoes[0][0] == _played_dominoes[0][1]:
+        total = _played_dominoes[0][0] * _SPINNER_MULTIPLIER
     else:
         lv, rv, tv, bv = _end_values()
         total = lv + rv + tv + bv
     return total if total % _SCORING_DIVISOR == 0 else 0
 
 
-def _simulate_chain_score_after_play(bone):
+def _simulate_score_after_play(bone):
     # Return the best possible chain score after playing this bone on any valid end.
     a, b = bone[0], bone[1]
-    if not _chain:
+    if not _played_dominoes:
         total = a * 2 if a == b else a + b
         return total if total % _SCORING_DIVISOR == 0 else 0
     lv, rv, tv, bv = _end_values()
@@ -507,8 +514,8 @@ def _find_bone(hand, top, bottom):
 
 def _end_values():
     # Return (lv, rv, tv, bv): current chain end pip values with doubles counted twice.
-    lv = (_left_end or 0) * (2 if _chain[0][0] == _chain[0][1] else 1)
-    rv = (_right_end or 0) * (2 if _chain[-1][0] == _chain[-1][1] else 1)
+    lv = (_left_end or 0) * (2 if _played_dominoes[0][0] == _played_dominoes[0][1] else 1)
+    rv = (_right_end or 0) * (2 if _played_dominoes[-1][0] == _played_dominoes[-1][1] else 1)
     top_dbl = _top_branch and _top_branch[-1][0] == _top_branch[-1][1]
     tv = ((_top_end or 0) * (2 if top_dbl else 1)) if _top_branch else 0
     bot_dbl = _bottom_branch and _bottom_branch[-1][0] == _bottom_branch[-1][1]
@@ -559,9 +566,9 @@ def _apply_play(top, bottom, hand, target_end=None):
     if bone is None:
         return False
     # First bone: always valid, no target needed
-    if not _chain:
+    if not _played_dominoes:
         hand.remove(bone)
-        _chain.append([top, bottom])
+        _played_dominoes.append([top, bottom])
         _left_end = top
         _right_end = bottom
         if top == bottom and _spinner_val is None:
@@ -578,20 +585,20 @@ def _apply_play(top, bottom, hand, target_end=None):
     hand.remove(bone)
     if target_end == "left":
         if top == _left_end:
-            _chain.insert(0, [bottom, top])
+            _played_dominoes.insert(0, [bottom, top])
             _left_end = bottom
         elif bottom == _left_end:
-            _chain.insert(0, [top, bottom])
+            _played_dominoes.insert(0, [top, bottom])
             _left_end = top
         else:
             hand.append(bone)
             return False
     elif target_end == "right":
         if top == _right_end:
-            _chain.append([top, bottom])
+            _played_dominoes.append([top, bottom])
             _right_end = bottom
         elif bottom == _right_end:
-            _chain.append([bottom, top])
+            _played_dominoes.append([bottom, top])
             _right_end = top
         else:
             hand.append(bone)
@@ -619,7 +626,7 @@ def _apply_play(top, bottom, hand, target_end=None):
 
 
 def _can_play(top, bottom):
-    if not _chain:
+    if not _played_dominoes:
         return True
     return len(_play_options(top, bottom)) > 0
 
@@ -632,7 +639,7 @@ def _spinner_index():
     # Find the spinner (the first double), identified by both halves equaling spinner_val.
     if _spinner_val is None:
         return None
-    for i, b in enumerate(_chain):
+    for i, b in enumerate(_played_dominoes):
         if b[0] == _spinner_val and b[1] == _spinner_val:
             return i
     return None
@@ -642,7 +649,7 @@ def _spinner_is_surrounded():
     si = _spinner_index()
     if si is None:
         return False
-    return 0 < si < len(_chain) - 1
+    return 0 < si < len(_played_dominoes) - 1
 
 
 def _play_options(top, bottom):
@@ -679,15 +686,15 @@ def _is_ambiguous_play(top, bottom):
 
 def _compute_bone_size():
     # Return the largest domino half-width (w) that fits all chain bones.
-    if not _chain:
+    if not _played_dominoes:
         return 55
     area = document.getElementById("play-area")
     avail = int(area.clientWidth) - 20  # subtract padding
     if avail <= 50:
         avail = 650  # fallback when DOM not yet laid out
-    h_bones = sum(1 for b in _chain if b[0] != b[1])
-    v_bones = len(_chain) - h_bones
-    n = len(_chain)
+    h_bones = sum(1 for b in _played_dominoes if b[0] != b[1])
+    v_bones = len(_played_dominoes) - h_bones
+    n = len(_played_dominoes)
     gaps = max(0, n - 1) * _BONE_GAP_PX
     # At half-width w: horizontal bone = (2w+6) px wide, vertical = (w+6) px wide.
     # Solve: h_bones*(2w+6) + v_bones*(w+6) + gaps <= avail
@@ -754,7 +761,7 @@ def _check_win_after_play(player_idx):
 
 def _deal_new_hand():
     # Shuffle and deal a fresh set of bones, preserving match scores.
-    global _hand0, _hand1, _boneyard, _chain, _left_end, _right_end
+    global _hand0, _hand1, _boneyard, _played_dominoes, _left_end, _right_end
     global _current_player, _needs_boneyard_draw, _consecutive_passes, _game_num
     global _spinner_val, _top_end, _bottom_end
     bones = [[i, j] for i in range(7) for j in range(i, 7)]
@@ -762,7 +769,7 @@ def _deal_new_hand():
     _hand0 = [list(t) for t in bones[:7]]
     _hand1 = [list(t) for t in bones[7:14]]
     _boneyard = [list(t) for t in bones[14:]]
-    _chain.clear()
+    _played_dominoes.clear()
     _left_end = None
     _right_end = None
     _spinner_val = None
@@ -858,7 +865,7 @@ def _after_play(player_idx, bone_played):
     global _consecutive_passes
     _consecutive_passes = 0
     hand = _hand0 if player_idx == 0 else _hand1
-    pts = _score_chain()
+    pts = _score_played()
     scored = pts > 0
     is_dbl = _is_double(bone_played)
     if scored:
@@ -944,13 +951,13 @@ def _computer_play():
     best = max(
         plays,
         key=lambda t: (
-            _simulate_chain_score_after_play(t),
+            _simulate_score_after_play(t),
             _is_double(t),
             t[0] + t[1],
         ),
     )
     # Pick the best target end for this bone (highest scoring; first option as tiebreak)
-    opts = _play_options(best[0], best[1]) if _chain else []
+    opts = _play_options(best[0], best[1]) if _played_dominoes else []
     tgt = opts[0] if opts else None
     if len(opts) > 1:
         a, b = best[0], best[1]
@@ -997,9 +1004,9 @@ def _on_drop(event):
     event.preventDefault()
     if _current_player != 0 or _needs_boneyard_draw or _game_over:
         return
-    # If the drop landed on a chain-end or spinner bone, that element's dedicated
+    # If the drop landed on a played-bone end or spinner bone, that element's dedicated
     # handler takes priority (guards against stopPropagation not firing through proxies).
-    if event.target.closest("[data-chain-end]"):
+    if event.target.closest("[data-play-end]"):
         return
     data = event.dataTransfer.getData("text/plain")
     if data.startswith("boneyard:"):
@@ -1067,13 +1074,13 @@ def _on_drop_spinner_bone(event):
         )
 
 
-def _on_drop_chain_bone(event):
+def _on_drop_played_bone(event):
     # Hand bone dropped directly onto a chain-end bone - directed placement.
     event.preventDefault()
     event.stopPropagation()
     if _current_player != 0 or _needs_boneyard_draw or _game_over:
         return
-    chain_end = event.currentTarget.getAttribute("data-chain-end")
+    chain_end = event.currentTarget.getAttribute("data-play-end")
     if not chain_end:
         return
     data = event.dataTransfer.getData("text/plain")
@@ -1332,7 +1339,7 @@ def _build_head(soup: BeautifulSoup, html_tag: Tag) -> None:
         content="width=device-width, initial-scale=1.0",
     )
     title = soup.new_tag("title")
-    title.string = "Claussoft Dominos - Racehorse"
+    title.string = "Claussoft Dominoes - Racehorse"
     head.append(title)
     _add_tag(soup, head, "link", rel="stylesheet", href=PYSCRIPT_CSS_URL)
     style = soup.new_tag("style")
@@ -1391,6 +1398,8 @@ def _build_board(soup: BeautifulSoup, body: Tag) -> None:
 
 def build_html(state: GameState) -> str:
     """Build the complete HTML page as a string using BeautifulSoup."""
+    import json as _json  # noqa: PLC0415
+
     soup = BeautifulSoup("<!DOCTYPE html><html lang='en'></html>", "html.parser")
     html_tag = soup.find("html")
 
@@ -1398,7 +1407,7 @@ def build_html(state: GameState) -> str:
 
     body = _add_tag(soup, html_tag, "body")
     h1 = soup.new_tag("h1")
-    h1.string = "Claussoft Dominos - Racehorse"
+    h1.string = "Claussoft Dominoes - Racehorse"
     body.append(h1)
 
     _build_board(soup, body)
@@ -1422,6 +1431,20 @@ def build_html(state: GameState) -> str:
     data_script["type"] = "application/json"
     data_script.string = state.model_dump_json()
     body.append(data_script)
+
+    # Embedded domino face-up SVG image URIs (loaded at PyScript startup)
+    img_uris_script = soup.new_tag("script")
+    img_uris_script["id"] = "domino-image-uris"
+    img_uris_script["type"] = "application/json"
+    img_uris_script.string = _json.dumps(_load_domino_image_uris())
+    body.append(img_uris_script)
+
+    # Embedded face-down domino skin image URI (loaded at PyScript startup)
+    facedown_script = soup.new_tag("script")
+    facedown_script["id"] = "facedown-image-uri"
+    facedown_script["type"] = "application/json"
+    facedown_script.string = _json.dumps(_load_facedown_image_uri())
+    body.append(facedown_script)
 
     # PyScript runtime
     _add_tag(soup, body, "script", type="module", src=PYSCRIPT_JS_URL)
