@@ -2,7 +2,6 @@ from dominoes_ui_on_pyscript import (
     _PYSCRIPT_CODE,
     GameState,
     _load_domino_image_uris,
-    _load_facedown_image_uri,
     all_domino_bones,
     build_html,
     deal_game,
