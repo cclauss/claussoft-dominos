@@ -409,9 +409,11 @@ def test_html_embeds_domino_image_uris() -> None:
 
 def test_pyscript_played_dominoes_not_chain() -> None:
     """The play area data structure is named _played_dominoes, not _chain."""
+    import re  # noqa: PLC0415
+
     assert "_played_dominoes" in _PYSCRIPT_CODE
-    # Old name must not appear
-    assert "\n_chain " not in _PYSCRIPT_CODE
+    # Old name must not appear as a standalone identifier (word-boundary check)
+    assert re.search(r'\b_chain\b', _PYSCRIPT_CODE) is None
     assert "play_chain" not in _PYSCRIPT_CODE
 
 
