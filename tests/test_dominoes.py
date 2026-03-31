@@ -1,3 +1,5 @@
+import re
+
 from src.main import (
     _PYSCRIPT_CODE,
     GameState,
@@ -407,7 +409,6 @@ def test_html_embeds_domino_image_uris() -> None:
 
 def test_pyscript_played_dominoes_not_chain() -> None:
     """The play area data structure is named _played_dominoes (a PlayedDominoes instance), not _chain."""
-    import re
     assert "_played_dominoes" in _PYSCRIPT_CODE
     assert "PlayedDominoes" in _PYSCRIPT_CODE
     assert re.search(r"\b_chain\b", _PYSCRIPT_CODE) is None
