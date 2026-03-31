@@ -374,7 +374,7 @@ def test_make_domino_svg_face_up_uses_image() -> None:
 
 def test_make_domino_svg_flipped_uses_rotate_180() -> None:
     """make_domino_svg rotates 180 deg when top > bottom."""
-    svg_normal = make_domino_svg(3, 4)   # top=3 <= bottom=4: no rotation
+    svg_normal = make_domino_svg(3, 4)  # top=3 <= bottom=4: no rotation
     svg_flipped = make_domino_svg(4, 3)  # top=4 > bottom=3: rotate 180
     assert "rotate(180" in svg_flipped
     assert "rotate(180" not in svg_normal
@@ -412,14 +412,14 @@ def test_pyscript_played_dominoes_not_chain() -> None:
 
     assert "_played_dominoes" in _PYSCRIPT_CODE
     # Old name must not appear as a standalone identifier (word-boundary check)
-    assert re.search(r'\b_chain\b', _PYSCRIPT_CODE) is None
+    assert re.search(r"\b_chain\b", _PYSCRIPT_CODE) is None
     assert "play_chain" not in _PYSCRIPT_CODE
 
 
 def test_pyscript_image_based_svg_uses_svgimage() -> None:
     """New domino rendering uses SVG <image> elements, not generated pip circles."""
     # The _domino_svg function uses <image href=
-    assert '<image href=' in _PYSCRIPT_CODE
+    assert "<image href=" in _PYSCRIPT_CODE
     # Old hand-drawn approach (rect/circle for pips) is gone
     assert "_PIP_LOCATIONS" not in _PYSCRIPT_CODE
     assert "_half_svg" not in _PYSCRIPT_CODE
