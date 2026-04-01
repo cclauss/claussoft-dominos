@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
     "beautifulsoup4",
+    "httpx",
     "pillow",
     "pydantic",
 ]
@@ -81,7 +82,6 @@ lint.select = [
 # ignore = []
 lint.per-file-ignores."__init__.py" = [ "E402" ]
 lint.per-file-ignores."dominoes_svg.py" = [ "S101" ]
-lint.per-file-ignores."Pythonista/BoardView.py" = [ "B026" ]
 lint.per-file-ignores."tests/*" = [ "S101" ]
 lint.pylint.allow-magic-value-types = [ "int", "str" ]
 
