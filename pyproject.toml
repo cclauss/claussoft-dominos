@@ -1,3 +1,18 @@
+[project]
+name = "claussoft-dominos"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "beautifulsoup4",
+    "pillow",
+    "pydantic",
+]
+
+[dependency-groups]
+test = [
+    "pytest",
+]
+
 [tool.ruff]
 target-version = "py39"
 line-length = 108
