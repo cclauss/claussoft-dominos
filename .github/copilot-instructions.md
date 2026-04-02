@@ -57,6 +57,9 @@ all environments.
 
 ### CI / GitHub Actions
 
+GitHub Actions should `uses: astral-sh/setup-uv` and prefer `uv pip install`
+over `pip install`.
+
 After pushing a branch or creating a PR, **always** check the status of the
 GitHub Actions workflow runs and pre-commit.ci:
 
@@ -69,8 +72,10 @@ Common failure patterns to watch for:
 
 - **`pytest: command not found` (exit 127):** `pytest` is missing from
   `[project.optional-dependencies].test`.  Add it there.
-- **ruff check / ruff format failures:** Run `ruff check .` and `ruff format .`
+- **ruff check / ruff format failures:** Run `ruff check` and `ruff format`
   locally, fix all violations, and commit before pushing.
+- **pyproject-fmt imposes strict syntax on pypproject.toml** Run
+  pyproject-fmt locally, fix all violations, and commit before pushing
 - **pre-commit.ci auto-fix commits:** Pull them in and re-run pre-commit
   locally to verify nothing remains.
 
@@ -86,9 +91,9 @@ The PyScript UI (`dominos_ui_on_pyscript.py`) implements
 - Dominoes can only be played against matching numbers.
 - If no domino in a player's hand matches an open end, the player must draw
   from the boneyard until a playable domino is found or only 2 remain.
-- If all open ends add up to a multiple of 5 the player scores `sum // 5` and
-  goes again.
-- If the player plays doubles they get to go again.  Doubles are played
+- If all open ends add up to a multiple of 5, the player scores `sum // 5`
+  and goes again.
+- If the player plays doubles, they get to go again.  Doubles are played
   sideways (perpendicular to the line of play) and count 2× when scoring.
 - The first double played becomes the **spinner**: once both horizontal ends
   have been played, vertical branches grow up and down from it.
@@ -186,7 +191,7 @@ The same rotation logic (portrait vs landscape) is applied to face-down bones.
   all assets must be embedded as base64 data URIs at page-generation time.
 
 - **Why Pillow for the face-down image?**  The source PNG can be very large
-  (e.g. 36 MB at 3024 × 4032 px 16-bit).  Pillow is used to resize to
+  (e.g., 36 MB at 3024 × 4032 px 16-bit).  Pillow is used to resize to
   200 × 400 and re-encode as JPEG before embedding, keeping the HTML file size
   manageable.  Pillow is listed as a script dependency in the PEP 723 metadata
   and in the CI workflow's pip install step.  If Pillow is unavailable,
