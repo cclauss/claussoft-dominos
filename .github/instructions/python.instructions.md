@@ -39,6 +39,7 @@ applyTo: "**/*.py"
 - Use assignment expressions (the walrus operator) for concise code when appropriate
 - Use dict, list, and set comprehensions for simple transformations
 - Avoid using mutable default arguments in functions
+- Where possible, function arguments should have just one datatype except where that would create a mutable default argument
 - Use meaningful variable and function names
 - Avoid string concatenation with the + operator
 - Prefer f-strings for string formatting
@@ -66,3 +67,11 @@ file.close()
 with open('data.txt') as file:
     content = file.read()
 ```
+
+```python
+# Avoid
+def func(names: list[str] = []) -> None:
+
+# Prefer
+def func(names: list[str] | None = None) -> None:
+    names = names or []
