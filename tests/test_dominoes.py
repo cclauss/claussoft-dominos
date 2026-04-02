@@ -1,5 +1,7 @@
 import re
 
+import pytest
+
 from src.main import (
     _PYSCRIPT_CODE,
     GameState,
@@ -437,6 +439,55 @@ def test_pyscript_computer_play_delay() -> None:
     assert "window.setTimeout" in _PYSCRIPT_CODE
 
 
+
 def test_pyscript_sounds_present() -> None:
     """Sound function calls are present for game events."""
     assert "playDominoSound" in _PYSCRIPT_CODE
+
+
+# ---------------------------------------------------------------------------
+# Parametrized play-area scoring tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def _pyscript_classes() -> dict:
+    """Exec the PlayedDomino/PlayedDominoes class definitions from _PYSCRIPT_CODE."""
+    start = _PYSCRIPT_CODE.index("class PlayedDomino:")
+    end = _PYSCRIPT_CODE.index("\n_raw = json.loads(")
+    ns: dict = {}
+    exec(_PYSCRIPT_CODE[start:end], ns)  # noqa: S102
+    return ns
+
+
+@pytest.mark.parametrize(
+    "dominoes,scores",
+    [
+        ([], (0,)),
+        (["6_6"], (0, 12)),
+        (["6_6", "6_3"], (0, 12, 15)),
+        (["6_6", "6_3", "6_2"], (0, 12, 15, 5)),
+    ],
+)
+def test_play_area_score_sequence(
+    dominoes: list[str], scores: tuple[int, ...], _pyscript_classes: dict
+) -> None:
+    """PlayedDominoes.score() is correct after each bone is added to the play area."""
+    PlayedDominoes = _pyscript_classes["PlayedDominoes"]  # noqa: N806
+    pd = PlayedDominoes()
+    assert pd.score() == scores[0], f"Empty board score should be {scores[0]}"
+    for i, dom in enumerate(dominoes):
+        a, b = map(int, dom.split("_"))
+        if pd.is_empty():
+            pd.apply_play(a, b)
+        else:
+            opts = pd.play_options(a, b)
+            assert opts, f"No valid play for [{a}|{b}] at step {i + 1}"
+            if len(opts) == 1:
+                pd.apply_play(a, b)
+            else:
+                tb, td = opts[0]
+                pd.apply_play(a, b, target_bone=tb, target_direction=td)
+        assert pd.score() == scores[i + 1], (
+            f"After playing {dom} (step {i + 1}), expected score {scores[i + 1]}"
+        )

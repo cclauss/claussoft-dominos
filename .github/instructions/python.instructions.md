@@ -17,6 +17,16 @@ applyTo: "**/*.py"
 - Use type hints for function signatures
 - In _PYSCRIPT_CODE blocks, use type hints for function signatures
 - In scripts/**/*.py, use the `uv run --script` shebang and include PEP 723 Inline Script Metadata (/// script) for dependencies and Python version requirements
+- Use `int | None` union syntax (Python 3.10+) rather than `Optional[int]`
+
+## Docstrings
+
+- Every public function and class should have a docstring
+- Use a single-line docstring for trivial functions
+- Use multi-line Google-style docstrings for non-trivial functions:
+  - First line: brief imperative summary
+  - `Args:` section for parameters that are not self-explanatory
+  - `Returns:` section when the return value is not obvious
 
 ## Best Practices
 
@@ -30,6 +40,8 @@ applyTo: "**/*.py"
 - Avoid string concatenation with the + operator
 - Prefer f-strings for string formatting
 - Use context managers (with statements) for resource management
+- Prefer `pathlib.Path` over `os.path` for file system operations
+- Avoid bare `except` clauses; catch specific exception types
 
 ```python
 # Avoid

@@ -128,6 +128,9 @@ resizes it to 200 × 400 px, and re-encodes it as a JPEG (quality 80) to keep
 the embedded HTML compact.  The result is stored in the DOM element
 `#facedown-image-uri` and loaded at PyScript startup into `_FACEDOWN_IMAGE_URI`.
 
+The facedown image should always be rotated with the domino so that the top of
+the image is at the top of the domino, whether it is horizontal or vertical.
+
 The same rotation logic (portrait vs landscape) is applied to face-down bones.
 
 ---

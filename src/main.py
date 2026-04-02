@@ -85,6 +85,29 @@ def _load_domino_image_uris() -> dict[str, str]:
     return uris
 
 
+def _load_all_facedown_image_uris() -> dict[str, str]:
+    """Load all face-down domino images and return them as a dict mapping stem name to data URI.
+
+    Each image is resized to 200 × 400 px and re-encoded as JPEG quality=80 before
+    embedding.  Returns an empty dict if Pillow is unavailable or no images are found.
+    """
+    facedown_dir = Path(__file__).parent.parent / "images" / "dominoes_facedown"
+    try:
+        from PIL import Image  # noqa: PLC0415
+    except ImportError:
+        return {}
+    result: dict[str, str] = {}
+    for ext in ("*.png", "*.jpg", "*.jpeg"):
+        for img_path in sorted(facedown_dir.glob(ext)):
+            img = Image.open(img_path).convert("RGB")
+            img = img.resize((200, 400), Image.LANCZOS)
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=80)
+            b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+            result[img_path.stem] = f"data:image/jpeg;base64,{b64}"
+    return result
+
+
 def _load_facedown_image_uri() -> str:
     """Load, compress, and return the face-down domino image as a JPEG data URI.
 
@@ -170,7 +193,7 @@ _BONE_GAP_PX = 4          # uniform gap (px) between adjacent dominoes in every 
 _COMPUTER_PLAY_DELAY_MS = 1200  # ms delay before computer plays
 
 
-def _domino_svg(top, bottom, w=55, face_down=False):
+def _domino_svg(top: int, bottom: int, w: int = 55, face_down: bool = False) -> str:
     # Portrait SVG using the pre-loaded domino image.
     # face_down: use the face-down skin; otherwise look up the face-up SVG image.
     # top > bottom: rotate the whole image 180 deg so the correct half is on top.
@@ -199,7 +222,7 @@ def _domino_svg(top, bottom, w=55, face_down=False):
     )
 
 
-def _domino_svg_h(top, bottom, w=55, face_down=False):
+def _domino_svg_h(top: int, bottom: int, w: int = 55, face_down: bool = False) -> str:
     # Landscape SVG by rotating the portrait domino image as a whole.
     # top <= bottom: CCW -90 deg (translate(0,pw) rotate(-90)) -- top pips on left.
     # top > bottom:  CW  +90 deg (translate(ph,0) rotate(90))  -- top pips on left.
@@ -240,7 +263,7 @@ class PlayedDomino:
     Regular dominoes have at most 2 active neighbor slots (left + right).
     Doubles expose all 4 slots once both horizontal sides are filled.
     \"\"\"
-    def __init__(self, a, b):
+    def __init__(self, a: int, b: int) -> None:
         self.value = [a, b]
         self.left = None   # PlayedDomino | None
         self.right = None  # PlayedDomino | None
@@ -248,16 +271,16 @@ class PlayedDomino:
         self.down = None   # PlayedDomino | None (doubles only)
 
     @property
-    def is_double(self):
+    def is_double(self) -> bool:
         return self.value[0] == self.value[1]
 
-    def pip_at(self, direction):
+    def pip_at(self, direction: str) -> int:
         \"\"\"Pip value exposed at the given direction.\"\"\"
         if self.is_double:
             return self.value[0]
         return self.value[0] if direction in ("left", "up") else self.value[1]
 
-    def open_directions(self):
+    def open_directions(self) -> list[str]:
         \"\"\"Directions where a new bone can be attached.\"\"\"
         dirs = []
         if self.left is None:
@@ -276,16 +299,16 @@ class PlayedDomino:
 class PlayedDominoes:
     \"\"\"Board state as a linked tree of PlayedDomino nodes.\"\"\"
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.first_played_domino = None   # PlayedDomino | None
 
-    def clear(self):
+    def clear(self) -> None:
         self.first_played_domino = None
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return self.first_played_domino is None
 
-    def all_bones(self):
+    def all_bones(self) -> list[PlayedDomino]:
         \"\"\"BFS over all placed bones.\"\"\"
         if not self.first_played_domino:
             return []
@@ -302,7 +325,7 @@ class PlayedDominoes:
                     stack.append(n)
         return result
 
-    def horizontal_run(self):
+    def horizontal_run(self) -> list[PlayedDomino]:
         \"\"\"Left-to-right spine of the board.\"\"\"
         if not self.first_played_domino:
             return []
@@ -315,17 +338,17 @@ class PlayedDominoes:
             cur = cur.right
         return run
 
-    def open_ends(self):
+    def open_ends(self) -> list[tuple[PlayedDomino, str]]:
         \"\"\"All open attachment points: list of (PlayedDomino, direction) pairs.\"\"\"
         return [(b, d) for b in self.all_bones() for d in b.open_directions()]
 
-    def playable_pips(self):
+    def playable_pips(self) -> set[int] | None:
         \"\"\"Set of pip values that can be played; None if board is empty.\"\"\"
         if not self.first_played_domino:
             return None
         return {b.pip_at(d) for b, d in self.open_ends()}
 
-    def score(self):
+    def score(self) -> int:
         \"\"\"Sum of all open-end pip values; doubles count twice per open end.\"\"\"
         if not self.first_played_domino:
             return 0
@@ -333,21 +356,33 @@ class PlayedDominoes:
         # Lone double (not yet surrounded): count both halves.
         if len(run) == 1 and run[0].is_double and run[0].left is None and run[0].right is None:
             return run[0].value[0] * 2
-        return sum(b.pip_at(d) * (2 if b.is_double else 1) for b, d in self.open_ends())
+        total = 0
+        for b, d in self.open_ends():
+            # Empty spinner vertical branches don't score until a bone is placed there.
+            if d in ("up", "down") and getattr(b, d) is None:
+                continue
+            total += b.pip_at(d) * (2 if b.is_double else 1)
+        return total
 
-    def can_play(self, a, b):
+    def can_play(self, a: int, b: int) -> bool:
         if not self.first_played_domino:
             return True
         pips = self.playable_pips()
         return a in pips or b in pips
 
-    def play_options(self, a, b):
+    def play_options(self, a: int, b: int) -> list[tuple[PlayedDomino, str]]:
         \"\"\"Valid (PlayedDomino, direction) pairs for placing bone [a, b].\"\"\"
         if not self.first_played_domino:
             return []
         return [(bone, d) for bone, d in self.open_ends() if a == bone.pip_at(d) or b == bone.pip_at(d)]
 
-    def apply_play(self, a, b, target_bone=None, target_direction=None):
+    def apply_play(
+        self,
+        a: int,
+        b: int,
+        target_bone: PlayedDomino | None = None,
+        target_direction: str | None = None,
+    ) -> PlayedDomino | None:
         \"\"\"Place bone [a, b] onto the board. Returns the new PlayedDomino or None.\"\"\"
         if not self.first_played_domino:
             new_bone = PlayedDomino(a, b)
@@ -383,14 +418,14 @@ class PlayedDominoes:
             new_bone.up = cb
         return new_bone
 
-    def find_double_in_run(self, pip_val):
+    def find_double_in_run(self, pip_val: int) -> PlayedDomino | None:
         \"\"\"Find the double bone with the given pip value in the horizontal run.\"\"\"
         for b in self.horizontal_run():
             if b.is_double and b.value[0] == pip_val:
                 return b
         return None
 
-    def find_tip(self, double_bone, direction):
+    def find_tip(self, double_bone: PlayedDomino, direction: str) -> PlayedDomino:
         \"\"\"Follow the chain from double_bone in direction, return the tip bone.\"\"\"
         cur = double_bone
         while getattr(cur, direction) is not None:
@@ -420,8 +455,15 @@ _game_num = _raw.get("game_num", 0)  # how many hands dealt so far (first player
 # ---------------------------------------------------------------------------
 # Rendering helpers
 # ---------------------------------------------------------------------------
-def _make_bone_div(top, bottom, draggable=False, face_down=False,
-                   horizontal=False, from_boneyard=False, w=55):
+def _make_bone_div(
+    top: int,
+    bottom: int,
+    draggable: bool = False,
+    face_down: bool = False,
+    horizontal: bool = False,
+    from_boneyard: bool = False,
+    w: int = 55,
+) -> object:
     div = document.createElement("div")
     div.className = "domino-bone"
     div.setAttribute("data-top", str(top))
@@ -436,7 +478,13 @@ def _make_bone_div(top, bottom, draggable=False, face_down=False,
     return div
 
 
-def _render_hand(hand, area_id, draggable=False, face_down=False, horizontal=False):
+def _render_hand(
+    hand: list,
+    area_id: str,
+    draggable: bool = False,
+    face_down: bool = False,
+    horizontal: bool = False,
+) -> None:
     area = document.getElementById(area_id)
     area.innerHTML = ""
     for bone in hand:
@@ -448,7 +496,7 @@ def _render_hand(hand, area_id, draggable=False, face_down=False, horizontal=Fal
             el.addEventListener("dragstart", ffi.create_proxy(_on_dragstart))
 
 
-def _render_boneyard(draggable_to_hand=False):
+def _render_boneyard(draggable_to_hand: bool = False) -> None:
     area = document.getElementById("boneyard-area")
     area.innerHTML = ""
     lbl = document.createElement("div")
@@ -470,7 +518,7 @@ def _render_boneyard(draggable_to_hand=False):
     area.className = "draw-mode" if draggable_to_hand else ""
 
 
-def _apply_bone_rotation(div, w):
+def _apply_bone_rotation(div: object, w: int) -> None:
     # CSS-rotate the whole landscape bone 90° to appear portrait (perpendicular to chain).
     div.className += " bone-rotated"
     hw = w // 2
@@ -480,7 +528,7 @@ def _apply_bone_rotation(div, w):
     div.style.marginRight = f"-{hw}px"
 
 
-def _get_branch_chain(double_bone, direction):
+def _get_branch_chain(double_bone: object, direction: str) -> list:
     \"\"\"Return the list of bones in the up or down chain from double_bone.\"\"\"
     chain = []
     cur = getattr(double_bone, direction)
@@ -490,7 +538,7 @@ def _get_branch_chain(double_bone, direction):
     return chain
 
 
-def _render_played_linear(area, bone, w):
+def _render_played_linear(area: object, bone: object, w: int) -> None:
     \"\"\"Render a single non-junction bone into the play area.\"\"\"
     is_double = bone.is_double
     div = _make_bone_div(bone.value[0], bone.value[1], horizontal=True, w=w)
@@ -507,7 +555,7 @@ def _render_played_linear(area, bone, w):
     area.appendChild(div)
 
 
-def _render_played_cross(area, double_bone, w):
+def _render_played_cross(area: object, double_bone: object, w: int) -> None:
     \"\"\"Render a junction for a double with up/down branches.\"\"\"
     up_chain = _get_branch_chain(double_bone, "up")
     down_chain = _get_branch_chain(double_bone, "down")
@@ -560,7 +608,7 @@ def _render_played_cross(area, double_bone, w):
     area.appendChild(junc)
 
 
-def _render_play_area():
+def _render_play_area() -> None:
     area = document.getElementById("play-area")
     area.innerHTML = ""
     if _played_dominoes.is_empty():
@@ -575,7 +623,7 @@ def _render_play_area():
             _render_played_linear(area, bone, w)
 
 
-def _render_scores():
+def _render_scores() -> None:
     document.getElementById("score-p0").textContent = str(_scores[0])
     document.getElementById("score-p1").textContent = str(_scores[1])
     pips = _played_dominoes.playable_pips()
@@ -598,7 +646,7 @@ def _render_scores():
         opts_el.textContent = f"Options: {sorted(all_dirs)}" if all_dirs else "Options: (first play)"
 
 
-def _set_message(msg):
+def _set_message(msg: str) -> None:
     area = document.getElementById("status-msg")
     p = document.createElement("p")
     p.textContent = msg
@@ -606,7 +654,7 @@ def _set_message(msg):
     area.scrollTop = area.scrollHeight
 
 
-def _render_all():
+def _render_all() -> None:
     is_human_turn = _current_player == 0 and not _game_over
     _render_hand(_hand0, "player0-hand",
                  draggable=is_human_turn and not _needs_boneyard_draw)
@@ -626,20 +674,20 @@ def _render_all():
 # ---------------------------------------------------------------------------
 # Game logic helpers
 # ---------------------------------------------------------------------------
-def _is_double(bone):
+def _is_double(bone: list) -> bool:
     return bone[0] == bone[1]
 
 
-def _hand_value(hand):
+def _hand_value(hand: list) -> int:
     return sum(t[0] + t[1] for t in hand)
 
 
-def _score_played():
+def _score_played() -> int:
     s = _played_dominoes.score()
     return s if s % _SCORING_DIVISOR == 0 else 0
 
 
-def _simulate_score_after_play(bone):
+def _simulate_score_after_play(bone: list) -> int:
     # Return the best possible score after playing this bone on any valid end.
     a, b = bone[0], bone[1]
     if _played_dominoes.is_empty():
@@ -669,27 +717,27 @@ def _simulate_score_after_play(bone):
     return best
 
 
-def _find_bone(hand, top, bottom):
+def _find_bone(hand: list, top: int, bottom: int) -> list | None:
     for bone in hand:
         if bone == [top, bottom] or bone == [bottom, top]:
             return bone
     return None
 
 
-def _can_play(top, bottom):
+def _can_play(top: int, bottom: int) -> bool:
     return _played_dominoes.can_play(top, bottom)
 
 
-def _valid_plays(hand):
+def _valid_plays(hand: list) -> list:
     return [t for t in hand if _can_play(t[0], t[1])]
 
 
-def _is_ambiguous_play(top, bottom):
+def _is_ambiguous_play(top: int, bottom: int) -> bool:
     # Return True when the bone fits more than one placement position.
     return len(_played_dominoes.play_options(top, bottom)) > 1
 
 
-def _apply_play(top, bottom, hand, target_end=None):
+def _apply_play(top: int, bottom: int, hand: list, target_end: str | None = None) -> bool:
     bone = _find_bone(hand, top, bottom)
     if bone is None:
         return False
@@ -721,7 +769,7 @@ def _apply_play(top, bottom, hand, target_end=None):
     return False
 
 
-def _play_options(top, bottom):
+def _play_options(top: int, bottom: int) -> list:
     \"\"\"Return list of direction strings for valid plays of bone [top, bottom].\"\"\"
     if _played_dominoes.is_empty():
         return []
@@ -734,7 +782,7 @@ def _play_options(top, bottom):
     return opts
 
 
-def _compute_bone_size():
+def _compute_bone_size() -> int:
     if _played_dominoes.is_empty():
         return 55
     run = _played_dominoes.horizontal_run()
@@ -775,13 +823,13 @@ def _compute_bone_size():
 # ---------------------------------------------------------------------------
 # Win / end-of-hand logic
 # ---------------------------------------------------------------------------
-def _show_new_game_button():
+def _show_new_game_button() -> None:
     btn = document.getElementById("new-game-btn")
     if btn:
         btn.style.display = "inline-block"
 
 
-def _check_win_after_play(player_idx):
+def _check_win_after_play(player_idx: int) -> None:
     # Player emptied their hand: award bonus pts and check for match win.
     global _game_over
     opp_hand = _hand1 if player_idx == 0 else _hand0
@@ -807,7 +855,7 @@ def _check_win_after_play(player_idx):
         _deal_new_hand()
 
 
-def _deal_new_hand():
+def _deal_new_hand() -> None:
     # Shuffle and deal a fresh set of bones, preserving match scores.
     global _hand0, _hand1, _boneyard
     global _current_player, _needs_boneyard_draw, _consecutive_passes, _game_num
@@ -828,7 +876,7 @@ def _deal_new_hand():
     _start_turn(first_player)
 
 
-def _end_stuck_game():
+def _end_stuck_game() -> None:
     # Called when both players pass in a row - award points to the player with fewer pips.
     global _game_over
     v0 = _hand_value(_hand0)
@@ -863,7 +911,7 @@ def _end_stuck_game():
 # ---------------------------------------------------------------------------
 # Turn management
 # ---------------------------------------------------------------------------
-def _start_turn(player_idx, prefix=""):
+def _start_turn(player_idx: int, prefix: str = "") -> None:
     global _current_player, _needs_boneyard_draw, _consecutive_passes
     _current_player = player_idx
     _needs_boneyard_draw = False
@@ -904,7 +952,7 @@ def _start_turn(player_idx, prefix=""):
             _start_turn(other)
 
 
-def _after_play(player_idx, bone_played):
+def _after_play(player_idx: int, bone_played: list) -> None:
     # Called after player successfully places a bone; handles scoring, go-again, and win.
     global _consecutive_passes
     _consecutive_passes = 0
@@ -963,7 +1011,7 @@ def _after_play(player_idx, bone_played):
 # ---------------------------------------------------------------------------
 # Computer player
 # ---------------------------------------------------------------------------
-def _computer_draw_and_play():
+def _computer_draw_and_play() -> None:
     # Computer draws from boneyard until it can play (or boneyard gets too small).
     drawn_count = 0
     while not _valid_plays(_hand1) and len(_boneyard) > _BONEYARD_MIN:
@@ -991,7 +1039,7 @@ def _computer_draw_and_play():
             _start_turn(0)
 
 
-def _computer_play():
+def _computer_play() -> None:
     # Computer picks the best available bone and plays it.
     plays = _valid_plays(_hand1)
     if not plays:
@@ -1056,25 +1104,25 @@ def _computer_play():
 # ---------------------------------------------------------------------------
 # Drag-and-drop handlers
 # ---------------------------------------------------------------------------
-def _on_dragstart(event):
+def _on_dragstart(event: object) -> None:
     top = event.target.getAttribute("data-top")
     bottom = event.target.getAttribute("data-bottom")
     event.dataTransfer.setData("text/plain", f"{top},{bottom}")
     event.dataTransfer.effectAllowed = "move"
 
 
-def _on_dragstart_boneyard(event):
+def _on_dragstart_boneyard(event: object) -> None:
     # Boneyard bones are face-down; transfer only a draw signal (no pip values revealed).
     event.dataTransfer.setData("text/plain", "boneyard:draw")
     event.dataTransfer.effectAllowed = "move"
 
 
-def _on_dragover(event):
+def _on_dragover(event: object) -> None:
     event.preventDefault()
     event.dataTransfer.dropEffect = "move"
 
 
-def _on_drop(event):
+def _on_drop(event: object) -> None:
     event.preventDefault()
     if _current_player != 0 or _needs_boneyard_draw or _game_over:
         return
@@ -1120,7 +1168,7 @@ def _on_drop(event):
         _set_message("That move is not valid.")
 
 
-def _on_drop_spinner_bone(event):
+def _on_drop_spinner_bone(event: object) -> None:
     event.preventDefault()
     event.stopPropagation()
     if _current_player != 0 or _needs_boneyard_draw or _game_over:
@@ -1154,7 +1202,7 @@ def _on_drop_spinner_bone(event):
         )
 
 
-def _on_drop_played_bone(event):
+def _on_drop_played_bone(event: object) -> None:
     event.preventDefault()
     event.stopPropagation()
     if _current_player != 0 or _needs_boneyard_draw or _game_over:
@@ -1192,7 +1240,7 @@ def _on_drop_played_bone(event):
         _set_message(f"[{top}|{bottom}] does not fit on the {chain_end} end.")
 
 
-def _on_drop_boneyard_to_hand(event):
+def _on_drop_boneyard_to_hand(event: object) -> None:
     # Boneyard bone dropped onto the human's hand area.
     global _needs_boneyard_draw, _consecutive_passes
     event.preventDefault()
@@ -1226,7 +1274,7 @@ def _on_drop_boneyard_to_hand(event):
         _set_message("Drew a bone from the boneyard. Still no playable bones - draw another.")
 
 
-def _on_new_game(event):  # noqa: ARG001
+def _on_new_game(event: object) -> None:  # noqa: ARG001
     window.location.reload()
 
 
@@ -1244,6 +1292,18 @@ _hand0_area.addEventListener("drop", ffi.create_proxy(_on_drop_boneyard_to_hand)
 _new_game_btn = document.getElementById("new-game-btn")
 if _new_game_btn:
     _new_game_btn.addEventListener("click", ffi.create_proxy(_on_new_game))
+
+# Facedown image selector
+_FACEDOWN_IMAGE_URIS_DICT = json.loads(
+    document.getElementById("facedown-image-uris-dict").textContent
+)
+_facedown_select = document.getElementById("facedown-selector")
+if _facedown_select:
+    def _on_facedown_change(event: object) -> None:
+        global _FACEDOWN_IMAGE_URI
+        _FACEDOWN_IMAGE_URI = _FACEDOWN_IMAGE_URIS_DICT.get(event.target.value, "")
+        _render_all()
+    _facedown_select.addEventListener("change", ffi.create_proxy(_on_facedown_change))
 
 _render_all()
 document.getElementById("status-msg").innerHTML = ""
@@ -1444,7 +1504,9 @@ def _build_head(soup: BeautifulSoup, html_tag: Tag) -> None:
     head.append(style)
 
 
-def _build_board(soup: BeautifulSoup, body: Tag) -> None:
+def _build_board(
+    soup: BeautifulSoup, body: Tag, facedown_names: list[str] | None = None
+) -> None:
     """Add the game board grid (player hands, boneyard, play area, scoreboard)."""
     board = _add_tag(soup, body, "div", id="board")
 
@@ -1495,6 +1557,27 @@ def _build_board(soup: BeautifulSoup, body: Tag) -> None:
         el["style"] = "font-size: 0.75rem; opacity: 0.8; text-align: center;"
         sb.append(el)
 
+    # Facedown image selector
+    sel_lbl = soup.new_tag("div")
+    sel_lbl["style"] = "font-size: 0.75rem; opacity: 0.8; text-align: center; margin-top: 4px;"
+    sel_lbl.string = "Facedown image:"
+    sb.append(sel_lbl)
+    select = soup.new_tag("select")
+    select["id"] = "facedown-selector"
+    select["style"] = "font-size: 0.75rem; width: 100%;"
+    blank_opt = soup.new_tag("option")
+    blank_opt["value"] = ""
+    blank_opt.string = "blank"
+    select.append(blank_opt)
+    for i, name in enumerate(facedown_names or []):
+        opt = soup.new_tag("option")
+        opt["value"] = name
+        opt.string = name
+        if i == 0:
+            opt["selected"] = "selected"
+        select.append(opt)
+    sb.append(select)
+
     # Player 0 hand (bottom - human)
     p0_div = _add_tag(soup, board, "div", id="player0-hand")
     p0_div["class"] = "player-hand"
@@ -1518,7 +1601,8 @@ def build_html(state: GameState) -> str:
     h1.string = "Claussoft Dominoes - Racehorse"
     body.append(h1)
 
-    _build_board(soup, body)
+    all_facedown_uris = _load_all_facedown_image_uris()
+    _build_board(soup, body, facedown_names=list(all_facedown_uris.keys()))
 
     # Status bar (scrollable message history)
     status = _add_tag(soup, body, "div", id="status-bar")
@@ -1547,12 +1631,20 @@ def build_html(state: GameState) -> str:
     img_uris_script.string = _json.dumps(_load_domino_image_uris())
     body.append(img_uris_script)
 
-    # Embedded face-down domino skin image URI (loaded at PyScript startup)
+    # Embedded face-down domino skin image URI (loaded at PyScript startup; first image)
+    default_facedown_uri = next(iter(all_facedown_uris.values()), "")
     facedown_script = soup.new_tag("script")
     facedown_script["id"] = "facedown-image-uri"
     facedown_script["type"] = "application/json"
-    facedown_script.string = _json.dumps(_load_facedown_image_uri())
+    facedown_script.string = _json.dumps(default_facedown_uri)
     body.append(facedown_script)
+
+    # Embedded dict of all face-down image URIs keyed by stem name
+    facedown_dict_script = soup.new_tag("script")
+    facedown_dict_script["id"] = "facedown-image-uris-dict"
+    facedown_dict_script["type"] = "application/json"
+    facedown_dict_script.string = _json.dumps(all_facedown_uris)
+    body.append(facedown_dict_script)
 
     # JavaScript sound function
     js_script = soup.new_tag("script")
