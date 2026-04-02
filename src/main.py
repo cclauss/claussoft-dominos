@@ -1504,9 +1504,7 @@ def _build_head(soup: BeautifulSoup, html_tag: Tag) -> None:
     head.append(style)
 
 
-def _build_board(
-    soup: BeautifulSoup, body: Tag, facedown_names: list[str] | None = None
-) -> None:
+def _build_board(soup: BeautifulSoup, body: Tag, facedown_names: list[str] | None = None) -> None:
     """Add the game board grid (player hands, boneyard, play area, scoreboard)."""
     board = _add_tag(soup, body, "div", id="board")
 

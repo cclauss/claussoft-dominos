@@ -439,7 +439,6 @@ def test_pyscript_computer_play_delay() -> None:
     assert "window.setTimeout" in _PYSCRIPT_CODE
 
 
-
 def test_pyscript_sounds_present() -> None:
     """Sound function calls are present for game events."""
     assert "playDominoSound" in _PYSCRIPT_CODE
