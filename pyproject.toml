@@ -17,8 +17,7 @@ dependencies = [
   "pydantic",
 ]
 
-[project.optional-dependencies]
-test = [
+optional-dependencies.test = [
   "pytest",
 ]
 
