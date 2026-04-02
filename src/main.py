@@ -88,7 +88,7 @@ def _load_domino_image_uris() -> dict[str, str]:
 def _load_all_facedown_image_uris() -> dict[str, str]:
     """Load all face-down domino images and return them as a dict mapping stem name to data URI.
 
-    Each image is resized to 200 × 400 px and re-encoded as JPEG quality=80 before
+    Each image is resized to 200 x 400 px and re-encoded as JPEG quality=80 before
     embedding.  Returns an empty dict if Pillow is unavailable or no images are found.
     """
     facedown_dir = Path(__file__).parent.parent / "images" / "dominoes_facedown"
@@ -1504,29 +1504,8 @@ def _build_head(soup: BeautifulSoup, html_tag: Tag) -> None:
     head.append(style)
 
 
-def _build_board(soup: BeautifulSoup, body: Tag, facedown_names: list[str] | None = None) -> None:
-    """Add the game board grid (player hands, boneyard, play area, scoreboard)."""
-    board = _add_tag(soup, body, "div", id="board")
-
-    # Player 1 hand (top - computer)
-    p1_div = _add_tag(soup, board, "div", id="player1-hand")
-    p1_div["class"] = "player-hand"
-    lbl1 = soup.new_tag("div")
-    lbl1["class"] = "area-label"
-    lbl1.string = "Computer's hand"
-    p1_div.append(lbl1)
-
-    # Boneyard (left column)
-    by_div = _add_tag(soup, board, "div", id="boneyard-area")
-    lbl_by = soup.new_tag("div")
-    lbl_by["class"] = "area-label"
-    lbl_by.string = "Boneyard"
-    by_div.append(lbl_by)
-
-    # Play area (centre)
-    _add_tag(soup, board, "div", id="play-area")
-
-    # Scoreboard (right column)
+def _build_scoreboard(soup: BeautifulSoup, board: Tag, facedown_names: list[str] | None = None) -> None:
+    """Append the scoreboard column (right) to the board grid."""
     sb = _add_tag(soup, board, "div", id="scoreboard")
     h2 = soup.new_tag("h2")
     h2.string = "Score"
@@ -1575,6 +1554,32 @@ def _build_board(soup: BeautifulSoup, body: Tag, facedown_names: list[str] | Non
             opt["selected"] = "selected"
         select.append(opt)
     sb.append(select)
+
+
+def _build_board(soup: BeautifulSoup, body: Tag, facedown_names: list[str] | None = None) -> None:
+    """Add the game board grid (player hands, boneyard, play area, scoreboard)."""
+    board = _add_tag(soup, body, "div", id="board")
+
+    # Player 1 hand (top - computer)
+    p1_div = _add_tag(soup, board, "div", id="player1-hand")
+    p1_div["class"] = "player-hand"
+    lbl1 = soup.new_tag("div")
+    lbl1["class"] = "area-label"
+    lbl1.string = "Computer's hand"
+    p1_div.append(lbl1)
+
+    # Boneyard (left column)
+    by_div = _add_tag(soup, board, "div", id="boneyard-area")
+    lbl_by = soup.new_tag("div")
+    lbl_by["class"] = "area-label"
+    lbl_by.string = "Boneyard"
+    by_div.append(lbl_by)
+
+    # Play area (centre)
+    _add_tag(soup, board, "div", id="play-area")
+
+    # Scoreboard (right column)
+    _build_scoreboard(soup, board, facedown_names)
 
     # Player 0 hand (bottom - human)
     p0_div = _add_tag(soup, board, "div", id="player0-hand")

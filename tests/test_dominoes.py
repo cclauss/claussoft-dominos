@@ -450,7 +450,7 @@ def test_pyscript_sounds_present() -> None:
 
 
 @pytest.fixture(scope="module")
-def _pyscript_classes() -> dict:
+def pyscript_classes() -> dict:
     """Exec the PlayedDomino/PlayedDominoes class definitions from _PYSCRIPT_CODE."""
     start = _PYSCRIPT_CODE.index("class PlayedDomino:")
     end = _PYSCRIPT_CODE.index("\n_raw = json.loads(")
@@ -460,7 +460,7 @@ def _pyscript_classes() -> dict:
 
 
 @pytest.mark.parametrize(
-    "dominoes,scores",
+    ("dominoes", "scores"),
     [
         ([], (0,)),
         (["6_6"], (0, 12)),
@@ -469,10 +469,10 @@ def _pyscript_classes() -> dict:
     ],
 )
 def test_play_area_score_sequence(
-    dominoes: list[str], scores: tuple[int, ...], _pyscript_classes: dict
+    dominoes: list[str], scores: tuple[int, ...], pyscript_classes: dict
 ) -> None:
     """PlayedDominoes.score() is correct after each bone is added to the play area."""
-    PlayedDominoes = _pyscript_classes["PlayedDominoes"]  # noqa: N806
+    PlayedDominoes = pyscript_classes["PlayedDominoes"]  # noqa: N806
     pd = PlayedDominoes()
     assert pd.score() == scores[0], f"Empty board score should be {scores[0]}"
     for i, dom in enumerate(dominoes):

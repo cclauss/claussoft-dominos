@@ -32,6 +32,11 @@ Use [pre-commit](https://pre-commit.com/) to enforce code quality before each co
 - Run manually: `pre-commit run --all-files`
 - Configuration lives in `.pre-commit-config.yaml`
 
+**Always run `pre-commit run --all-files` (or `ruff check .` and `ruff format .`) before
+creating or pushing a pull request**, and fix every violation before committing.
+If pre-commit.ci creates an auto-fix commit, pull it in immediately (`git pull`) and
+re-run pre-commit locally to confirm there are no remaining violations.
+
 When adding new linting or formatting hooks, add them to `.pre-commit-config.yaml`
 rather than running tools ad-hoc.
 
@@ -42,6 +47,32 @@ Use [pytest](https://docs.pytest.org/) for all tests.
 - Tests live in the `tests/` directory
 - New features and bug fixes should include tests in `tests/`
 - Test files are named `test_*.py`
+
+**Test dependency group:** `pytest` must always be listed in **both**
+`[project.optional-dependencies].test` and `[dependency-groups].test` in
+`pyproject.toml`.  The GitHub Actions workflow installs dependencies with
+`pip install .[test]`, which reads `[project.optional-dependencies]`; uv reads
+`[dependency-groups]`.  Keeping both in sync ensures `pytest` is available in
+all environments.
+
+### CI / GitHub Actions
+
+After pushing a branch or creating a PR, **always** check the status of the
+GitHub Actions workflow runs and pre-commit.ci:
+
+1. Use `list_workflow_runs` to find the latest run for your branch.
+2. Use `get_job_logs` (with `failed_only=true`) to read failure details.
+3. Fix every failure and push a corrective commit.
+4. Repeat until all checks are green.
+
+Common failure patterns to watch for:
+
+- **`pytest: command not found` (exit 127):** `pytest` is missing from
+  `[project.optional-dependencies].test`.  Add it there.
+- **ruff check / ruff format failures:** Run `ruff check .` and `ruff format .`
+  locally, fix all violations, and commit before pushing.
+- **pre-commit.ci auto-fix commits:** Pull them in and re-run pre-commit
+  locally to verify nothing remains.
 
 ---
 

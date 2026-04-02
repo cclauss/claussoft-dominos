@@ -17,6 +17,11 @@ dependencies = [
   "pydantic",
 ]
 
+[project.optional-dependencies]
+test = [
+  "pytest",
+]
+
 [dependency-groups]
 test = [
   "pytest",

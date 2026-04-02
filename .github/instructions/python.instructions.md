@@ -31,6 +31,9 @@ applyTo: "**/*.py"
 ## Best Practices
 
 - Python code will be linted and formatted with ruff check and ruff format
+- **Always run `ruff check .` and `ruff format .` before creating a PR.**  Fix every
+  violation before pushing.  Never suppress a ruff rule with `# noqa` unless there
+  is a documented reason.
 - Ruff check and ruff format will be run as pre-commit hooks to ensure code quality before commits
 - Read the ruff configuration from pyproject.toml
 - Use assignment expressions (the walrus operator) for concise code when appropriate
@@ -42,6 +45,16 @@ applyTo: "**/*.py"
 - Use context managers (with statements) for resource management
 - Prefer `pathlib.Path` over `os.path` for file system operations
 - Avoid bare `except` clauses; catch specific exception types
+- Use ASCII characters in docstrings and comments (e.g. `x` not `×`)
+
+## Dependency Management
+
+- `pytest` must be listed in **both** `[project.optional-dependencies].test`
+  **and** `[dependency-groups].test` in `pyproject.toml`.
+  - `pip install .[test]` reads `[project.optional-dependencies]` (used by
+    GitHub Actions CI).
+  - `uv` reads `[dependency-groups]` (used for local development).
+  - Both must be kept in sync so pytest is available in all environments.
 
 ```python
 # Avoid
