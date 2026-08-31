@@ -59,12 +59,12 @@ applyTo: "**/*.py"
 
 ```python
 # Avoid
-file = open('data.txt')
+file = open("data.txt")
 content = file.read()
 file.close()
 
 # Prefer
-with open('data.txt') as file:
+with open("data.txt") as file:
     content = file.read()
 ```
 
